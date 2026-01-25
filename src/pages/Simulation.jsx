@@ -29,6 +29,7 @@ import ResponseCard from '../components/simulation/ResponseCard';
 import SimulationHistory from '../components/simulation/SimulationHistory';
 import ComparisonView from '../components/simulation/ComparisonView';
 import NextSteps from '../components/simulation/NextSteps';
+import TradeOffs from '../components/simulation/TradeOffs';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -106,50 +107,63 @@ export default function SimulationPage() {
       return desc;
     }).join('\n\n');
 
-    const prompt = `You are simulating a cross-functional product team discussion. 
+    const prompt = `You are simulating a cross-functional team discussion for a critical product/business decision.
 
 SCENARIO: ${scenario}
 
 PARTICIPATING ROLES:
 ${roleDescriptions}
 
-For each role, provide their perspective on this scenario. Consider their typical priorities, concerns, and risk tolerance. For custom roles, use the "Typical concerns" description to guide their perspective.
+For each role, deeply analyze their perspective considering their typical priorities, concerns, and risk tolerance. For custom roles, use the "Typical concerns" description as guidance.
 
-Return a JSON object with this exact structure:
+Return a JSON object with this EXACT structure:
 {
   "responses": [
     {
-      "role": "role_id (use the exact role ID, e.g., founder, backend_dev, custom_123, etc.)",
+      "role": "role_id (exact role ID from above)",
       "position": "2-3 sentence summary of their stance",
       "concerns": ["concern 1", "concern 2", "concern 3"],
       "risk_tolerance": "low | medium | high",
-      "recommendation": "Their specific recommendation"
+      "recommendation": "Their specific recommendation",
+      "primary_driver": "The core motivation/principle driving their position (1 sentence)"
     }
   ],
   "tensions": [
     {
       "between": ["role1_id", "role2_id"],
-      "description": "Description of the conflict between these roles",
+      "description": "Description of the conflict",
       "severity": "low | medium | high | critical"
     }
   ],
-  "summary": "A 2-3 paragraph synthesis of the discussion, key takeaways, and recommended path forward",
+  "decision_trade_offs": [
+    {
+      "trade_off": "Name of the trade-off",
+      "option_a": "Description of one path",
+      "option_b": "Description of alternative path"
+    }
+  ],
+  "summary": "2-3 paragraphs synthesizing the discussion. Include: (1) Main areas of consensus (2) Key points of contention (3) Decision-making framework based on the primary drivers identified",
   "next_steps": [
     {
-      "action": "Specific, actionable step (1-2 sentences)",
-      "owner_role": "role_id best suited to own this action",
-      "priority": "low | medium | high"
+      "action": "Specific, actionable step",
+      "owner_role": "role_id best suited to own this",
+      "priority": "low | medium | high",
+      "confidence": 85
     }
   ]
 }
 
-IMPORTANT: 
-- Use the exact role IDs provided above
-- Identify real tensions - don't smooth over conflicts
-- Be specific and actionable in recommendations
-- Consider the influence levels when weighing perspectives
-- Extract 3-5 concrete next steps from the tensions and recommendations
-- Assign each next step to the most appropriate role based on their concerns and capabilities`;
+CRITICAL INSTRUCTIONS:
+- PRIMARY DRIVER: For each role's response, identify the ONE core principle/motivation driving their position
+- TRADE-OFFS: Extract 2-4 major decision trade-offs implicit in the scenario
+- SUMMARY: Don't just summarize - explicitly call out what's driving each role and where the fundamental tensions lie
+- NEXT STEPS: 
+  * Extract 3-5 concrete, specific actions
+  * Confidence score (0-100) based on: alignment across roles, clarity of action, likelihood of success
+  * Higher confidence = more agreement + clearer path
+  * Lower confidence = controversial + needs more research
+- Consider influence levels when weighing perspectives
+- Identify REAL tensions - don't smooth over conflicts`;
 
     try {
       const simulation = await createMutation.mutateAsync({
@@ -176,7 +190,8 @@ IMPORTANT:
                   position: { type: "string" },
                   concerns: { type: "array", items: { type: "string" } },
                   risk_tolerance: { type: "string" },
-                  recommendation: { type: "string" }
+                  recommendation: { type: "string" },
+                  primary_driver: { type: "string" }
                 }
               }
             },
@@ -191,6 +206,17 @@ IMPORTANT:
                 }
               }
             },
+            decision_trade_offs: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  trade_off: { type: "string" },
+                  option_a: { type: "string" },
+                  option_b: { type: "string" }
+                }
+              }
+            },
             summary: { type: "string" },
             next_steps: {
               type: "array",
@@ -199,7 +225,8 @@ IMPORTANT:
                 properties: {
                   action: { type: "string" },
                   owner_role: { type: "string" },
-                  priority: { type: "string" }
+                  priority: { type: "string" },
+                  confidence: { type: "number" }
                 }
               }
             }
@@ -218,6 +245,7 @@ IMPORTANT:
           responses: result.responses,
           tensions: result.tensions,
           summary: result.summary,
+          decision_trade_offs: result.decision_trade_offs || [],
           next_steps: nextSteps,
           status: 'completed',
         }
@@ -228,6 +256,7 @@ IMPORTANT:
         responses: result.responses,
         tensions: result.tensions,
         summary: result.summary,
+        decision_trade_offs: result.decision_trade_offs || [],
         next_steps: nextSteps,
         status: 'completed',
       });
@@ -487,6 +516,18 @@ IMPORTANT:
               <TabsContent value="results" className="space-y-6">
                 {currentSimulation && (
                   <>
+                    {/* Decision Trade-offs */}
+                    {currentSimulation.decision_trade_offs && currentSimulation.decision_trade_offs.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-3"
+                      >
+                        <h3 className="text-sm font-semibold text-slate-700">Decision Trade-offs</h3>
+                        <TradeOffs tradeOffs={currentSimulation.decision_trade_offs} />
+                      </motion.div>
+                    )}
+
                     {/* Summary & Next Steps */}
                     {currentSimulation.summary && (
                       <motion.div

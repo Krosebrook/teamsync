@@ -27,14 +27,24 @@ import {
   Zap,
   Star,
   Heart,
-  Crown
+  Crown,
+  Headphones,
+  UserCheck,
+  MessageSquare,
+  DollarSign,
+  GitBranch,
+  Package,
+  Database,
+  FileCheck
 } from "lucide-react";
 import CustomRoleDialog from './CustomRoleDialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CLIENT_SUITE_ROLES, FRONT_OF_HOUSE_ROLES, BACK_OF_HOUSE_ROLES } from './ClientRoles';
 
-const ROLES = [
+const PRODUCT_TEAM_ROLES = [
   { id: "founder", name: "Founder / CEO", icon: Rocket, color: "violet", defaultInfluence: 10 },
   { id: "backend_dev", name: "Backend Developer", icon: Code2, color: "blue", defaultInfluence: 6 },
   { id: "frontend_dev", name: "Frontend Developer", icon: Palette, color: "cyan", defaultInfluence: 5 },
@@ -46,6 +56,8 @@ const ROLES = [
   { id: "devrel", name: "Developer Relations", icon: Megaphone, color: "orange", defaultInfluence: 4 },
   { id: "analytics", name: "Analytics Lead", icon: Users, color: "indigo", defaultInfluence: 5 },
 ];
+
+const ROLES = [...PRODUCT_TEAM_ROLES, ...CLIENT_SUITE_ROLES];
 
 const colorClasses = {
   violet: "bg-violet-100 text-violet-700 border-violet-200",
@@ -67,7 +79,9 @@ const colorClasses = {
 const ICON_MAP = {
   Rocket, Code2, Shield, Palette, TestTube, Users, BarChart3, 
   Megaphone, Settings, Eye, Briefcase, User, Building, Award, 
-  Target, TrendingUp, Zap, Star, Heart, Crown
+  Target, TrendingUp, Zap, Star, Heart, Crown, Headphones,
+  UserCheck, MessageSquare, DollarSign, GitBranch, Package,
+  Database, FileCheck
 };
 
 export default function RoleSelector({ selectedRoles, onRolesChange }) {
@@ -180,100 +194,108 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         <Plus className="w-4 h-4" />
         Create Custom Role
       </Button>
-      
-      <div className="grid gap-2">
-        {allRoles.map((role) => {
-          const Icon = role.icon;
-          const selected = isSelected(role.id);
-          
-          return (
-            <motion.div
-              key={role.id}
-              layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`
-                rounded-xl border transition-all duration-200
-                ${selected 
-                  ? 'bg-white border-slate-200 shadow-sm' 
-                  : 'bg-slate-50/50 border-transparent hover:border-slate-200'
-                }
-              `}
-            >
-              <div className="p-3">
-                <div className="flex items-center gap-3">
-                  <Checkbox 
-                    checked={selected}
-                    onCheckedChange={() => handleToggleRole(role.id)}
-                    className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+
+      <Tabs defaultValue="product" className="w-full">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="product" className="text-xs">Product</TabsTrigger>
+          <TabsTrigger value="client" className="text-xs">Client</TabsTrigger>
+          <TabsTrigger value="custom" className="text-xs">Custom</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="product" className="mt-3">
+          <div className="grid gap-2">
+            {PRODUCT_TEAM_ROLES.map((role) => {
+              const Icon = role.icon;
+              const selected = isSelected(role.id);
+              
+              return (
+                <RoleCard 
+                  key={role.id}
+                  role={role}
+                  selected={selected}
+                  onToggle={handleToggleRole}
+                  influence={getInfluence(role.id)}
+                  onInfluenceChange={handleInfluenceChange}
+                  colorClasses={colorClasses}
+                />
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="client" className="mt-3">
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Front of House (Client-Facing)</p>
+              <div className="grid gap-2">
+                {FRONT_OF_HOUSE_ROLES.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
                   />
-                  <div className={`p-1.5 rounded-lg ${colorClasses[role.color]}`}>
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                  <span className={`text-sm ${selected ? 'font-medium text-slate-800' : 'text-slate-600'} flex-1`}>
-                    {role.name}
-                  </span>
-                  {role.isCustom && (
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditRole(role);
-                        }}
-                      >
-                        <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteRole(role.id);
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3 text-slate-400 hover:text-rose-600" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                <AnimatePresence>
-                  {selected && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pt-3 pl-8">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-slate-500 w-16">Influence</span>
-                          <Slider
-                            value={[getInfluence(role.id)]}
-                            onValueChange={(val) => handleInfluenceChange(role.id, val)}
-                            max={10}
-                            min={1}
-                            step={1}
-                            className="flex-1"
-                          />
-                          <span className="text-xs font-semibold text-violet-600 w-6 text-right">
-                            {getInfluence(role.id)}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                ))}
               </div>
-            </motion.div>
-          );
-        })}
-      </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Back of House (Internal Ops)</p>
+              <div className="grid gap-2">
+                {BACK_OF_HOUSE_ROLES.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="custom" className="mt-3">
+          <div className="grid gap-2">
+            {customRoles.length === 0 ? (
+              <div className="text-center py-8 text-sm text-slate-500">
+                No custom roles yet. Create one above!
+              </div>
+            ) : (
+              customRoles.map(cr => {
+                const role = {
+                  id: `custom_${cr.id}`,
+                  name: cr.name,
+                  icon: ICON_MAP[cr.icon_name] || User,
+                  color: cr.color,
+                  defaultInfluence: cr.default_influence,
+                  isCustom: true,
+                  customData: cr
+                };
+                
+                return (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                    onEdit={handleEditRole}
+                    onDelete={handleDeleteRole}
+                  />
+                );
+              })
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <CustomRoleDialog
         open={dialogOpen}
@@ -285,4 +307,94 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
   );
 }
 
-export { ROLES };
+function RoleCard({ role, selected, onToggle, influence, onInfluenceChange, colorClasses, onEdit, onDelete }) {
+  const Icon = role.icon;
+  
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`
+        rounded-xl border transition-all duration-200
+        ${selected 
+          ? 'bg-white border-slate-200 shadow-sm' 
+          : 'bg-slate-50/50 border-transparent hover:border-slate-200'
+        }
+      `}
+    >
+      <div className="p-3">
+        <div className="flex items-center gap-3">
+          <Checkbox 
+            checked={selected}
+            onCheckedChange={() => onToggle(role.id)}
+            className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+          />
+          <div className={`p-1.5 rounded-lg ${colorClasses[role.color]}`}>
+            <Icon className="w-3.5 h-3.5" />
+          </div>
+          <span className={`text-sm ${selected ? 'font-medium text-slate-800' : 'text-slate-600'} flex-1`}>
+            {role.name}
+          </span>
+          {role.isCustom && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(role);
+                }}
+              >
+                <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(role.id);
+                }}
+              >
+                <Trash2 className="w-3 h-3 text-slate-400 hover:text-rose-600" />
+              </Button>
+            </div>
+          )}
+        </div>
+        
+        <AnimatePresence>
+          {selected && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 pl-8">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-500 w-16">Influence</span>
+                  <Slider
+                    value={[influence]}
+                    onValueChange={(val) => onInfluenceChange(role.id, val)}
+                    max={10}
+                    min={1}
+                    step={1}
+                    className="flex-1"
+                  />
+                  <span className="text-xs font-semibold text-violet-600 w-6 text-right">
+                    {influence}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+export { PRODUCT_TEAM_ROLES as ROLES };

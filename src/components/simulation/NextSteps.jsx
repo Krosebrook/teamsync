@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, ArrowRight, User } from "lucide-react";
+import { CheckCircle2, Circle, ArrowRight, User, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 const priorityConfig = {
   high: { color: "text-rose-600", bg: "bg-rose-50", badge: "bg-rose-100 text-rose-700" },
@@ -67,6 +68,20 @@ export default function NextSteps({ steps, onToggleComplete }) {
                       <User className="w-3 h-3" />
                       <span className="capitalize">
                         {step.owner_role.replace(/_/g, ' ').replace('custom ', '')}
+                      </span>
+                    </div>
+                  )}
+
+                  {step.confidence !== undefined && (
+                    <div className="flex items-center gap-1.5">
+                      <TrendingUp className={cn(
+                        "w-3 h-3",
+                        step.confidence >= 80 ? "text-emerald-600" :
+                        step.confidence >= 60 ? "text-amber-600" :
+                        "text-slate-400"
+                      )} />
+                      <span className="text-xs text-slate-500">
+                        {step.confidence}% confidence
                       </span>
                     </div>
                   )}

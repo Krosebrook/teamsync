@@ -150,6 +150,17 @@ export default function ResponseCard({ response, influence, index }) {
               </p>
             </div>
 
+            {response.primary_driver && (
+              <div className="p-3 rounded-lg bg-slate-50">
+                <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Primary Driver
+                </h5>
+                <p className="text-sm text-slate-700 italic">
+                  "{response.primary_driver}"
+                </p>
+              </div>
+            )}
+
             {response.concerns && response.concerns.length > 0 && (
               <div>
                 <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">

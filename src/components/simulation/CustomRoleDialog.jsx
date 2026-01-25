@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Save } from "lucide-react";
+import { Plus, Save, Sparkles, Loader2 } from "lucide-react";
+import { base44 } from '@/api/base44Client';
+import { Badge } from "@/components/ui/badge";
 
 const ICON_OPTIONS = [
   "Briefcase", "User", "Users", "Building", "Award", "Target", 
@@ -24,6 +26,58 @@ export default function CustomRoleDialog({ open, onOpenChange, onSave, editRole 
   const [influence, setInfluence] = useState(editRole?.default_influence || 5);
   const [iconName, setIconName] = useState(editRole?.icon_name || 'User');
   const [color, setColor] = useState(editRole?.color || 'slate');
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
+  useEffect(() => {
+    if (editRole) {
+      setName(editRole.name);
+      setDescription(editRole.description);
+      setInfluence(editRole.default_influence);
+      setIconName(editRole.icon_name);
+      setColor(editRole.color);
+    }
+  }, [editRole]);
+
+  const getSuggestions = async () => {
+    if (!name.trim() || name.length < 3) return;
+    
+    setLoadingSuggestions(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are helping create a custom role for a team simulation tool. Given the role name "${name}", suggest:
+1. Detailed description of typical concerns and priorities (2-3 sentences)
+2. Most appropriate icon from this list: ${ICON_OPTIONS.join(', ')}
+3. Most appropriate color theme from this list: ${COLOR_OPTIONS.join(', ')}
+4. Default influence level (1-10, where 10 is highest)
+
+Be specific and practical. Consider what this role typically cares about in product/business decisions.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            description: { type: "string" },
+            icon: { type: "string" },
+            color: { type: "string" },
+            influence: { type: "number" }
+          }
+        }
+      });
+      
+      setAiSuggestions(result);
+    } catch (error) {
+      console.error('Failed to get suggestions:', error);
+    }
+    setLoadingSuggestions(false);
+  };
+
+  const applySuggestions = () => {
+    if (!aiSuggestions) return;
+    setDescription(aiSuggestions.description);
+    setIconName(aiSuggestions.icon);
+    setColor(aiSuggestions.color);
+    setInfluence(aiSuggestions.influence);
+    setAiSuggestions(null);
+  };
 
   const handleSave = () => {
     if (!name.trim() || !description.trim()) return;
@@ -56,7 +110,29 @@ export default function CustomRoleDialog({ open, onOpenChange, onSave, editRole 
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="role-name">Role Name</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="role-name">Role Name</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={getSuggestions}
+                disabled={!name.trim() || name.length < 3 || loadingSuggestions}
+                className="h-7 gap-1.5 text-xs"
+              >
+                {loadingSuggestions ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Thinking...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3 h-3" />
+                    AI Suggest
+                  </>
+                )}
+              </Button>
+            </div>
             <Input
               id="role-name"
               value={name}
@@ -64,6 +140,36 @@ export default function CustomRoleDialog({ open, onOpenChange, onSave, editRole 
               placeholder="e.g., Chief Compliance Officer"
             />
           </div>
+
+          {aiSuggestions && (
+            <div className="p-3 rounded-lg bg-violet-50 border border-violet-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-violet-600" />
+                  <span className="text-sm font-medium text-violet-900">AI Suggestions</span>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={applySuggestions}
+                  className="h-7 text-xs"
+                >
+                  Apply All
+                </Button>
+              </div>
+              <div className="space-y-2 text-sm text-slate-700">
+                <div>
+                  <span className="font-medium">Description:</span>
+                  <p className="text-xs mt-1 text-slate-600">{aiSuggestions.description}</p>
+                </div>
+                <div className="flex gap-4 text-xs">
+                  <Badge variant="outline">{aiSuggestions.icon}</Badge>
+                  <Badge variant="outline" className="capitalize">{aiSuggestions.color}</Badge>
+                  <Badge variant="outline">Influence: {aiSuggestions.influence}/10</Badge>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="role-description">
