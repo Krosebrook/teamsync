@@ -30,6 +30,7 @@ import SimulationHistory from '../components/simulation/SimulationHistory';
 import ComparisonView from '../components/simulation/ComparisonView';
 import NextSteps from '../components/simulation/NextSteps';
 import TradeOffs from '../components/simulation/TradeOffs';
+import ScenarioRoleSuggestions from '../components/simulation/ScenarioRoleSuggestions';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -57,6 +58,19 @@ export default function SimulationPage() {
     queryKey: ['customRoles'],
     queryFn: () => base44.entities.CustomRole.list(),
   });
+
+  // Build complete roles list including custom roles
+  const allRolesWithCustom = React.useMemo(() => {
+    const customRoleObjects = customRoles.map(cr => ({
+      id: `custom_${cr.id}`,
+      name: cr.name,
+      description: cr.description,
+      icon: cr.icon_name,
+      color: cr.color,
+      defaultInfluence: cr.default_influence,
+    }));
+    return [...ROLES, ...customRoleObjects];
+  }, [customRoles]);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Simulation.create(data),
