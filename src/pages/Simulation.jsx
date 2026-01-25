@@ -18,7 +18,9 @@ import {
   Download,
   RefreshCw,
   GitCompare,
-  ListChecks
+  ListChecks,
+  FileText,
+  BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,6 +33,8 @@ import ComparisonView from '../components/simulation/ComparisonView';
 import NextSteps from '../components/simulation/NextSteps';
 import TradeOffs from '../components/simulation/TradeOffs';
 import ScenarioRoleSuggestions from '../components/simulation/ScenarioRoleSuggestions';
+import TemplateGenerator from '../components/simulation/TemplateGenerator';
+import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -48,6 +52,7 @@ export default function SimulationPage() {
   const [activeTab, setActiveTab] = useState('setup');
   const [compareMode, setCompareMode] = useState(false);
   const [compareSimulations, setCompareSimulations] = useState([]);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -347,6 +352,14 @@ CRITICAL INSTRUCTIONS:
     });
   };
 
+  const handleApplyTemplate = (template) => {
+    setTitle(template.title);
+    setScenario(template.scenario);
+    setSelectedRoles(template.roles);
+    setActiveTab('setup');
+    toast.success('Template applied!');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
       {/* Header */}
@@ -397,6 +410,15 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
+                    onClick={() => setTemplateDialogOpen(true)}
+                    className="gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Templates
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
                     onClick={resetForm}
                     className="gap-2"
                   >
@@ -409,6 +431,12 @@ CRITICAL INSTRUCTIONS:
           </div>
         </div>
       </header>
+
+      <TemplateGenerator
+        open={templateDialogOpen}
+        onOpenChange={setTemplateDialogOpen}
+        onApplyTemplate={handleApplyTemplate}
+      />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-12 gap-8">
@@ -460,6 +488,14 @@ CRITICAL INSTRUCTIONS:
                 >
                   <GitCompare className="w-4 h-4 mr-2" />
                   Compare
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  disabled={compareMode}
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
                 </TabsTrigger>
               </TabsList>
 
@@ -642,6 +678,10 @@ CRITICAL INSTRUCTIONS:
                   simulations={compareSimulations}
                   onRemove={(id) => setCompareSimulations(compareSimulations.filter(s => s.id !== id))}
                 />
+              </TabsContent>
+
+              <TabsContent value="analytics" className="space-y-6">
+                <AnalyticsDashboard simulations={simulations} />
               </TabsContent>
             </Tabs>
           </div>
