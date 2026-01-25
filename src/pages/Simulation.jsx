@@ -16,7 +16,9 @@ import {
   LayoutGrid,
   List,
   Download,
-  RefreshCw
+  RefreshCw,
+  GitCompare,
+  ListChecks
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +27,8 @@ import UseCaseTemplates, { USE_CASES } from '../components/simulation/UseCaseTem
 import TensionMap from '../components/simulation/TensionMap';
 import ResponseCard from '../components/simulation/ResponseCard';
 import SimulationHistory from '../components/simulation/SimulationHistory';
+import ComparisonView from '../components/simulation/ComparisonView';
+import NextSteps from '../components/simulation/NextSteps';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -40,10 +44,17 @@ export default function SimulationPage() {
   const [currentSimulation, setCurrentSimulation] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState('setup');
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareSimulations, setCompareSimulations] = useState([]);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
     queryFn: () => base44.entities.Simulation.list('-created_date', 20),
+  });
+
+  const { data: customRoles = [] } = useQuery({
+    queryKey: ['customRoles'],
+    queryFn: () => base44.entities.CustomRole.list(),
   });
 
   const createMutation = useMutation({
@@ -76,25 +87,39 @@ export default function SimulationPage() {
     setIsRunning(true);
     setActiveTab('results');
 
-    const roleNames = selectedRoles.map(r => {
-      const roleData = ROLES.find(rd => rd.id === r.role);
-      return `${roleData?.name || r.role} (Influence: ${r.influence}/10)`;
-    }).join(', ');
+    // Build role descriptions including custom roles
+    const allRoles = [
+      ...ROLES,
+      ...customRoles.map(cr => ({
+        id: `custom_${cr.id}`,
+        name: cr.name,
+        description: cr.description,
+      }))
+    ];
+
+    const roleDescriptions = selectedRoles.map(r => {
+      const roleData = allRoles.find(rd => rd.id === r.role);
+      let desc = `${roleData?.name || r.role} (Influence: ${r.influence}/10)`;
+      if (roleData?.description) {
+        desc += `\n  Typical concerns: ${roleData.description}`;
+      }
+      return desc;
+    }).join('\n\n');
 
     const prompt = `You are simulating a cross-functional product team discussion. 
 
 SCENARIO: ${scenario}
 
 PARTICIPATING ROLES:
-${roleNames}
+${roleDescriptions}
 
-For each role, provide their perspective on this scenario. Consider their typical priorities, concerns, and risk tolerance.
+For each role, provide their perspective on this scenario. Consider their typical priorities, concerns, and risk tolerance. For custom roles, use the "Typical concerns" description to guide their perspective.
 
 Return a JSON object with this exact structure:
 {
   "responses": [
     {
-      "role": "role_id (e.g., founder, backend_dev, security, etc.)",
+      "role": "role_id (use the exact role ID, e.g., founder, backend_dev, custom_123, etc.)",
       "position": "2-3 sentence summary of their stance",
       "concerns": ["concern 1", "concern 2", "concern 3"],
       "risk_tolerance": "low | medium | high",
@@ -108,14 +133,23 @@ Return a JSON object with this exact structure:
       "severity": "low | medium | high | critical"
     }
   ],
-  "summary": "A 2-3 paragraph synthesis of the discussion, key takeaways, and recommended path forward"
+  "summary": "A 2-3 paragraph synthesis of the discussion, key takeaways, and recommended path forward",
+  "next_steps": [
+    {
+      "action": "Specific, actionable step (1-2 sentences)",
+      "owner_role": "role_id best suited to own this action",
+      "priority": "low | medium | high"
+    }
+  ]
 }
 
 IMPORTANT: 
-- Use these exact role IDs: founder, backend_dev, frontend_dev, security, qa, eng_manager, ux_designer, product_manager, devrel, analytics
+- Use the exact role IDs provided above
 - Identify real tensions - don't smooth over conflicts
 - Be specific and actionable in recommendations
-- Consider the influence levels when weighing perspectives`;
+- Consider the influence levels when weighing perspectives
+- Extract 3-5 concrete next steps from the tensions and recommendations
+- Assign each next step to the most appropriate role based on their concerns and capabilities`;
 
     try {
       const simulation = await createMutation.mutateAsync({
@@ -157,10 +191,26 @@ IMPORTANT:
                 }
               }
             },
-            summary: { type: "string" }
+            summary: { type: "string" },
+            next_steps: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  action: { type: "string" },
+                  owner_role: { type: "string" },
+                  priority: { type: "string" }
+                }
+              }
+            }
           }
         }
       });
+
+      const nextSteps = (result.next_steps || []).map(step => ({
+        ...step,
+        completed: false
+      }));
 
       await updateMutation.mutateAsync({
         id: simulation.id,
@@ -168,6 +218,7 @@ IMPORTANT:
           responses: result.responses,
           tensions: result.tensions,
           summary: result.summary,
+          next_steps: nextSteps,
           status: 'completed',
         }
       });
@@ -177,6 +228,7 @@ IMPORTANT:
         responses: result.responses,
         tensions: result.tensions,
         summary: result.summary,
+        next_steps: nextSteps,
         status: 'completed',
       });
 
@@ -204,6 +256,52 @@ IMPORTANT:
     setSelectedUseCase(null);
     setCurrentSimulation(null);
     setActiveTab('setup');
+    setCompareMode(false);
+    setCompareSimulations([]);
+  };
+
+  const toggleCompareSimulation = (sim) => {
+    const exists = compareSimulations.find(s => s.id === sim.id);
+    if (exists) {
+      setCompareSimulations(compareSimulations.filter(s => s.id !== sim.id));
+    } else {
+      if (compareSimulations.length >= 4) {
+        toast.error('Maximum 4 simulations for comparison');
+        return;
+      }
+      setCompareSimulations([...compareSimulations, sim]);
+    }
+  };
+
+  const enterCompareMode = () => {
+    setCompareMode(true);
+    setActiveTab('compare');
+  };
+
+  const exitCompareMode = () => {
+    setCompareMode(false);
+    setCompareSimulations([]);
+    setActiveTab('setup');
+  };
+
+  const handleToggleStepComplete = async (stepIndex) => {
+    if (!currentSimulation) return;
+
+    const updatedSteps = [...currentSimulation.next_steps];
+    updatedSteps[stepIndex] = {
+      ...updatedSteps[stepIndex],
+      completed: !updatedSteps[stepIndex].completed
+    };
+
+    await updateMutation.mutateAsync({
+      id: currentSimulation.id,
+      data: { next_steps: updatedSteps }
+    });
+
+    setCurrentSimulation({
+      ...currentSimulation,
+      next_steps: updatedSteps
+    });
   };
 
   return (
@@ -227,15 +325,43 @@ IMPORTANT:
             </div>
 
             <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={resetForm}
-                className="gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                New
-              </Button>
+              {compareMode ? (
+                <>
+                  <Badge variant="outline" className="gap-1">
+                    <GitCompare className="w-3 h-3" />
+                    {compareSimulations.length} selected
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={exitCompareMode}
+                  >
+                    Exit Compare
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={enterCompareMode}
+                    className="gap-2"
+                    disabled={simulations.length < 2}
+                  >
+                    <GitCompare className="w-4 h-4" />
+                    Compare
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={resetForm}
+                    className="gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    New
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -255,9 +381,11 @@ IMPORTANT:
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
               <SimulationHistory 
                 simulations={simulations}
-                onSelect={loadSimulation}
+                onSelect={compareMode ? toggleCompareSimulation : loadSimulation}
                 selectedId={currentSimulation?.id}
                 isLoading={loadingSimulations}
+                compareMode={compareMode}
+                compareSelected={compareSimulations.map(s => s.id)}
               />
             </div>
           </div>
@@ -269,6 +397,7 @@ IMPORTANT:
                 <TabsTrigger 
                   value="setup" 
                   className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  disabled={compareMode}
                 >
                   <LayoutGrid className="w-4 h-4 mr-2" />
                   Setup
@@ -276,10 +405,18 @@ IMPORTANT:
                 <TabsTrigger 
                   value="results"
                   className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={!currentSimulation}
+                  disabled={!currentSimulation || compareMode}
                 >
                   <List className="w-4 h-4 mr-2" />
                   Results
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="compare"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  disabled={!compareMode}
+                >
+                  <GitCompare className="w-4 h-4 mr-2" />
+                  Compare
                 </TabsTrigger>
               </TabsList>
 
@@ -350,22 +487,39 @@ IMPORTANT:
               <TabsContent value="results" className="space-y-6">
                 {currentSimulation && (
                   <>
-                    {/* Summary */}
+                    {/* Summary & Next Steps */}
                     {currentSimulation.summary && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-br from-violet-50 to-white rounded-2xl border border-violet-200 p-6 shadow-sm"
+                        className="bg-gradient-to-br from-violet-50 to-white rounded-2xl border border-violet-200 p-6 shadow-sm space-y-6"
                       >
-                        <div className="flex items-center gap-2 mb-4">
-                          <Sparkles className="w-5 h-5 text-violet-600" />
-                          <h3 className="text-sm font-semibold text-violet-900">
-                            Synthesis & Recommendations
-                          </h3>
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <Sparkles className="w-5 h-5 text-violet-600" />
+                            <h3 className="text-sm font-semibold text-violet-900">
+                              Synthesis & Recommendations
+                            </h3>
+                          </div>
+                          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                            {currentSimulation.summary}
+                          </p>
                         </div>
-                        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                          {currentSimulation.summary}
-                        </p>
+
+                        {currentSimulation.next_steps && currentSimulation.next_steps.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-4">
+                              <ListChecks className="w-5 h-5 text-violet-600" />
+                              <h3 className="text-sm font-semibold text-violet-900">
+                                Next Steps
+                              </h3>
+                            </div>
+                            <NextSteps 
+                              steps={currentSimulation.next_steps}
+                              onToggleComplete={handleToggleStepComplete}
+                            />
+                          </div>
+                        )}
                       </motion.div>
                     )}
 
@@ -419,6 +573,13 @@ IMPORTANT:
                     </p>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="compare" className="space-y-6">
+                <ComparisonView 
+                  simulations={compareSimulations}
+                  onRemove={(id) => setCompareSimulations(compareSimulations.filter(s => s.id !== id))}
+                />
               </TabsContent>
             </Tabs>
           </div>

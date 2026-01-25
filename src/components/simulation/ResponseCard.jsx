@@ -41,6 +41,13 @@ const ROLE_NAMES = {
   analytics: "Analytics Lead",
 };
 
+// Helper to get custom role name from role ID
+const getRoleName = (roleId) => {
+  if (ROLE_NAMES[roleId]) return ROLE_NAMES[roleId];
+  // For custom roles, format the ID nicely
+  return roleId.replace(/^custom_/, '').replace(/_/g, ' ');
+};
+
 const ROLE_COLORS = {
   founder: "violet",
   backend_dev: "blue",
@@ -77,7 +84,7 @@ export default function ResponseCard({ response, influence, index }) {
   const [expanded, setExpanded] = useState(true);
   
   const Icon = ROLE_ICONS[response.role] || Users;
-  const roleName = ROLE_NAMES[response.role] || response.role;
+  const roleName = getRoleName(response.role);
   const color = ROLE_COLORS[response.role] || "slate";
   const RiskIcon = riskIcons[response.risk_tolerance?.toLowerCase()]?.icon || MinusCircle;
   const riskColor = riskIcons[response.risk_tolerance?.toLowerCase()]?.color || "text-slate-400";
