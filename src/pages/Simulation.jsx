@@ -502,6 +502,13 @@ CRITICAL INSTRUCTIONS:
                         className="min-h-[120px] resize-none"
                       />
                     </div>
+
+                    <ScenarioRoleSuggestions
+                      scenario={scenario}
+                      allRoles={allRolesWithCustom}
+                      selectedRoles={selectedRoles}
+                      onRolesChange={setSelectedRoles}
+                    />
                   </div>
 
                   <div className="pt-2">
