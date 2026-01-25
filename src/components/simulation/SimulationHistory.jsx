@@ -86,18 +86,19 @@ export default function SimulationHistory({ simulations, onSelect, selectedId, i
                   <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                 )}
               </div>
-            
-            <div className="flex items-center gap-2 mt-2">
-              <Badge className={`text-[10px] ${statusColors[sim.status]}`}>
-                {sim.status}
-              </Badge>
-              <div className="flex items-center gap-1 text-[10px] text-slate-400">
-                <Clock className="w-3 h-3" />
-                {format(new Date(sim.created_date), 'MMM d, h:mm a')}
+              
+              <div className="flex items-center gap-2 mt-2">
+                <Badge className={`text-[10px] ${statusColors[sim.status]}`}>
+                  {sim.status}
+                </Badge>
+                <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                  <Clock className="w-3 h-3" />
+                  {format(new Date(sim.created_date), 'MMM d, h:mm a')}
+                </div>
               </div>
-            </div>
-          </motion.button>
-        ))}
+            </motion.button>
+          );
+        })}
       </div>
     </div>
   );
