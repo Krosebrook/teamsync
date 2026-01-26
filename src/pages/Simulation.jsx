@@ -20,7 +20,8 @@ import {
   GitCompare,
   ListChecks,
   FileText,
-  BarChart3
+  BarChart3,
+  FolderOpen
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,6 +36,7 @@ import TradeOffs from '../components/simulation/TradeOffs';
 import ScenarioRoleSuggestions from '../components/simulation/ScenarioRoleSuggestions';
 import TemplateGenerator from '../components/simulation/TemplateGenerator';
 import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
+import SavedTemplates from '../components/simulation/SavedTemplates';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -53,6 +55,8 @@ export default function SimulationPage() {
   const [compareMode, setCompareMode] = useState(false);
   const [compareSimulations, setCompareSimulations] = useState([]);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [savedTemplatesOpen, setSavedTemplatesOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -360,6 +364,12 @@ CRITICAL INSTRUCTIONS:
     toast.success('Template applied!');
   };
 
+  const handleEditTemplate = (template) => {
+    setEditingTemplate(template);
+    setSavedTemplatesOpen(false);
+    setTemplateDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
       {/* Header */}
@@ -413,7 +423,16 @@ CRITICAL INSTRUCTIONS:
                     onClick={() => setTemplateDialogOpen(true)}
                     className="gap-2"
                   >
-                    <FileText className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4" />
+                    Generate
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSavedTemplatesOpen(true)}
+                    className="gap-2"
+                  >
+                    <FolderOpen className="w-4 h-4" />
                     Templates
                   </Button>
                   <Button 
@@ -436,6 +455,14 @@ CRITICAL INSTRUCTIONS:
         open={templateDialogOpen}
         onOpenChange={setTemplateDialogOpen}
         onApplyTemplate={handleApplyTemplate}
+        allRoles={allRolesWithCustom}
+      />
+
+      <SavedTemplates
+        open={savedTemplatesOpen}
+        onOpenChange={setSavedTemplatesOpen}
+        onApplyTemplate={handleApplyTemplate}
+        onEditTemplate={handleEditTemplate}
       />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
