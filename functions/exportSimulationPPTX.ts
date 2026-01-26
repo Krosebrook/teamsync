@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       x: 0.5, y: 2.0, w: 9, h: 1.5,
       fontSize: 36, color: 'ffffff', bold: true, align: 'center'
     });
-    slide1.addText(`Decision Simulation Report`, {
+    slide1.addText('Decision Simulation Report', {
       x: 0.5, y: 3.5, w: 9, h: 0.5,
       fontSize: 18, color: '94a3b8', align: 'center'
     });
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
     // Slide 5: Role Responses
     if (simulation.responses) {
-      simulation.responses.forEach((response, idx) => {
+      simulation.responses.forEach((response) => {
         const slide = pres.addSlide();
         slide.addText(`Role: ${response.role.replace(/_/g, ' ').toUpperCase()}`, {
           x: 0.5, y: 0.3, w: 9, h: 0.6,
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Analytics Insights
+    // Analytics Insights Slides
     if (insights) {
       // Predictive Analysis
       if (insights.predictions && insights.predictions.length > 0) {
@@ -199,6 +199,8 @@ Deno.serve(async (req) => {
 
         let y = 1.2;
         insights.predictions.forEach(pred => {
+          if (y > 5) return; // Prevent overflow
+          
           slide.addText(pred.scenario_type, {
             x: 0.5, y, w: 9, h: 0.3,
             fontSize: 14, bold: true, color: '1e293b'
