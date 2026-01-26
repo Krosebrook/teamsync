@@ -1,10 +1,10 @@
-import Simulation from './pages/Simulation';
 import Documentation from './pages/Documentation';
+import Simulation from './pages/Simulation';
 
 
 export const PAGES = {
-    "Simulation": Simulation,
     "Documentation": Documentation,
+    "Simulation": Simulation,
 }
 
 export const pagesConfig = {

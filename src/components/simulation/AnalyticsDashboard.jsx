@@ -11,10 +11,14 @@ import {
   Sparkles,
   Loader2,
   BarChart3,
-  Activity
+  Activity,
+  Download,
+  Flame
 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 export default function AnalyticsDashboard({ simulations }) {
   const [insights, setInsights] = useState(null);
@@ -28,7 +32,6 @@ export default function AnalyticsDashboard({ simulations }) {
 
     setLoading(true);
     try {
-      // Prepare historical data
       const historicalData = simulations.slice(0, 20).map(sim => ({
         title: sim.title,
         scenario: sim.scenario,
@@ -113,6 +116,35 @@ Provide deep analytical insights:
     setLoading(false);
   };
 
+  const exportAnalyticsPDF = async () => {
+    if (!insights) {
+      toast.error('Generate insights first');
+      return;
+    }
+
+    try {
+      const { data } = await base44.functions.invoke('exportAnalyticsPDF', {
+        insights,
+        stats
+      });
+
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Analytics_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      
+      toast.success('Analytics report exported');
+    } catch (error) {
+      toast.error('Failed to export analytics');
+      console.error(error);
+    }
+  };
+
   const stats = useMemo(() => {
     if (!simulations || simulations.length === 0) return null;
 
@@ -130,6 +162,59 @@ Provide deep analytical insights:
       avgRolesPerSim: (simulations.reduce((acc, s) => 
         acc + (s.selected_roles?.length || 0), 0) / totalSimulations).toFixed(1)
     };
+  }, [simulations]);
+
+  // Role sentiment over time
+  const roleSentimentData = useMemo(() => {
+    if (!simulations || simulations.length === 0) return [];
+
+    const roleMap = {};
+    simulations.slice().reverse().forEach((sim, idx) => {
+      sim.responses?.forEach(resp => {
+        if (!roleMap[resp.role]) {
+          roleMap[resp.role] = [];
+        }
+        const sentimentScore = resp.risk_tolerance === 'low' ? 3 : resp.risk_tolerance === 'medium' ? 2 : 1;
+        roleMap[resp.role].push({ index: idx + 1, score: sentimentScore });
+      });
+    });
+
+    const chartData = [];
+    const maxIndex = Math.max(...Object.values(roleMap).flatMap(arr => arr.map(d => d.index)));
+    
+    for (let i = 1; i <= maxIndex; i++) {
+      const dataPoint = { simulation: i };
+      Object.keys(roleMap).forEach(role => {
+        const point = roleMap[role].find(d => d.index === i);
+        if (point) dataPoint[role] = point.score;
+      });
+      chartData.push(dataPoint);
+    }
+
+    return { chartData, roles: Object.keys(roleMap).slice(0, 5) };
+  }, [simulations]);
+
+  // Tension heatmap data
+  const tensionHeatmapData = useMemo(() => {
+    if (!simulations || simulations.length === 0) return [];
+
+    const tensionMap = {};
+    simulations.forEach(sim => {
+      sim.tensions?.forEach(tension => {
+        const key = tension.between.sort().join(' vs ');
+        if (!tensionMap[key]) {
+          tensionMap[key] = { between: tension.between, count: 0, severities: [] };
+        }
+        tensionMap[key].count++;
+        tensionMap[key].severities.push(tension.severity);
+      });
+    });
+
+    return Object.values(tensionMap).map(t => ({
+      ...t,
+      avgSeverity: t.severities.filter(s => s === 'critical').length > t.count / 2 ? 'critical' :
+                   t.severities.filter(s => s === 'high').length > t.count / 2 ? 'high' : 'medium'
+    })).sort((a, b) => b.count - a.count);
   }, [simulations]);
 
   if (!simulations || simulations.length === 0) {
@@ -194,24 +279,131 @@ Provide deep analytical insights:
         </Card>
       </div>
 
-      {/* Generate Insights Button */}
-      <Button
-        onClick={generateInsights}
-        disabled={loading || simulations.length < 3}
-        className="w-full gap-2"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Analyzing Patterns...
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-4 h-4" />
-            Generate AI Insights
-          </>
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        <Button
+          onClick={generateInsights}
+          disabled={loading || simulations.length < 3}
+          className="flex-1 gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Analyzing Patterns...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              Generate AI Insights
+            </>
+          )}
+        </Button>
+        {insights && (
+          <Button
+            onClick={exportAnalyticsPDF}
+            variant="outline"
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export PDF
+          </Button>
         )}
-      </Button>
+      </div>
+
+      {/* Role Sentiment Trends Chart */}
+      {simulations.length >= 3 && roleSentimentData.chartData.length > 0 && (
+        <Card className="p-6">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-violet-600" />
+            Role Sentiment Trends Over Time
+          </h3>
+          <p className="text-xs text-slate-500 mb-4">Risk tolerance by role across simulations (3=Low risk, 2=Medium, 1=High risk)</p>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={roleSentimentData.chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis 
+                dataKey="simulation" 
+                label={{ value: 'Simulation #', position: 'insideBottom', offset: -5 }}
+                tick={{ fontSize: 11 }}
+              />
+              <YAxis 
+                domain={[0.5, 3.5]}
+                ticks={[1, 2, 3]}
+                tick={{ fontSize: 11 }}
+              />
+              <Tooltip 
+                contentStyle={{ fontSize: 11 }}
+                formatter={(value) => {
+                  if (value === 3) return 'Low risk';
+                  if (value === 2) return 'Medium risk';
+                  if (value === 1) return 'High risk';
+                  return value;
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              {roleSentimentData.roles.map((role, idx) => (
+                <Line 
+                  key={role}
+                  type="monotone" 
+                  dataKey={role} 
+                  stroke={ROLE_COLORS[idx % ROLE_COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  name={role.replace(/_/g, ' ')}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+      )}
+
+      {/* Tension Heatmap */}
+      {tensionHeatmapData.length > 0 && (
+        <Card className="p-6">
+          <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+            <Flame className="w-5 h-5 text-rose-600" />
+            Recurring Tension Heatmap
+          </h3>
+          <p className="text-xs text-slate-500 mb-4">Frequency and severity of role conflicts</p>
+          <div className="space-y-2">
+            {tensionHeatmapData.slice(0, 10).map((tension, idx) => {
+              const severityColors = {
+                critical: 'bg-rose-600',
+                high: 'bg-orange-500',
+                medium: 'bg-amber-400',
+                low: 'bg-emerald-400'
+              };
+              const maxCount = Math.max(...tensionHeatmapData.map(t => t.count));
+              const intensity = (tension.count / maxCount) * 100;
+
+              return (
+                <div key={idx} className="relative">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-rose-100 transition-all"
+                    style={{ width: `${intensity}%` }}
+                  />
+                  <div className="relative p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${severityColors[tension.avgSeverity]}`} />
+                      <span className="text-sm font-medium text-slate-800">
+                        {tension.between.map(r => r.replace(/_/g, ' ')).join(' vs ')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="text-xs">
+                        {tension.count}x
+                      </Badge>
+                      <Badge className={`text-xs ${severityColors[tension.avgSeverity]} text-white`}>
+                        {tension.avgSeverity}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* Insights Display */}
       {insights && (
@@ -278,27 +470,43 @@ Provide deep analytical insights:
             </Card>
           )}
 
-          {/* Predictions */}
+          {/* Predictive Analysis */}
           {insights.predictions && insights.predictions.length > 0 && (
             <Card className="p-6 bg-gradient-to-br from-violet-50 to-white border-violet-200">
               <h3 className="font-semibold text-violet-900 mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-violet-600" />
-                Predictive Insights
+                Predictive Analysis - Potential Outcomes
               </h3>
+              <p className="text-xs text-slate-600 mb-4">
+                Based on historical patterns, here are likely outcomes for different decision paths
+              </p>
               <div className="space-y-3">
-                {insights.predictions.map((pred, idx) => (
-                  <div key={idx} className="p-3 bg-white rounded-lg border border-violet-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm text-slate-800">
-                        {pred.scenario_type}
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        {pred.confidence}% confidence
-                      </Badge>
+                {insights.predictions.map((pred, idx) => {
+                  const confidence = pred.confidence || 0;
+                  const confidenceColor = confidence >= 75 ? 'emerald' : confidence >= 50 ? 'amber' : 'rose';
+                  
+                  return (
+                    <div key={idx} className="p-4 bg-white rounded-lg border border-violet-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="font-medium text-sm text-slate-800">
+                          {pred.scenario_type}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full bg-${confidenceColor}-500 transition-all`}
+                              style={{ width: `${confidence}%` }}
+                            />
+                          </div>
+                          <Badge variant="outline" className={`text-xs text-${confidenceColor}-700`}>
+                            {confidence}%
+                          </Badge>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed">{pred.predicted_outcome}</p>
                     </div>
-                    <p className="text-sm text-slate-600">{pred.predicted_outcome}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </Card>
           )}
@@ -325,3 +533,14 @@ Provide deep analytical insights:
     </div>
   );
 }
+
+const ROLE_COLORS = [
+  '#8b5cf6', // violet
+  '#3b82f6', // blue
+  '#06b6d4', // cyan
+  '#f43f5e', // rose
+  '#f59e0b', // amber
+  '#10b981', // emerald
+  '#ec4899', // pink
+  '#6366f1', // indigo
+];

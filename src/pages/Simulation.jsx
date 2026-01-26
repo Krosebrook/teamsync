@@ -39,6 +39,7 @@ import TradeOffs from '../components/simulation/TradeOffs';
 import TemplateGenerator from '../components/simulation/TemplateGenerator';
 import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
 import SavedTemplates from '../components/simulation/SavedTemplates';
+import PlaybooksDialog from '../components/simulation/PlaybooksDialog';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -61,6 +62,8 @@ export default function SimulationPage() {
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [decisionType, setDecisionType] = useState('');
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
+  const [playbooksOpen, setPlaybooksOpen] = useState(false);
+  const [selectedPlaybook, setSelectedPlaybook] = useState(null);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -373,6 +376,26 @@ CRITICAL INSTRUCTIONS:
     setTemplateDialogOpen(true);
   };
 
+  const handleApplyPlaybook = (playbook) => {
+    setSelectedPlaybook(playbook);
+    
+    // Pre-fill roles based on playbook requirements
+    if (playbook.required_roles && playbook.required_roles.length > 0) {
+      const roles = playbook.required_roles.map(rr => ({
+        role: rr.role,
+        influence: 7 // Default influence
+      }));
+      setSelectedRoles(roles);
+    }
+
+    // Set title if framework name exists
+    if (playbook.name) {
+      setTitle(`${playbook.name} Decision`);
+    }
+
+    toast.success(`${playbook.name || 'Playbook'} applied`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -439,6 +462,15 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
+                    onClick={() => setPlaybooksOpen(true)}
+                    className="gap-2 h-7 text-xs"
+                  >
+                    <FileText className="w-3 h-3" />
+                    Playbooks
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
                     onClick={resetForm}
                     className="gap-2 h-7 text-xs"
                   >
@@ -464,6 +496,13 @@ CRITICAL INSTRUCTIONS:
         onOpenChange={setSavedTemplatesOpen}
         onApplyTemplate={handleApplyTemplate}
         onEditTemplate={handleEditTemplate}
+      />
+
+      <PlaybooksDialog
+        open={playbooksOpen}
+        onOpenChange={setPlaybooksOpen}
+        onApplyPlaybook={handleApplyPlaybook}
+        allRoles={allRolesWithCustom}
       />
 
       <main className="h-[calc(100vh-57px)] flex">
