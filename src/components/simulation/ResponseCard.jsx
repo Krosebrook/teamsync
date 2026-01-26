@@ -91,85 +91,71 @@ export default function ResponseCard({ response, influence, index }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm"
+      transition={{ delay: index * 0.05 }}
+      className="border border-slate-200 overflow-hidden"
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors"
+        className="w-full p-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
       >
-        <div className={`p-2.5 rounded-xl ${colorClasses[color]}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-        
         <div className="flex-1 text-left">
-          <div className="flex items-center gap-2">
-            <h4 className="font-semibold text-slate-800">{roleName}</h4>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="text-sm font-semibold text-slate-800">{roleName}</h4>
             {influence && (
-              <Badge variant="outline" className="text-[10px] font-normal">
-                Influence: {influence}/10
+              <Badge variant="outline" className="text-[10px] font-normal h-4 px-1.5">
+                {influence}
               </Badge>
             )}
+            <Badge variant="outline" className="text-[10px] font-normal h-4 px-1.5 capitalize">
+              {response.risk_tolerance}
+            </Badge>
           </div>
-          <p className="text-sm text-slate-500 line-clamp-1 mt-0.5">
+          <p className="text-xs text-slate-500 line-clamp-1">
             {response.position}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <RiskIcon className={`w-4 h-4 ${riskColor}`} />
-            <span className="text-xs text-slate-500 capitalize">
-              {response.risk_tolerance} risk
-            </span>
-          </div>
-          {expanded ? (
-            <ChevronUp className="w-5 h-5 text-slate-400" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-slate-400" />
-          )}
-        </div>
+        {expanded ? (
+          <ChevronUp className="w-4 h-4 text-slate-400" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-slate-400" />
+        )}
       </button>
 
       {expanded && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className="border-t border-slate-100"
-        >
-          <div className="p-4 space-y-4">
+        <div className="border-t border-slate-100 bg-slate-50">
+          <div className="p-3 space-y-3">
             <div>
-              <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              <h5 className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                 Position
               </h5>
-              <p className="text-sm text-slate-700 leading-relaxed">
+              <p className="text-xs text-slate-700 leading-relaxed">
                 {response.position}
               </p>
             </div>
 
             {response.primary_driver && (
-              <div className="p-3 rounded-lg bg-slate-50">
-                <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              <div className="p-2 bg-white border border-slate-200">
+                <h5 className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">
                   Primary Driver
                 </h5>
-                <p className="text-sm text-slate-700 italic">
-                  "{response.primary_driver}"
+                <p className="text-xs text-slate-700">
+                  {response.primary_driver}
                 </p>
               </div>
             )}
 
             {response.concerns && response.concerns.length > 0 && (
               <div>
-                <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  Key Concerns
+                <h5 className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                  Concerns
                 </h5>
-                <ul className="space-y-1.5">
+                <ul className="space-y-1">
                   {response.concerns.map((concern, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                      <span className="text-slate-300 mt-1">•</span>
+                    <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
+                      <span className="text-slate-300">•</span>
                       {concern}
                     </li>
                   ))}
@@ -178,17 +164,17 @@ export default function ResponseCard({ response, influence, index }) {
             )}
 
             {response.recommendation && (
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              <div className="p-2 bg-white border border-slate-200">
+                <h5 className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">
                   Recommendation
                 </h5>
-                <p className="text-sm text-slate-700">
+                <p className="text-xs text-slate-700">
                   {response.recommendation}
                 </p>
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
     </motion.div>
   );

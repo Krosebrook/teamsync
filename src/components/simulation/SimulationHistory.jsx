@@ -14,21 +14,17 @@ const statusColors = {
 export default function SimulationHistory({ simulations, onSelect, selectedId, isLoading, compareMode = false, compareSelected = [] }) {
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 text-violet-500 animate-spin mb-2" />
-        <p className="text-sm text-slate-500">Loading history...</p>
+      <div className="flex flex-col items-center justify-center py-8">
+        <Loader2 className="w-4 h-4 text-slate-400 animate-spin mb-2" />
+        <p className="text-xs text-slate-500">Loading...</p>
       </div>
     );
   }
 
   if (!simulations || simulations.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-          <FileText className="w-5 h-5 text-slate-400" />
-        </div>
-        <p className="text-sm text-slate-500">No simulations yet</p>
-        <p className="text-xs text-slate-400 mt-1">Create your first simulation above</p>
+      <div className="text-center py-8">
+        <p className="text-xs text-slate-400">No simulations yet</p>
       </div>
     );
   }
@@ -36,34 +32,20 @@ export default function SimulationHistory({ simulations, onSelect, selectedId, i
   const isCompareSelected = (simId) => compareSelected.includes(simId);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 tracking-tight">
-          {compareMode ? 'Select to Compare' : 'History'}
-        </h3>
-        {compareMode && compareSelected.length >= 2 && (
-          <Badge variant="outline" className="text-[10px] bg-violet-50 text-violet-700">
-            Ready to compare
-          </Badge>
-        )}
-      </div>
-      
-      <div className="space-y-2">
+    <div className="space-y-2">
+      <div className="space-y-1">
         {simulations.map((sim, index) => {
           const isSelected = compareMode ? isCompareSelected(sim.id) : selectedId === sim.id;
           
           return (
-            <motion.button
+            <button
               key={sim.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
               onClick={() => onSelect(sim)}
               className={`
-                w-full p-3 rounded-xl border text-left transition-all duration-200
+                w-full p-2 border text-left transition-all
                 ${isSelected 
-                  ? 'bg-violet-50 border-violet-200 ring-1 ring-violet-200' 
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                  ? 'bg-slate-100 border-slate-300' 
+                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }
               `}
             >
@@ -71,32 +53,27 @@ export default function SimulationHistory({ simulations, onSelect, selectedId, i
                 {compareMode && (
                   <Checkbox 
                     checked={isSelected}
-                    className="mt-0.5 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+                    className="mt-0.5 data-[state=checked]:bg-slate-800 data-[state=checked]:border-slate-800"
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-slate-800 text-sm truncate">
+                  <h4 className="font-medium text-slate-800 text-xs truncate">
                     {sim.title}
                   </h4>
-                  <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                  <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
                     {sim.scenario}
                   </p>
-                </div>
-                {!compareMode && (
-                  <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
-                )}
-              </div>
-              
-              <div className="flex items-center gap-2 mt-2">
-                <Badge className={`text-[10px] ${statusColors[sim.status]}`}>
-                  {sim.status}
-                </Badge>
-                <div className="flex items-center gap-1 text-[10px] text-slate-400">
-                  <Clock className="w-3 h-3" />
-                  {format(new Date(sim.created_date), 'MMM d, h:mm a')}
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <Badge variant="outline" className={`text-[10px] h-4 px-1 ${statusColors[sim.status]}`}>
+                      {sim.status}
+                    </Badge>
+                    <span className="text-[10px] text-slate-400">
+                      {format(new Date(sim.created_date), 'MMM d')}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </motion.button>
+            </button>
           );
         })}
       </div>

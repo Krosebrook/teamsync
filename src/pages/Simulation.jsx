@@ -25,15 +25,17 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import RoleSelector, { ROLES } from '../components/simulation/RoleSelector';
-import UseCaseTemplates, { USE_CASES } from '../components/simulation/UseCaseTemplates';
+import { ROLES } from '../components/simulation/RoleSelector';
+import RolePills from '../components/simulation/RolePills';
+import DecisionCanvas from '../components/simulation/DecisionCanvas';
+import ContextPanel from '../components/simulation/ContextPanel';
+import ProfessionalTemplates from '../components/simulation/ProfessionalTemplates';
 import TensionMap from '../components/simulation/TensionMap';
 import ResponseCard from '../components/simulation/ResponseCard';
 import SimulationHistory from '../components/simulation/SimulationHistory';
 import ComparisonView from '../components/simulation/ComparisonView';
 import NextSteps from '../components/simulation/NextSteps';
 import TradeOffs from '../components/simulation/TradeOffs';
-import ScenarioRoleSuggestions from '../components/simulation/ScenarioRoleSuggestions';
 import TemplateGenerator from '../components/simulation/TemplateGenerator';
 import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
 import SavedTemplates from '../components/simulation/SavedTemplates';
@@ -57,6 +59,8 @@ export default function SimulationPage() {
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [savedTemplatesOpen, setSavedTemplatesOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
+  const [decisionType, setDecisionType] = useState('');
+  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -91,11 +95,10 @@ export default function SimulationPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['simulations'] }),
   });
 
-  const handleUseCaseSelect = (useCase) => {
-    setSelectedUseCase(useCase);
-    setTitle(`${useCase.name} Analysis`);
-    setScenario(useCase.example);
-  };
+  const { data: templates = [] } = useQuery({
+    queryKey: ['templates'],
+    queryFn: () => base44.entities.SimulationTemplate.list('-use_count', 10),
+  });
 
   const runSimulation = async () => {
     if (!title.trim() || !scenario.trim()) {
@@ -371,29 +374,26 @@ CRITICAL INSTRUCTIONS:
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
+        <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 shadow-lg shadow-violet-200">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-slate-800 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-800 tracking-tight">
-                  Team Simulation
+                <h1 className="text-base font-semibold text-slate-900 tracking-tight">
+                  Team Decision Simulation
                 </h1>
-                <p className="text-sm text-slate-500">
-                  Cross-functional product decision analysis
-                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {compareMode ? (
                 <>
-                  <Badge variant="outline" className="gap-1">
+                  <Badge variant="outline" className="gap-1 text-xs h-7">
                     <GitCompare className="w-3 h-3" />
                     {compareSimulations.length} selected
                   </Badge>
@@ -401,6 +401,7 @@ CRITICAL INSTRUCTIONS:
                     variant="outline" 
                     size="sm"
                     onClick={exitCompareMode}
+                    className="h-7 text-xs"
                   >
                     Exit Compare
                   </Button>
@@ -411,37 +412,37 @@ CRITICAL INSTRUCTIONS:
                     variant="outline" 
                     size="sm"
                     onClick={enterCompareMode}
-                    className="gap-2"
+                    className="gap-2 h-7 text-xs"
                     disabled={simulations.length < 2}
                   >
-                    <GitCompare className="w-4 h-4" />
+                    <GitCompare className="w-3 h-3" />
                     Compare
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => setTemplateDialogOpen(true)}
-                    className="gap-2"
+                    className="gap-2 h-7 text-xs"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-3 h-3" />
                     Generate
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => setSavedTemplatesOpen(true)}
-                    className="gap-2"
+                    className="gap-2 h-7 text-xs"
                   >
-                    <FolderOpen className="w-4 h-4" />
+                    <FolderOpen className="w-3 h-3" />
                     Templates
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={resetForm}
-                    className="gap-2"
+                    className="gap-2 h-7 text-xs"
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className="w-3 h-3" />
                     New
                   </Button>
                 </>
@@ -465,18 +466,186 @@ CRITICAL INSTRUCTIONS:
         onEditTemplate={handleEditTemplate}
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-12 gap-8">
-          {/* Left Sidebar - Setup */}
-          <div className="col-span-3 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <RoleSelector 
+      <main className="h-[calc(100vh-57px)] flex">
+        {/* Three Column Layout */}
+        <div className="flex-1 flex">
+          
+          {/* LEFT: Role Selection */}
+          {!leftPanelCollapsed && (
+            <div className="w-72 border-r border-slate-200 bg-white p-4 overflow-y-auto">
+              <RolePills
                 selectedRoles={selectedRoles}
                 onRolesChange={setSelectedRoles}
+                allRoles={allRolesWithCustom}
               />
-            </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                  Templates
+                </h3>
+                <ProfessionalTemplates
+                  templates={templates.slice(0, 5)}
+                  onApply={handleApplyTemplate}
+                />
+                {templates.length > 5 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full mt-2 text-xs h-7"
+                    onClick={() => setSavedTemplatesOpen(true)}
+                  >
+                    View all {templates.length} templates
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* CENTER: Decision Canvas */}
+          <div className="flex-1 overflow-y-auto">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+              <div className="border-b border-slate-200 bg-white px-6 py-2">
+                <TabsList className="bg-transparent p-0 h-auto gap-1">
+                  <TabsTrigger 
+                    value="setup" 
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    disabled={compareMode}
+                  >
+                    Setup
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="results"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    disabled={!currentSimulation || compareMode}
+                  >
+                    Results
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="compare"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    disabled={!compareMode}
+                  >
+                    Compare
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="analytics"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    disabled={compareMode}
+                  >
+                    Analytics
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                <TabsContent value="setup" className="p-6 mt-0">
+                  <DecisionCanvas
+                    title={title}
+                    setTitle={setTitle}
+                    scenario={scenario}
+                    setScenario={setScenario}
+                    decisionType={decisionType}
+                    setDecisionType={setDecisionType}
+                    selectedRoles={selectedRoles}
+                    onRunSimulation={runSimulation}
+                    isRunning={isRunning}
+                  />
+                </TabsContent>
+
+                <TabsContent value="results" className="p-6 mt-0 space-y-4">
+                  {currentSimulation && currentSimulation.status === 'completed' && (
+                    <>
+                      {/* Summary */}
+                      {currentSimulation.summary && (
+                        <div className="border-b border-slate-200 pb-6">
+                          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                            Executive Summary
+                          </h3>
+                          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                            {currentSimulation.summary}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Next Steps */}
+                      {currentSimulation.next_steps && currentSimulation.next_steps.length > 0 && (
+                        <div className="border-b border-slate-200 pb-6">
+                          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                            Recommended Actions
+                          </h3>
+                          <NextSteps 
+                            steps={currentSimulation.next_steps}
+                            onToggleComplete={handleToggleStepComplete}
+                          />
+                        </div>
+                      )}
+
+                      {/* Tensions */}
+                      {currentSimulation.tensions && currentSimulation.tensions.length > 0 && (
+                        <div className="border-b border-slate-200 pb-6">
+                          <TensionMap tensions={currentSimulation.tensions} />
+                        </div>
+                      )}
+
+                      {/* Role Responses */}
+                      <div>
+                        <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                          Role Perspectives
+                        </h3>
+                        
+                        <div className="space-y-2">
+                          {currentSimulation.responses?.map((response, index) => {
+                            const roleConfig = currentSimulation.selected_roles?.find(
+                              r => r.role === response.role
+                            );
+                            return (
+                              <ResponseCard 
+                                key={response.role}
+                                response={response}
+                                influence={roleConfig?.influence}
+                                index={index}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {isRunning && (
+                    <div className="flex flex-col items-center justify-center py-20">
+                      <Loader2 className="w-8 h-8 text-slate-400 animate-spin mb-3" />
+                      <p className="text-sm text-slate-600">
+                        Analyzing {selectedRoles.length} perspectives...
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="compare" className="p-6 mt-0">
+                  <ComparisonView 
+                    simulations={compareSimulations}
+                    onRemove={(id) => setCompareSimulations(compareSimulations.filter(s => s.id !== id))}
+                  />
+                </TabsContent>
+
+                <TabsContent value="analytics" className="p-6 mt-0">
+                  <AnalyticsDashboard simulations={simulations} />
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+
+          {/* RIGHT: Context / Impact Panel */}
+          <div className="w-80 border-l border-slate-200 bg-white p-4 overflow-y-auto">
+            <ContextPanel 
+              simulation={currentSimulation}
+            />
+
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                History
+              </h3>
               <SimulationHistory 
                 simulations={simulations}
                 onSelect={compareMode ? toggleCompareSimulation : loadSimulation}
@@ -486,231 +655,6 @@ CRITICAL INSTRUCTIONS:
                 compareSelected={compareSimulations.map(s => s.id)}
               />
             </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="col-span-9">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-slate-100 p-1 rounded-xl mb-6">
-                <TabsTrigger 
-                  value="setup" 
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={compareMode}
-                >
-                  <LayoutGrid className="w-4 h-4 mr-2" />
-                  Setup
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="results"
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={!currentSimulation || compareMode}
-                >
-                  <List className="w-4 h-4 mr-2" />
-                  Results
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="compare"
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={!compareMode}
-                >
-                  <GitCompare className="w-4 h-4 mr-2" />
-                  Compare
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics"
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={compareMode}
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="setup" className="space-y-6">
-                {/* Templates */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                  <UseCaseTemplates 
-                    onSelect={handleUseCaseSelect}
-                    selectedId={selectedUseCase?.id}
-                  />
-                </div>
-
-                {/* Scenario Input */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-                  <h3 className="text-sm font-semibold text-slate-700 tracking-tight">
-                    Scenario Details
-                  </h3>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-medium text-slate-500 mb-1.5 block">
-                        Title
-                      </label>
-                      <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g., Real-time Collaboration Architecture"
-                        className="h-11"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-medium text-slate-500 mb-1.5 block">
-                        Describe the decision or scenario
-                      </label>
-                      <Textarea
-                        value={scenario}
-                        onChange={(e) => setScenario(e.target.value)}
-                        placeholder="What product decision are you facing? Be specific about the context, constraints, and stakes..."
-                        className="min-h-[120px] resize-none"
-                      />
-                    </div>
-
-                    <ScenarioRoleSuggestions
-                      scenario={scenario}
-                      allRoles={allRolesWithCustom}
-                      selectedRoles={selectedRoles}
-                      onRolesChange={setSelectedRoles}
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <Button
-                      onClick={runSimulation}
-                      disabled={isRunning || !title.trim() || !scenario.trim() || selectedRoles.length < 2}
-                      className="w-full h-12 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-700 hover:to-violet-600 shadow-lg shadow-violet-200 gap-2"
-                    >
-                      {isRunning ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Running Simulation...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-5 h-5" />
-                          Run Simulation
-                          <ArrowRight className="w-4 h-4 ml-1" />
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="results" className="space-y-6">
-                {currentSimulation && (
-                  <>
-                    {/* Decision Trade-offs */}
-                    {currentSimulation.decision_trade_offs && currentSimulation.decision_trade_offs.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-3"
-                      >
-                        <h3 className="text-sm font-semibold text-slate-700">Decision Trade-offs</h3>
-                        <TradeOffs tradeOffs={currentSimulation.decision_trade_offs} />
-                      </motion.div>
-                    )}
-
-                    {/* Summary & Next Steps */}
-                    {currentSimulation.summary && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-br from-violet-50 to-white rounded-2xl border border-violet-200 p-6 shadow-sm space-y-6"
-                      >
-                        <div>
-                          <div className="flex items-center gap-2 mb-4">
-                            <Sparkles className="w-5 h-5 text-violet-600" />
-                            <h3 className="text-sm font-semibold text-violet-900">
-                              Synthesis & Recommendations
-                            </h3>
-                          </div>
-                          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                            {currentSimulation.summary}
-                          </p>
-                        </div>
-
-                        {currentSimulation.next_steps && currentSimulation.next_steps.length > 0 && (
-                          <div>
-                            <div className="flex items-center gap-2 mb-4">
-                              <ListChecks className="w-5 h-5 text-violet-600" />
-                              <h3 className="text-sm font-semibold text-violet-900">
-                                Next Steps
-                              </h3>
-                            </div>
-                            <NextSteps 
-                              steps={currentSimulation.next_steps}
-                              onToggleComplete={handleToggleStepComplete}
-                            />
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-
-                    {/* Tension Map */}
-                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                      <TensionMap tensions={currentSimulation.tensions} />
-                    </div>
-
-                    {/* Role Responses */}
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-slate-700 tracking-tight">
-                        Team Perspectives
-                      </h3>
-                      
-                      <div className="space-y-3">
-                        {currentSimulation.responses?.map((response, index) => {
-                          const roleConfig = currentSimulation.selected_roles?.find(
-                            r => r.role === response.role
-                          );
-                          return (
-                            <ResponseCard 
-                              key={response.role}
-                              response={response}
-                              influence={roleConfig?.influence}
-                              index={index}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {isRunning && (
-                  <div className="flex flex-col items-center justify-center py-20">
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 text-violet-600 animate-spin" />
-                      </div>
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="absolute -inset-4 rounded-full bg-violet-200/30"
-                      />
-                    </div>
-                    <p className="text-slate-600 mt-6 font-medium">
-                      Simulating team discussion...
-                    </p>
-                    <p className="text-sm text-slate-400 mt-1">
-                      Analyzing perspectives from {selectedRoles.length} roles
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="compare" className="space-y-6">
-                <ComparisonView 
-                  simulations={compareSimulations}
-                  onRemove={(id) => setCompareSimulations(compareSimulations.filter(s => s.id !== id))}
-                />
-              </TabsContent>
-
-              <TabsContent value="analytics" className="space-y-6">
-                <AnalyticsDashboard simulations={simulations} />
-              </TabsContent>
-            </Tabs>
           </div>
         </div>
       </main>
