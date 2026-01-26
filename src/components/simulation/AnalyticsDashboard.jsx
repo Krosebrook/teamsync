@@ -19,6 +19,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import NetworkGraph from './NetworkGraph';
 
 export default function AnalyticsDashboard({ simulations }) {
   const [insights, setInsights] = useState(null);
@@ -143,6 +144,41 @@ Provide deep analytical insights:
       toast.error('Failed to export analytics');
       console.error(error);
     }
+  };
+
+  const exportToPowerPoint = async () => {
+    if (!insights) {
+      toast.error('Generate insights first');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const latestSim = simulations[0];
+      const { data } = await base44.functions.invoke('exportSimulationPPTX', {
+        simulation: latestSim,
+        insights,
+        stats
+      });
+
+      const blob = new Blob([data], { 
+        type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${latestSim.title.replace(/[^a-z0-9]/gi, '_')}_Report_${format(new Date(), 'yyyy-MM-dd')}.pptx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      
+      toast.success('PowerPoint report exported');
+    } catch (error) {
+      toast.error('Failed to export PowerPoint');
+      console.error(error);
+    }
+    setLoading(false);
   };
 
   const stats = useMemo(() => {
@@ -299,16 +335,33 @@ Provide deep analytical insights:
           )}
         </Button>
         {insights && (
-          <Button
-            onClick={exportAnalyticsPDF}
-            variant="outline"
-            className="gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Export PDF
-          </Button>
+          <>
+            <Button
+              onClick={exportAnalyticsPDF}
+              variant="outline"
+              className="gap-2"
+              disabled={loading}
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </Button>
+            <Button
+              onClick={exportToPowerPoint}
+              variant="outline"
+              className="gap-2"
+              disabled={loading}
+            >
+              <Download className="w-4 h-4" />
+              PowerPoint
+            </Button>
+          </>
         )}
       </div>
+
+      {/* Network Graph */}
+      {simulations.length > 0 && simulations[0]?.responses && (
+        <NetworkGraph simulation={simulations[0]} />
+      )}
 
       {/* Role Sentiment Trends Chart */}
       {simulations.length >= 3 && roleSentimentData.chartData.length > 0 && (

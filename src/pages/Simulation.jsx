@@ -21,7 +21,8 @@ import {
   ListChecks,
   FileText,
   BarChart3,
-  FolderOpen
+  FolderOpen,
+  Link as LinkIcon
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +41,7 @@ import TemplateGenerator from '../components/simulation/TemplateGenerator';
 import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
 import SavedTemplates from '../components/simulation/SavedTemplates';
 import PlaybooksDialog from '../components/simulation/PlaybooksDialog';
+import IntegrationPanel from '../components/simulation/IntegrationPanel';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -64,6 +66,7 @@ export default function SimulationPage() {
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [playbooksOpen, setPlaybooksOpen] = useState(false);
   const [selectedPlaybook, setSelectedPlaybook] = useState(null);
+  const [integrationsOpen, setIntegrationsOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -468,6 +471,17 @@ CRITICAL INSTRUCTIONS:
                     <FileText className="w-3 h-3" />
                     Playbooks
                   </Button>
+                  {currentSimulation?.status === 'completed' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setIntegrationsOpen(true)}
+                      className="gap-2 h-7 text-xs"
+                    >
+                      <LinkIcon className="w-3 h-3" />
+                      Export
+                    </Button>
+                  )}
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -503,6 +517,12 @@ CRITICAL INSTRUCTIONS:
         onOpenChange={setPlaybooksOpen}
         onApplyPlaybook={handleApplyPlaybook}
         allRoles={allRolesWithCustom}
+      />
+
+      <IntegrationPanel
+        simulation={currentSimulation}
+        open={integrationsOpen}
+        onOpenChange={setIntegrationsOpen}
       />
 
       <main className="h-[calc(100vh-57px)] flex">
