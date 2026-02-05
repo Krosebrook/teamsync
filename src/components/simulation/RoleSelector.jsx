@@ -35,7 +35,20 @@ import {
   GitBranch,
   Package,
   Database,
-  FileCheck
+  FileCheck,
+  Globe,
+  FileText,
+  PenTool,
+  BarChart,
+  Workflow,
+  Server,
+  Lock,
+  Cpu,
+  Calculator,
+  Scale,
+  FileSpreadsheet,
+  Handshake,
+  Bot
 } from "lucide-react";
 import CustomRoleDialog from './CustomRoleDialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -55,6 +68,46 @@ const PRODUCT_TEAM_ROLES = [
   { id: "product_manager", name: "Product Manager", icon: BarChart3, color: "emerald", defaultInfluence: 8 },
   { id: "devrel", name: "Developer Relations", icon: Megaphone, color: "orange", defaultInfluence: 4 },
   { id: "analytics", name: "Analytics Lead", icon: Users, color: "indigo", defaultInfluence: 5 },
+];
+
+const INT_FRONT_OF_HOUSE_ROLES = [
+  { id: "int_web_services", name: "Web Services Director", icon: Globe, color: "blue", defaultInfluence: 7 },
+  { id: "int_branding", name: "Branding & Identity Lead", icon: PenTool, color: "purple", defaultInfluence: 7 },
+  { id: "int_marketing", name: "Marketing Services Manager", icon: Megaphone, color: "orange", defaultInfluence: 7 },
+  { id: "int_content", name: "Content Creation Strategist", icon: FileText, color: "cyan", defaultInfluence: 6 },
+  { id: "int_operations", name: "Operations Manager", icon: Workflow, color: "emerald", defaultInfluence: 8 },
+  { id: "int_client_success", name: "Client Success Manager", icon: Handshake, color: "pink", defaultInfluence: 7 },
+];
+
+const INT_BACK_OF_HOUSE_ROLES = [
+  { id: "int_technology", name: "Technology Director", icon: Cpu, color: "blue", defaultInfluence: 8 },
+  { id: "int_infosec", name: "Information Security Lead", icon: Lock, color: "rose", defaultInfluence: 9 },
+  { id: "int_it_support", name: "IT Support Specialist", icon: Server, color: "slate", defaultInfluence: 5 },
+  { id: "int_network_admin", name: "Network Administrator", icon: GitBranch, color: "indigo", defaultInfluence: 6 },
+  { id: "int_data_analyst", name: "Data Analytics Specialist", icon: BarChart, color: "violet", defaultInfluence: 6 },
+  { id: "int_devops", name: "DevOps Engineer", icon: Settings, color: "teal", defaultInfluence: 7 },
+];
+
+const INT_CORPORATE_ROLES = [
+  { id: "int_ceo", name: "Chief Executive Officer", icon: Crown, color: "violet", defaultInfluence: 10 },
+  { id: "int_cfo", name: "Chief Financial Officer", icon: DollarSign, color: "emerald", defaultInfluence: 9 },
+  { id: "int_cto", name: "Chief Technology Officer", icon: Cpu, color: "blue", defaultInfluence: 9 },
+  { id: "int_ciso", name: "Chief Information Security Officer", icon: Shield, color: "rose", defaultInfluence: 9 },
+  { id: "int_hr_director", name: "HR Director", icon: Users, color: "pink", defaultInfluence: 7 },
+  { id: "int_finance_controller", name: "Finance Controller", icon: Calculator, color: "amber", defaultInfluence: 7 },
+  { id: "int_legal_counsel", name: "Legal Counsel", icon: Scale, color: "slate", defaultInfluence: 8 },
+  { id: "int_compliance", name: "Compliance Officer", icon: FileCheck, color: "indigo", defaultInfluence: 7 },
+  { id: "int_accounting", name: "Accounting Manager", icon: FileSpreadsheet, color: "lime", defaultInfluence: 6 },
+  { id: "int_procurement", name: "Procurement Manager", icon: Package, color: "orange", defaultInfluence: 6 },
+];
+
+const INT_AIAAS_ROLES = [
+  { id: "int_ai_product", name: "AI Product Manager", icon: Bot, color: "purple", defaultInfluence: 8 },
+  { id: "int_ml_engineer", name: "ML Engineer", icon: Cpu, color: "violet", defaultInfluence: 7 },
+  { id: "int_ai_architect", name: "AI Solutions Architect", icon: Zap, color: "blue", defaultInfluence: 8 },
+  { id: "int_data_scientist", name: "Data Scientist", icon: Database, color: "cyan", defaultInfluence: 7 },
+  { id: "int_ai_ethics", name: "AI Ethics & Compliance Lead", icon: Shield, color: "rose", defaultInfluence: 7 },
+  { id: "int_prompt_engineer", name: "Prompt Engineer", icon: MessageSquare, color: "amber", defaultInfluence: 6 },
 ];
 
 const ROLES = [...PRODUCT_TEAM_ROLES, ...CLIENT_SUITE_ROLES];
@@ -81,7 +134,9 @@ const ICON_MAP = {
   Megaphone, Settings, Eye, Briefcase, User, Building, Award, 
   Target, TrendingUp, Zap, Star, Heart, Crown, Headphones,
   UserCheck, MessageSquare, DollarSign, GitBranch, Package,
-  Database, FileCheck
+  Database, FileCheck, Globe, FileText, PenTool, BarChart, 
+  Workflow, Server, Lock, Cpu, Calculator, Scale, FileSpreadsheet,
+  Handshake, Bot
 };
 
 export default function RoleSelector({ selectedRoles, onRolesChange }) {
@@ -196,10 +251,12 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
       </Button>
 
       <Tabs defaultValue="product" className="w-full">
-        <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="product" className="text-xs">Product</TabsTrigger>
-          <TabsTrigger value="client" className="text-xs">Client</TabsTrigger>
-          <TabsTrigger value="custom" className="text-xs">Custom</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-5 text-[10px]">
+          <TabsTrigger value="product" className="text-[10px]">Product</TabsTrigger>
+          <TabsTrigger value="client" className="text-[10px]">Client</TabsTrigger>
+          <TabsTrigger value="intinc" className="text-[10px]">INT Inc</TabsTrigger>
+          <TabsTrigger value="aiaas" className="text-[10px]">AIaaS</TabsTrigger>
+          <TabsTrigger value="custom" className="text-[10px]">Custom</TabsTrigger>
         </TabsList>
 
         <TabsContent value="product" className="mt-3">
@@ -257,6 +314,75 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
                 ))}
               </div>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="intinc" className="mt-3">
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Front of House</p>
+              <div className="grid gap-2">
+                {INT_FRONT_OF_HOUSE_ROLES.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Back of House</p>
+              <div className="grid gap-2">
+                {INT_BACK_OF_HOUSE_ROLES.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Corporate</p>
+              <div className="grid gap-2">
+                {INT_CORPORATE_ROLES.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="aiaas" className="mt-3">
+          <div className="grid gap-2">
+            {INT_AIAAS_ROLES.map((role) => (
+              <RoleCard 
+                key={role.id}
+                role={role}
+                selected={isSelected(role.id)}
+                onToggle={handleToggleRole}
+                influence={getInfluence(role.id)}
+                onInfluenceChange={handleInfluenceChange}
+                colorClasses={colorClasses}
+              />
+            ))}
           </div>
         </TabsContent>
 
