@@ -22,7 +22,9 @@ import {
   FileText,
   BarChart3,
   FolderOpen,
-  Link as LinkIcon
+  Link as LinkIcon,
+  PlayCircle,
+  Users as UsersIcon
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,6 +46,9 @@ import PlaybooksDialog from '../components/simulation/PlaybooksDialog';
 import IntegrationPanel from '../components/simulation/IntegrationPanel';
 import WebhookManager from '../components/simulation/WebhookManager';
 import EnhancedNextSteps from '../components/simulation/EnhancedNextSteps';
+import SimulationPlayback from '../components/simulation/SimulationPlayback';
+import CollaborationPanel from '../components/simulation/CollaborationPanel';
+import RealTimeSync from '../components/simulation/RealTimeSync';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -70,6 +75,8 @@ export default function SimulationPage() {
   const [selectedPlaybook, setSelectedPlaybook] = useState(null);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [webhooksOpen, setWebhooksOpen] = useState(false);
+  const [playbackOpen, setPlaybackOpen] = useState(false);
+  const [collaborationOpen, setCollaborationOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -494,6 +501,24 @@ CRITICAL INSTRUCTIONS:
                         <Zap className="w-3 h-3" />
                         Webhooks
                       </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setPlaybackOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <PlayCircle className="w-3 h-3" />
+                        Playback
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCollaborationOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <UsersIcon className="w-3 h-3" />
+                        Team
+                      </Button>
                     </>
                   )}
                   <Button 
@@ -543,6 +568,23 @@ CRITICAL INSTRUCTIONS:
         open={webhooksOpen}
         onOpenChange={setWebhooksOpen}
       />
+
+      <SimulationPlayback
+        simulation={currentSimulation}
+        open={playbackOpen}
+        onOpenChange={setPlaybackOpen}
+      />
+
+      <CollaborationPanel
+        simulation={currentSimulation}
+        open={collaborationOpen}
+        onOpenChange={setCollaborationOpen}
+      />
+
+      {currentSimulation && <RealTimeSync simulationId={currentSimulation.id} />}
+    </div>
+  );
+}
 
       <main className="h-[calc(100vh-57px)] flex">
         {/* Three Column Layout */}

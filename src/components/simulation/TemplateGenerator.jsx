@@ -37,36 +37,54 @@ export default function TemplateGenerator({ open, onOpenChange, onApplyTemplate,
       })) || [];
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert at creating cross-functional team simulation templates for product and business decisions.
+        prompt: `You are an expert at creating realistic, detailed decision simulation scenarios for cross-functional teams.
 
-USER REQUEST: ${prompt}
+USER HIGH-LEVEL GOAL/KEYWORDS: ${prompt}
 
 AVAILABLE ROLES:
 ${JSON.stringify(availableRoles, null, 2)}
 
-Generate a comprehensive simulation template that includes:
-1. A realistic, detailed scenario description (3-4 sentences with specific context)
-2. 5-8 most relevant team roles from AVAILABLE ROLES with their influence levels
-3. 2-4 CUSTOM role suggestions specific to this scenario/industry (with full definitions including seniority, skills, personality)
-4. Identify potential CONFLICTS and SYNERGIES between suggested roles
-5. Template metadata
+Generate a comprehensive simulation template with an extremely detailed and realistic scenario:
 
-For custom roles, provide detailed attributes:
-- Unique role name (not in available roles)
-- Description of their concerns and priorities (2-3 sentences)
-- Seniority level (junior, mid, senior, executive)
-- Key technical/domain skills (list 3-5)
-- Personality traits relevant to decisions (e.g., risk-averse, data-driven, customer-focused)
-- Suggested icon name (from lucide-react: User, Building, Shield, Target, Cpu, Bot, etc.)
-- Color theme (violet, blue, rose, emerald, amber, etc.)
-- Default influence level (1-10)
+1. RICH SCENARIO (4-6 paragraphs):
+   - Start with the business context and background
+   - Describe the specific situation or challenge
+   - Include key constraints (budget, timeline, resources)
+   - Mention potential risks and opportunities
+   - Add realistic details like market conditions, competitive pressures, customer feedback, or technical considerations
+   - Describe the decision that needs to be made and its implications
 
-IMPORTANT: For role conflicts/synergies:
-- Identify which role pairs are likely to have tension and why
-- Identify which roles will naturally align and complement each other
-- Consider personality traits, priorities, and typical decision-making styles
+2. DECISION CONTEXT:
+   - What's at stake? (revenue, customer satisfaction, technical debt, etc.)
+   - Who are the key stakeholders? (customers, investors, partners)
+   - What are the success criteria?
+   - What are the potential consequences of action vs inaction?
 
-Consider what roles would have meaningful, potentially conflicting perspectives on this type of decision.`,
+3. KEY CHALLENGES:
+   - List 3-5 specific challenges this decision presents
+   - Include conflicting priorities or competing interests
+   - Mention resource constraints or external pressures
+
+4. AUTOMATICALLY SUGGEST use_case_type:
+   Choose from: pre_mortem, roadmap, adr, pmf_validation, tech_debt, post_mortem, hiring, build_buy, migration, customer_escalation, custom
+   Based on the scenario, what type of decision framework fits best?
+
+5. TEAM ROLES (5-8 from available + 1-3 custom):
+   - Select roles whose perspectives would create meaningful debate
+   - Include roles with natural conflicts and synergies
+   - Custom roles should fill gaps not covered by existing roles
+
+For custom roles, provide:
+- Name, description (concerns/priorities), seniority, skills, personality traits
+- Icon name (lucide-react icons), color theme, influence level
+- Why this role is crucial for THIS specific decision
+
+6. ROLE DYNAMICS:
+   - Identify which roles will likely conflict and why
+   - Identify which roles will align and complement each other
+   - Consider how personality traits and priorities create tension or synergy
+
+Make the scenario feel like a real situation your user would encounter in their work.`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -74,7 +92,24 @@ Consider what roles would have meaningful, potentially conflicting perspectives 
             description: { type: "string" },
             industry: { type: "string" },
             goal: { type: "string" },
-            scenario: { type: "string" },
+            scenario: { type: "string", description: "Detailed 4-6 paragraph scenario" },
+            use_case_type: { 
+              type: "string",
+              enum: ["pre_mortem", "roadmap", "adr", "pmf_validation", "tech_debt", "post_mortem", "hiring", "build_buy", "migration", "customer_escalation", "custom"]
+            },
+            decision_context: {
+              type: "object",
+              properties: {
+                stakes: { type: "string" },
+                stakeholders: { type: "array", items: { type: "string" } },
+                success_criteria: { type: "array", items: { type: "string" } },
+                consequences: { type: "string" }
+              }
+            },
+            key_challenges: {
+              type: "array",
+              items: { type: "string" }
+            },
             existing_roles: {
               type: "array",
               items: {
