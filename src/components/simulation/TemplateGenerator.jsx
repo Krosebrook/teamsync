@@ -47,15 +47,24 @@ ${JSON.stringify(availableRoles, null, 2)}
 Generate a comprehensive simulation template that includes:
 1. A realistic, detailed scenario description (3-4 sentences with specific context)
 2. 5-8 most relevant team roles from AVAILABLE ROLES with their influence levels
-3. 2-4 CUSTOM role suggestions specific to this scenario/industry (with full definitions)
-4. Template metadata
+3. 2-4 CUSTOM role suggestions specific to this scenario/industry (with full definitions including seniority, skills, personality)
+4. Identify potential CONFLICTS and SYNERGIES between suggested roles
+5. Template metadata
 
-For custom roles, provide:
+For custom roles, provide detailed attributes:
 - Unique role name (not in available roles)
-- Description of their concerns and priorities
-- Suggested icon name (from lucide-react: User, Building, Shield, Target, etc.)
+- Description of their concerns and priorities (2-3 sentences)
+- Seniority level (junior, mid, senior, executive)
+- Key technical/domain skills (list 3-5)
+- Personality traits relevant to decisions (e.g., risk-averse, data-driven, customer-focused)
+- Suggested icon name (from lucide-react: User, Building, Shield, Target, Cpu, Bot, etc.)
 - Color theme (violet, blue, rose, emerald, amber, etc.)
-- Default influence level
+- Default influence level (1-10)
+
+IMPORTANT: For role conflicts/synergies:
+- Identify which role pairs are likely to have tension and why
+- Identify which roles will naturally align and complement each other
+- Consider personality traits, priorities, and typical decision-making styles
 
 Consider what roles would have meaningful, potentially conflicting perspectives on this type of decision.`,
         response_json_schema: {
@@ -85,10 +94,35 @@ Consider what roles would have meaningful, potentially conflicting perspectives 
                 properties: {
                   name: { type: "string" },
                   description: { type: "string" },
+                  seniority_level: { type: "string" },
+                  key_skills: { type: "array", items: { type: "string" } },
+                  personality_traits: { type: "array", items: { type: "string" } },
                   icon_name: { type: "string" },
                   color: { type: "string" },
                   default_influence: { type: "number" },
                   why_relevant: { type: "string" }
+                }
+              }
+            },
+            role_conflicts: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  between: { type: "array", items: { type: "string" } },
+                  reason: { type: "string" },
+                  severity: { type: "string" }
+                }
+              }
+            },
+            role_synergies: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  between: { type: "array", items: { type: "string" } },
+                  reason: { type: "string" },
+                  strength: { type: "string" }
                 }
               }
             }

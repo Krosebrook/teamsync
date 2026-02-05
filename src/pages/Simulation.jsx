@@ -42,6 +42,8 @@ import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
 import SavedTemplates from '../components/simulation/SavedTemplates';
 import PlaybooksDialog from '../components/simulation/PlaybooksDialog';
 import IntegrationPanel from '../components/simulation/IntegrationPanel';
+import WebhookManager from '../components/simulation/WebhookManager';
+import EnhancedNextSteps from '../components/simulation/EnhancedNextSteps';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -67,6 +69,7 @@ export default function SimulationPage() {
   const [playbooksOpen, setPlaybooksOpen] = useState(false);
   const [selectedPlaybook, setSelectedPlaybook] = useState(null);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
+  const [webhooksOpen, setWebhooksOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -472,15 +475,26 @@ CRITICAL INSTRUCTIONS:
                     Playbooks
                   </Button>
                   {currentSimulation?.status === 'completed' && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setIntegrationsOpen(true)}
-                      className="gap-2 h-7 text-xs"
-                    >
-                      <LinkIcon className="w-3 h-3" />
-                      Export
-                    </Button>
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setIntegrationsOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                        Export
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setWebhooksOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <Zap className="w-3 h-3" />
+                        Webhooks
+                      </Button>
+                    </>
                   )}
                   <Button 
                     variant="outline" 
@@ -523,6 +537,11 @@ CRITICAL INSTRUCTIONS:
         simulation={currentSimulation}
         open={integrationsOpen}
         onOpenChange={setIntegrationsOpen}
+      />
+
+      <WebhookManager
+        open={webhooksOpen}
+        onOpenChange={setWebhooksOpen}
       />
 
       <main className="h-[calc(100vh-57px)] flex">
