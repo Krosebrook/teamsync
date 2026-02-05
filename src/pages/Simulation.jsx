@@ -537,55 +537,6 @@ CRITICAL INSTRUCTIONS:
         </div>
       </header>
 
-      <TemplateGenerator
-        open={templateDialogOpen}
-        onOpenChange={setTemplateDialogOpen}
-        onApplyTemplate={handleApplyTemplate}
-        allRoles={allRolesWithCustom}
-      />
-
-      <SavedTemplates
-        open={savedTemplatesOpen}
-        onOpenChange={setSavedTemplatesOpen}
-        onApplyTemplate={handleApplyTemplate}
-        onEditTemplate={handleEditTemplate}
-      />
-
-      <PlaybooksDialog
-        open={playbooksOpen}
-        onOpenChange={setPlaybooksOpen}
-        onApplyPlaybook={handleApplyPlaybook}
-        allRoles={allRolesWithCustom}
-      />
-
-      <IntegrationPanel
-        simulation={currentSimulation}
-        open={integrationsOpen}
-        onOpenChange={setIntegrationsOpen}
-      />
-
-      <WebhookManager
-        open={webhooksOpen}
-        onOpenChange={setWebhooksOpen}
-      />
-
-      <SimulationPlayback
-        simulation={currentSimulation}
-        open={playbackOpen}
-        onOpenChange={setPlaybackOpen}
-      />
-
-      <CollaborationPanel
-        simulation={currentSimulation}
-        open={collaborationOpen}
-        onOpenChange={setCollaborationOpen}
-      />
-
-      {currentSimulation && <RealTimeSync simulationId={currentSimulation.id} />}
-    </div>
-  );
-}
-
       <main className="h-[calc(100vh-57px)] flex">
         {/* Three Column Layout */}
         <div className="flex-1 flex">
@@ -778,6 +729,52 @@ CRITICAL INSTRUCTIONS:
           </div>
         </div>
       </main>
+
+      <TemplateGenerator
+        open={templateDialogOpen}
+        onOpenChange={setTemplateDialogOpen}
+        onApplyTemplate={handleApplyTemplate}
+        allRoles={allRolesWithCustom}
+      />
+
+      <SavedTemplates
+        open={savedTemplatesOpen}
+        onOpenChange={setSavedTemplatesOpen}
+        onApplyTemplate={handleApplyTemplate}
+        onEditTemplate={handleEditTemplate}
+      />
+
+      <PlaybooksDialog
+        open={playbooksOpen}
+        onOpenChange={setPlaybooksOpen}
+        onApplyPlaybook={handleApplyPlaybook}
+        allRoles={allRolesWithCustom}
+      />
+
+      <IntegrationPanel
+        simulation={currentSimulation}
+        open={integrationsOpen}
+        onOpenChange={setIntegrationsOpen}
+      />
+
+      <WebhookManager
+        open={webhooksOpen}
+        onOpenChange={setWebhooksOpen}
+      />
+
+      <SimulationPlayback
+        simulation={currentSimulation}
+        open={playbackOpen}
+        onOpenChange={setPlaybackOpen}
+      />
+
+      <CollaborationPanel
+        simulation={currentSimulation}
+        open={collaborationOpen}
+        onOpenChange={setCollaborationOpen}
+      />
+
+      {currentSimulation && <RealTimeSync simulationId={currentSimulation.id} />}
     </div>
   );
 }
