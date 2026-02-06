@@ -199,9 +199,12 @@ Make the scenario feel like a real situation your user would encounter in their 
         await base44.entities.CustomRole.create({
           name: customRole.name,
           description: customRole.description,
-          icon_name: customRole.icon_name,
-          color: customRole.color,
-          default_influence: customRole.default_influence
+          seniority_level: customRole.seniority_level || 'mid',
+          key_skills: customRole.key_skills || [],
+          personality_traits: customRole.personality_traits || [],
+          icon_name: customRole.icon_name || 'User',
+          color: customRole.color || 'slate',
+          default_influence: customRole.default_influence || 5
         });
       }
 
