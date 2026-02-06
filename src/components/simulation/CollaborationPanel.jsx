@@ -20,12 +20,19 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function CollaborationPanel({ simulation, open, onOpenChange }) {
+export default function CollaborationPanel({ simulation, open, onOpenChange, initialCommentTarget }) {
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState('');
+  const [commentTarget, setCommentTarget] = useState({ type: null, value: null });
+
+  useEffect(() => {
+    if (initialCommentTarget) {
+      setCommentTarget(initialCommentTarget);
+    }
+  }, [initialCommentTarget]);
 
   const { data: comments = [] } = useQuery({
     queryKey: ['comments', simulation?.id],
@@ -76,6 +83,8 @@ export default function CollaborationPanel({ simulation, open, onOpenChange }) {
       content: newComment,
       mentions,
       parent_comment_id: replyingTo?.id || null,
+      role_id: commentTarget.type === 'role' ? commentTarget.value : null,
+      tension_index: commentTarget.type === 'tension' ? commentTarget.value : null,
     });
   };
 
@@ -180,6 +189,15 @@ export default function CollaborationPanel({ simulation, open, onOpenChange }) {
                     </button>
                   </div>
                 )}
+                {commentTarget.type && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 bg-violet-50 p-2 rounded">
+                    <MessageSquare className="w-3 h-3" />
+                    Commenting on {commentTarget.type}: {commentTarget.value}
+                    <button onClick={() => setCommentTarget({ type: null, value: null })} className="ml-auto">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Textarea
                     value={newComment}
@@ -188,7 +206,25 @@ export default function CollaborationPanel({ simulation, open, onOpenChange }) {
                     className="min-h-[80px]"
                   />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCommentTarget({ type: 'role', value: null })}
+                      className="h-7 text-xs"
+                    >
+                      Comment on Role
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCommentTarget({ type: 'tension', value: null })}
+                      className="h-7 text-xs"
+                    >
+                      Comment on Tension
+                    </Button>
+                  </div>
                   <Button 
                     onClick={handleSubmitComment}
                     disabled={!newComment.trim()}
@@ -293,6 +329,14 @@ function CommentCard({ comment, replies, currentUser, onReply, onDelete }) {
           </Button>
         )}
       </div>
+      {(comment.role_id || comment.tension_index !== null) && (
+        <div className="mb-2">
+          <Badge variant="outline" className="text-xs">
+            {comment.role_id && `Role: ${comment.role_id.replace(/_/g, ' ')}`}
+            {comment.tension_index !== null && `Tension #${comment.tension_index + 1}`}
+          </Badge>
+        </div>
+      )}
       <p className="text-sm text-slate-700 mb-2 whitespace-pre-wrap">{comment.content}</p>
       {comment.mentions && comment.mentions.length > 0 && (
         <div className="flex items-center gap-1 mb-2">

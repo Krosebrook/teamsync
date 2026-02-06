@@ -77,6 +77,8 @@ export default function SimulationPage() {
   const [webhooksOpen, setWebhooksOpen] = useState(false);
   const [playbackOpen, setPlaybackOpen] = useState(false);
   const [collaborationOpen, setCollaborationOpen] = useState(false);
+  const [commentTargetRole, setCommentTargetRole] = useState(null);
+  const [commentTargetTension, setCommentTargetTension] = useState(null);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -409,6 +411,18 @@ CRITICAL INSTRUCTIONS:
     toast.success(`${playbook.name || 'Playbook'} applied`);
   };
 
+  const handleCommentOnRole = (roleId) => {
+    setCommentTargetRole(roleId);
+    setCommentTargetTension(null);
+    setCollaborationOpen(true);
+  };
+
+  const handleCommentOnTension = (tensionIndex) => {
+    setCommentTargetTension(tensionIndex);
+    setCommentTargetRole(null);
+    setCollaborationOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -620,6 +634,7 @@ CRITICAL INSTRUCTIONS:
                     selectedRoles={selectedRoles}
                     onRunSimulation={runSimulation}
                     isRunning={isRunning}
+                    simulationId={currentSimulation?.id}
                   />
                 </TabsContent>
 
@@ -654,7 +669,10 @@ CRITICAL INSTRUCTIONS:
                       {/* Tensions */}
                       {currentSimulation.tensions && currentSimulation.tensions.length > 0 && (
                         <div className="border-b border-slate-200 pb-6">
-                          <TensionMap tensions={currentSimulation.tensions} />
+                          <TensionMap 
+                            tensions={currentSimulation.tensions}
+                            onComment={handleCommentOnTension}
+                          />
                         </div>
                       )}
 
@@ -675,6 +693,7 @@ CRITICAL INSTRUCTIONS:
                                 response={response}
                                 influence={roleConfig?.influence}
                                 index={index}
+                                onComment={handleCommentOnRole}
                               />
                             );
                           })}
@@ -771,7 +790,18 @@ CRITICAL INSTRUCTIONS:
       <CollaborationPanel
         simulation={currentSimulation}
         open={collaborationOpen}
-        onOpenChange={setCollaborationOpen}
+        onOpenChange={(open) => {
+          setCollaborationOpen(open);
+          if (!open) {
+            setCommentTargetRole(null);
+            setCommentTargetTension(null);
+          }
+        }}
+        initialCommentTarget={
+          commentTargetRole ? { type: 'role', value: commentTargetRole } :
+          commentTargetTension !== null ? { type: 'tension', value: commentTargetTension } :
+          null
+        }
       />
 
       {currentSimulation && <RealTimeSync simulationId={currentSimulation.id} />}
