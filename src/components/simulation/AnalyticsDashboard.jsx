@@ -42,20 +42,79 @@ export default function AnalyticsDashboard({ simulations }) {
       }));
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are analyzing historical simulation data to identify patterns and provide predictive insights.
+        prompt: `You are an expert decision analyst providing advanced insights on team decision-making patterns.
 
 HISTORICAL SIMULATIONS:
 ${JSON.stringify(historicalData, null, 2)}
 
-Provide deep analytical insights:
-1. ROLE SENTIMENT TRENDS: Which roles consistently take similar positions? Any evolving patterns?
-2. RECURRING TENSIONS: What conflicts appear repeatedly? Are they getting better or worse?
-3. DECISION PATTERNS: What types of decisions create the most conflict? What resolves smoothly?
-4. PREDICTIVE INSIGHTS: Based on patterns, what should teams watch for in future decisions?
-5. RECOMMENDATIONS: What process improvements would reduce friction?`,
+Provide comprehensive analytical insights:
+
+1. DECISION TRADE-OFFS ANALYSIS:
+   - Identify and summarize the key trade-offs across all simulations
+   - For each trade-off, explain the implications and long-term consequences
+   - Highlight any recurring patterns in how teams approach trade-offs
+
+2. PROACTIVE RISK FLAGGING:
+   - Identify potential risks or overlooked factors based on patterns
+   - Flag blindspots: what critical perspectives or concerns are consistently missing?
+   - Highlight any concerning trends in decision quality or team dynamics
+
+3. FUTURE SIMULATION SUGGESTIONS:
+   - Suggest specific simulation parameters to test hypotheses
+   - Recommend roles to include that would provide missing perspectives
+   - Suggest scenario modifications to explore edge cases or stress-test decisions
+   - Propose simulations that could mitigate identified risks
+
+4. ROLE SENTIMENT TRENDS: Which roles consistently take similar positions? Any evolving patterns?
+
+5. RECURRING TENSIONS: What conflicts appear repeatedly? Are they getting better or worse?
+
+6. PREDICTIVE INSIGHTS: Based on patterns, what outcomes are likely for different decision types?
+
+7. RECOMMENDATIONS: What process improvements would reduce friction and improve decisions?`,
         response_json_schema: {
           type: "object",
           properties: {
+            trade_off_analysis: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  trade_off: { type: "string" },
+                  frequency: { type: "string" },
+                  implications: { type: "string" },
+                  pattern: { type: "string" }
+                }
+              },
+              description: "Key trade-offs identified across simulations"
+            },
+            risk_flags: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  risk_type: { type: "string" },
+                  description: { type: "string" },
+                  severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
+                  overlooked_factor: { type: "string" }
+                }
+              },
+              description: "Proactive risk identification"
+            },
+            future_simulations: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  suggestion_type: { type: "string" },
+                  scenario_description: { type: "string" },
+                  recommended_roles: { type: "array", items: { type: "string" } },
+                  hypothesis_to_test: { type: "string" },
+                  expected_insight: { type: "string" }
+                }
+              },
+              description: "Suggested future simulation parameters"
+            },
             role_trends: {
               type: "array",
               items: {
@@ -76,17 +135,6 @@ Provide deep analytical insights:
                   pattern: { type: "string" },
                   frequency: { type: "string" },
                   severity_trend: { type: "string" }
-                }
-              }
-            },
-            decision_patterns: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  pattern_type: { type: "string" },
-                  description: { type: "string" },
-                  conflict_level: { type: "string" }
                 }
               }
             },
@@ -560,6 +608,117 @@ Provide deep analytical insights:
                     </div>
                   );
                 })}
+              </div>
+            </Card>
+          )}
+
+          {/* Trade-Off Analysis */}
+          {insights.trade_off_analysis && insights.trade_off_analysis.length > 0 && (
+            <Card className="p-6 bg-blue-50 border-blue-200">
+              <h3 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                Decision Trade-Offs Analysis
+              </h3>
+              <p className="text-xs text-slate-600 mb-4">
+                Key trade-offs identified across simulations and their implications
+              </p>
+              <div className="space-y-3">
+                {insights.trade_off_analysis.map((tradeoff, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium text-sm text-slate-800">{tradeoff.trade_off}</span>
+                      <Badge variant="outline" className="text-xs">{tradeoff.frequency}</Badge>
+                    </div>
+                    <p className="text-sm text-slate-600 mb-2">{tradeoff.implications}</p>
+                    <p className="text-xs text-slate-500 italic">Pattern: {tradeoff.pattern}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Risk Flags */}
+          {insights.risk_flags && insights.risk_flags.length > 0 && (
+            <Card className="p-6 bg-orange-50 border-orange-200">
+              <h3 className="font-semibold text-orange-900 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
+                Proactive Risk Flags
+              </h3>
+              <p className="text-xs text-slate-600 mb-4">
+                Potential risks and overlooked factors identified from patterns
+              </p>
+              <div className="space-y-3">
+                {insights.risk_flags.map((risk, idx) => {
+                  const severityColors = {
+                    critical: 'bg-rose-600',
+                    high: 'bg-orange-500',
+                    medium: 'bg-amber-400',
+                    low: 'bg-blue-400'
+                  };
+                  return (
+                    <div key={idx} className="p-4 bg-white rounded-lg border-l-4 border-orange-500">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium text-sm text-slate-800">{risk.risk_type}</span>
+                        <div className={`w-2 h-2 rounded-full ${severityColors[risk.severity]}`} />
+                        <Badge className={`text-xs ${severityColors[risk.severity]} text-white`}>
+                          {risk.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-slate-600 mb-2">{risk.description}</p>
+                      <div className="p-2 bg-amber-50 rounded border border-amber-200">
+                        <p className="text-xs font-medium text-amber-900 mb-1">Overlooked Factor:</p>
+                        <p className="text-xs text-amber-800">{risk.overlooked_factor}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
+
+          {/* Future Simulation Suggestions */}
+          {insights.future_simulations && insights.future_simulations.length > 0 && (
+            <Card className="p-6 bg-purple-50 border-purple-200">
+              <h3 className="font-semibold text-purple-900 mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-600" />
+                Suggested Future Simulations
+              </h3>
+              <p className="text-xs text-slate-600 mb-4">
+                Recommended simulation parameters to test hypotheses and mitigate risks
+              </p>
+              <div className="space-y-4">
+                {insights.future_simulations.map((suggestion, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-lg border border-purple-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="text-xs bg-purple-100 text-purple-700">
+                        {suggestion.suggestion_type}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium text-slate-800 mb-2">
+                      {suggestion.scenario_description}
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-medium text-slate-600 mb-1">Recommended Roles:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {suggestion.recommended_roles.map((role, i) => (
+                            <Badge key={i} variant="outline" className="text-xs">
+                              {role.replace(/_/g, ' ')}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="p-2 bg-purple-50 rounded">
+                        <p className="text-xs font-medium text-purple-900 mb-1">Hypothesis:</p>
+                        <p className="text-xs text-purple-800">{suggestion.hypothesis_to_test}</p>
+                      </div>
+                      <div className="p-2 bg-slate-50 rounded">
+                        <p className="text-xs font-medium text-slate-700 mb-1">Expected Insight:</p>
+                        <p className="text-xs text-slate-600">{suggestion.expected_insight}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           )}
