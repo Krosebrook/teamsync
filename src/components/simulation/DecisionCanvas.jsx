@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, Loader2, CheckCircle2 } from "lucide-react";
+import { Play, Loader2, CheckCircle2, Users } from "lucide-react";
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const DECISION_TYPES = [
   { id: "pre_mortem", name: "Pre-Mortem Analysis", description: "Identify risks before launch" },
@@ -28,12 +30,60 @@ export default function DecisionCanvas({
   setDecisionType,
   selectedRoles,
   onRunSimulation,
-  isRunning
+  isRunning,
+  simulationId
 }) {
+  const [activeEditors, setActiveEditors] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const currentStep = !decisionType ? 1 : !scenario.trim() ? 2 : 3;
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const user = await base44.auth.me();
+      setCurrentUser(user);
+    };
+    loadUser();
+  }, []);
+
+  useEffect(() => {
+    if (!simulationId) return;
+
+    // Subscribe to simulation updates for co-editing awareness
+    const unsubscribe = base44.entities.Simulation.subscribe((event) => {
+      if (event.id === simulationId && event.type === 'update') {
+        const editor = event.data?.updated_by;
+        if (editor && editor !== currentUser?.email) {
+          // Show who's editing
+          setActiveEditors(prev => {
+            if (!prev.includes(editor)) {
+              toast.info(`${editor} is editing`, { duration: 2000 });
+              return [...prev, editor];
+            }
+            return prev;
+          });
+
+          // Remove after 5 seconds
+          setTimeout(() => {
+            setActiveEditors(prev => prev.filter(e => e !== editor));
+          }, 5000);
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [simulationId, currentUser]);
 
   return (
     <div className="space-y-6">
+      {activeEditors.length > 0 && (
+        <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <Users className="w-4 h-4 text-blue-600" />
+          <span className="text-xs text-blue-700">
+            Currently editing: {activeEditors.join(', ')}
+          </span>
+        </div>
+      )}
+
       {/* Step 1: Decision Type */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">

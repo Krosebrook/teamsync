@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from "framer-motion";
-import { AlertCircle, AlertTriangle, Info, XCircle } from "lucide-react";
+import { AlertCircle, AlertTriangle, Info, XCircle, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const severityConfig = {
   low: { 
@@ -34,7 +35,7 @@ const severityConfig = {
   },
 };
 
-export default function TensionMap({ tensions }) {
+export default function TensionMap({ tensions, onComment }) {
   if (!tensions || tensions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -72,35 +73,44 @@ export default function TensionMap({ tensions }) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`p-4 rounded-xl border ${config.border} ${config.bg}`}
+              className={`p-4 rounded-xl border ${config.border} ${config.bg} flex items-start gap-3`}
             >
-              <div className="flex items-start gap-3">
-                <div className={`p-1.5 rounded-lg bg-white/80`}>
-                  <Icon className={`w-4 h-4 ${config.color}`} />
+              <div className={`p-1.5 rounded-lg bg-white/80`}>
+                <Icon className={`w-4 h-4 ${config.color}`} />
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  {tension.between.map((role, i) => (
+                    <React.Fragment key={role}>
+                      <span className="text-xs font-semibold text-slate-700 capitalize">
+                        {role.replace(/_/g, ' ')}
+                      </span>
+                      {i < tension.between.length - 1 && (
+                        <span className="text-slate-400">vs</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                  <Badge className={`ml-auto text-[10px] ${config.badge}`}>
+                    {tension.severity}
+                  </Badge>
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    {tension.between.map((role, i) => (
-                      <React.Fragment key={role}>
-                        <span className="text-xs font-semibold text-slate-700 capitalize">
-                          {role.replace(/_/g, ' ')}
-                        </span>
-                        {i < tension.between.length - 1 && (
-                          <span className="text-slate-400">vs</span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                    <Badge className={`ml-auto text-[10px] ${config.badge}`}>
-                      {tension.severity}
-                    </Badge>
-                  </div>
-                  
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    {tension.description}
-                  </p>
-                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {tension.description}
+                </p>
               </div>
+
+              {onComment && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onComment(index)}
+                  className="h-6 w-6 flex-shrink-0"
+                >
+                  <MessageSquare className="w-3 h-3 text-slate-400 hover:text-violet-600" />
+                </Button>
+              )}
             </motion.div>
           );
         })}

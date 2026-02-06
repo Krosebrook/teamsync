@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   Rocket, 
   Code2, 
@@ -80,7 +81,7 @@ const riskIcons = {
   high: { icon: AlertCircle, color: "text-rose-500" },
 };
 
-export default function ResponseCard({ response, influence, index }) {
+export default function ResponseCard({ response, influence, index, onComment }) {
   const [expanded, setExpanded] = useState(true);
   
   const Icon = ROLE_ICONS[response.role] || Users;
@@ -96,33 +97,46 @@ export default function ResponseCard({ response, influence, index }) {
       transition={{ delay: index * 0.05 }}
       className="border border-slate-200 overflow-hidden"
     >
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
-      >
-        <div className="flex-1 text-left">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-slate-800">{roleName}</h4>
-            {influence && (
-              <Badge variant="outline" className="text-[10px] font-normal h-4 px-1.5">
-                {influence}
+      <div className="flex items-start">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex-1 p-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex-1 text-left">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="text-sm font-semibold text-slate-800">{roleName}</h4>
+              {influence && (
+                <Badge variant="outline" className="text-[10px] font-normal h-4 px-1.5">
+                  {influence}
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-[10px] font-normal h-4 px-1.5 capitalize">
+                {response.risk_tolerance}
               </Badge>
-            )}
-            <Badge variant="outline" className="text-[10px] font-normal h-4 px-1.5 capitalize">
-              {response.risk_tolerance}
-            </Badge>
+            </div>
+            <p className="text-xs text-slate-500 line-clamp-1">
+              {response.position}
+            </p>
           </div>
-          <p className="text-xs text-slate-500 line-clamp-1">
-            {response.position}
-          </p>
-        </div>
 
-        {expanded ? (
-          <ChevronUp className="w-4 h-4 text-slate-400" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-slate-400" />
+          {expanded ? (
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          )}
+        </button>
+        
+        {onComment && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onComment(response.role)}
+            className="h-12 w-10 flex-shrink-0"
+          >
+            <MessageSquare className="w-3 h-3 text-slate-400 hover:text-violet-600" />
+          </Button>
         )}
-      </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-slate-100 bg-slate-50">
