@@ -56,6 +56,14 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CLIENT_SUITE_ROLES, FRONT_OF_HOUSE_ROLES, BACK_OF_HOUSE_ROLES } from './ClientRoles';
+import {
+  CORPORATION_FRONT_OF_HOUSE,
+  CORPORATION_BACK_OF_HOUSE,
+  CLIENT_FRONT_OF_HOUSE,
+  CLIENT_BACK_OF_HOUSE,
+  PARTNER_ROLES,
+  B2B_ICON_MAP
+} from './B2BRoles';
 
 const PRODUCT_TEAM_ROLES = [
   { id: "founder", name: "Founder / CEO", icon: Rocket, color: "violet", defaultInfluence: 10 },
@@ -110,7 +118,45 @@ const INT_AIAAS_ROLES = [
   { id: "int_prompt_engineer", name: "Prompt Engineer", icon: MessageSquare, color: "amber", defaultInfluence: 6 },
 ];
 
-const ROLES = [...PRODUCT_TEAM_ROLES, ...CLIENT_SUITE_ROLES];
+const ROLES = [
+  ...PRODUCT_TEAM_ROLES, 
+  ...CLIENT_SUITE_ROLES,
+  ...CORPORATION_FRONT_OF_HOUSE.map(r => ({ 
+    id: r.id, 
+    name: r.name, 
+    icon: ICON_MAP[r.icon] || User, 
+    color: r.color, 
+    defaultInfluence: r.default_influence 
+  })),
+  ...CORPORATION_BACK_OF_HOUSE.map(r => ({ 
+    id: r.id, 
+    name: r.name, 
+    icon: ICON_MAP[r.icon] || User, 
+    color: r.color, 
+    defaultInfluence: r.default_influence 
+  })),
+  ...CLIENT_FRONT_OF_HOUSE.map(r => ({ 
+    id: r.id, 
+    name: r.name, 
+    icon: ICON_MAP[r.icon] || User, 
+    color: r.color, 
+    defaultInfluence: r.default_influence 
+  })),
+  ...CLIENT_BACK_OF_HOUSE.map(r => ({ 
+    id: r.id, 
+    name: r.name, 
+    icon: ICON_MAP[r.icon] || User, 
+    color: r.color, 
+    defaultInfluence: r.default_influence 
+  })),
+  ...PARTNER_ROLES.map(r => ({ 
+    id: r.id, 
+    name: r.name, 
+    icon: ICON_MAP[r.icon] || User, 
+    color: r.color, 
+    defaultInfluence: r.default_influence 
+  }))
+];
 
 const colorClasses = {
   violet: "bg-violet-100 text-violet-700 border-violet-200",
@@ -136,7 +182,8 @@ const ICON_MAP = {
   UserCheck, MessageSquare, DollarSign, GitBranch, Package,
   Database, FileCheck, Globe, FileText, PenTool, BarChart, 
   Workflow, Server, Lock, Cpu, Calculator, Scale, FileSpreadsheet,
-  Handshake, Bot
+  Handshake, Bot,
+  ...B2B_ICON_MAP
 };
 
 export default function RoleSelector({ selectedRoles, onRolesChange }) {
@@ -251,10 +298,11 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
       </Button>
 
       <Tabs defaultValue="product" className="w-full">
-        <TabsList className="w-full grid grid-cols-5 text-[10px]">
+        <TabsList className="w-full grid grid-cols-6 text-[10px]">
           <TabsTrigger value="product" className="text-[10px]">Product</TabsTrigger>
           <TabsTrigger value="client" className="text-[10px]">Client</TabsTrigger>
           <TabsTrigger value="intinc" className="text-[10px]">INT Inc</TabsTrigger>
+          <TabsTrigger value="b2b" className="text-[10px]">B2B</TabsTrigger>
           <TabsTrigger value="aiaas" className="text-[10px]">AIaaS</TabsTrigger>
           <TabsTrigger value="custom" className="text-[10px]">Custom</TabsTrigger>
         </TabsList>
@@ -365,6 +413,111 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
                     colorClasses={colorClasses}
                   />
                 ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="b2b" className="mt-3">
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Corporation - Customer Facing</p>
+              <div className="grid gap-2">
+                {CORPORATION_FRONT_OF_HOUSE.map((r) => {
+                  const role = { 
+                    id: r.id, 
+                    name: r.name, 
+                    icon: ICON_MAP[r.icon] || User, 
+                    color: r.color, 
+                    defaultInfluence: r.default_influence 
+                  };
+                  return (
+                    <RoleCard 
+                      key={role.id}
+                      role={role}
+                      selected={isSelected(role.id)}
+                      onToggle={handleToggleRole}
+                      influence={getInfluence(role.id)}
+                      onInfluenceChange={handleInfluenceChange}
+                      colorClasses={colorClasses}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Corporation - Internal</p>
+              <div className="grid gap-2">
+                {CORPORATION_BACK_OF_HOUSE.map((r) => {
+                  const role = { 
+                    id: r.id, 
+                    name: r.name, 
+                    icon: ICON_MAP[r.icon] || User, 
+                    color: r.color, 
+                    defaultInfluence: r.default_influence 
+                  };
+                  return (
+                    <RoleCard 
+                      key={role.id}
+                      role={role}
+                      selected={isSelected(role.id)}
+                      onToggle={handleToggleRole}
+                      influence={getInfluence(role.id)}
+                      onInfluenceChange={handleInfluenceChange}
+                      colorClasses={colorClasses}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Client Organizations</p>
+              <div className="grid gap-2">
+                {[...CLIENT_FRONT_OF_HOUSE, ...CLIENT_BACK_OF_HOUSE].map((r) => {
+                  const role = { 
+                    id: r.id, 
+                    name: r.name, 
+                    icon: ICON_MAP[r.icon] || User, 
+                    color: r.color, 
+                    defaultInfluence: r.default_influence 
+                  };
+                  return (
+                    <RoleCard 
+                      key={role.id}
+                      role={role}
+                      selected={isSelected(role.id)}
+                      onToggle={handleToggleRole}
+                      influence={getInfluence(role.id)}
+                      onInfluenceChange={handleInfluenceChange}
+                      colorClasses={colorClasses}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Partners & Integrators</p>
+              <div className="grid gap-2">
+                {PARTNER_ROLES.map((r) => {
+                  const role = { 
+                    id: r.id, 
+                    name: r.name, 
+                    icon: ICON_MAP[r.icon] || User, 
+                    color: r.color, 
+                    defaultInfluence: r.default_influence 
+                  };
+                  return (
+                    <RoleCard 
+                      key={role.id}
+                      role={role}
+                      selected={isSelected(role.id)}
+                      onToggle={handleToggleRole}
+                      influence={getInfluence(role.id)}
+                      onInfluenceChange={handleInfluenceChange}
+                      colorClasses={colorClasses}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
