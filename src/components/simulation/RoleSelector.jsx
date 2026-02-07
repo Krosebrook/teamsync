@@ -118,6 +118,34 @@ const INT_AIAAS_ROLES = [
   { id: "int_prompt_engineer", name: "Prompt Engineer", icon: MessageSquare, color: "amber", defaultInfluence: 6 },
 ];
 
+const colorClasses = {
+  violet: "bg-violet-100 text-violet-700 border-violet-200",
+  blue: "bg-blue-100 text-blue-700 border-blue-200",
+  cyan: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  rose: "bg-rose-100 text-rose-700 border-rose-200",
+  amber: "bg-amber-100 text-amber-700 border-amber-200",
+  slate: "bg-slate-100 text-slate-700 border-slate-200",
+  pink: "bg-pink-100 text-pink-700 border-pink-200",
+  emerald: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  orange: "bg-orange-100 text-orange-700 border-orange-200",
+  indigo: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  purple: "bg-purple-100 text-purple-700 border-purple-200",
+  lime: "bg-lime-100 text-lime-700 border-lime-200",
+  teal: "bg-teal-100 text-teal-700 border-teal-200",
+  fuchsia: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
+};
+
+const ICON_MAP = {
+  Rocket, Code2, Shield, Palette, TestTube, Users, BarChart3, 
+  Megaphone, Settings, Eye, Briefcase, User, Building, Award, 
+  Target, TrendingUp, Zap, Star, Heart, Crown, Headphones,
+  UserCheck, MessageSquare, DollarSign, GitBranch, Package,
+  Database, FileCheck, Globe, FileText, PenTool, BarChart, 
+  Workflow, Server, Lock, Cpu, Calculator, Scale, FileSpreadsheet,
+  Handshake, Bot,
+  ...B2B_ICON_MAP
+};
+
 const ROLES = [
   ...PRODUCT_TEAM_ROLES, 
   ...CLIENT_SUITE_ROLES,
@@ -157,34 +185,6 @@ const ROLES = [
     defaultInfluence: r.default_influence 
   }))
 ];
-
-const colorClasses = {
-  violet: "bg-violet-100 text-violet-700 border-violet-200",
-  blue: "bg-blue-100 text-blue-700 border-blue-200",
-  cyan: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  rose: "bg-rose-100 text-rose-700 border-rose-200",
-  amber: "bg-amber-100 text-amber-700 border-amber-200",
-  slate: "bg-slate-100 text-slate-700 border-slate-200",
-  pink: "bg-pink-100 text-pink-700 border-pink-200",
-  emerald: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  orange: "bg-orange-100 text-orange-700 border-orange-200",
-  indigo: "bg-indigo-100 text-indigo-700 border-indigo-200",
-  purple: "bg-purple-100 text-purple-700 border-purple-200",
-  lime: "bg-lime-100 text-lime-700 border-lime-200",
-  teal: "bg-teal-100 text-teal-700 border-teal-200",
-  fuchsia: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
-};
-
-const ICON_MAP = {
-  Rocket, Code2, Shield, Palette, TestTube, Users, BarChart3, 
-  Megaphone, Settings, Eye, Briefcase, User, Building, Award, 
-  Target, TrendingUp, Zap, Star, Heart, Crown, Headphones,
-  UserCheck, MessageSquare, DollarSign, GitBranch, Package,
-  Database, FileCheck, Globe, FileText, PenTool, BarChart, 
-  Workflow, Server, Lock, Cpu, Calculator, Scale, FileSpreadsheet,
-  Handshake, Bot,
-  ...B2B_ICON_MAP
-};
 
 export default function RoleSelector({ selectedRoles, onRolesChange }) {
   const queryClient = useQueryClient();
