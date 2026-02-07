@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from '@tanstack/react-query';
 import { Sparkles, Loader2, Save, FileText, Edit2, Plus, X, Download } from "lucide-react";
 import { base44 } from '@/api/base44Client';
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
 
 export default function TemplateGenerator({ open, onOpenChange, onApplyTemplate, allRoles }) {
   const [mode, setMode] = useState('ai');
