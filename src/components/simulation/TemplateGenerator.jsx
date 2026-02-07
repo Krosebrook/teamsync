@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Loader2, Save, FileText, Edit2, Plus, X } from "lucide-react";
+import { Sparkles, Loader2, Save, FileText, Edit2, Plus, X, Download } from "lucide-react";
 import { base44 } from '@/api/base44Client';
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
 export default function TemplateGenerator({ open, onOpenChange, onApplyTemplate, allRoles }) {
   const [mode, setMode] = useState('ai');
@@ -24,6 +25,14 @@ export default function TemplateGenerator({ open, onOpenChange, onApplyTemplate,
   const [templateGoal, setTemplateGoal] = useState('');
   const [templateScenario, setTemplateScenario] = useState('');
   const [templateRoles, setTemplateRoles] = useState([]);
+  const [importingRoles, setImportingRoles] = useState(false);
+
+  // Fetch existing custom roles for import
+  const { data: existingCustomRoles = [] } = useQuery({
+    queryKey: ['customRoles'],
+    queryFn: () => base44.entities.CustomRole.list(),
+    enabled: open
+  });
 
   const generateTemplate = async () => {
     if (!prompt.trim()) return;
@@ -41,8 +50,18 @@ export default function TemplateGenerator({ open, onOpenChange, onApplyTemplate,
 
 USER HIGH-LEVEL GOAL/KEYWORDS: ${prompt}
 
-AVAILABLE ROLES:
+AVAILABLE ROLES (standard + custom):
 ${JSON.stringify(availableRoles, null, 2)}
+
+EXISTING CUSTOM ROLES THAT CAN BE IMPORTED:
+${JSON.stringify(existingCustomRoles.map(r => ({
+  id: r.id,
+  name: r.name,
+  description: r.description,
+  skills: r.key_skills,
+  traits: r.personality_traits,
+  seniority: r.seniority_level
+})), null, 2)}
 
 Generate a comprehensive simulation template with an extremely detailed and realistic scenario:
 
@@ -54,11 +73,13 @@ Generate a comprehensive simulation template with an extremely detailed and real
    - Add realistic details like market conditions, competitive pressures, customer feedback, or technical considerations
    - Describe the decision that needs to be made and its implications
 
-2. DECISION CONTEXT:
-   - What's at stake? (revenue, customer satisfaction, technical debt, etc.)
-   - Who are the key stakeholders? (customers, investors, partners)
-   - What are the success criteria?
-   - What are the potential consequences of action vs inaction?
+2. NUANCED DECISION CONTEXT (with specific data points):
+   - What's at stake? Include specific metrics (e.g., "$2M in ARR", "30% churn risk", "6-month technical debt")
+   - Who are the key stakeholders? Name specific types (e.g., "Fortune 500 enterprise customers", "Series B investors expecting 3x growth")
+   - What are the success criteria? Be specific (e.g., "Launch within Q2", "Maintain <2% error rate")
+   - What are the potential consequences? Quantify where possible
+   - Include external pressures: regulatory deadlines, competitor moves, market shifts
+   - Add internal constraints: team capacity, budget limits, technology constraints
 
 3. KEY CHALLENGES:
    - List 3-5 specific challenges this decision presents
@@ -69,15 +90,19 @@ Generate a comprehensive simulation template with an extremely detailed and real
    Choose from: pre_mortem, roadmap, adr, pmf_validation, tech_debt, post_mortem, hiring, build_buy, migration, customer_escalation, custom
    Based on the scenario, what type of decision framework fits best?
 
-5. TEAM ROLES (5-8 from available + 1-3 custom):
-   - Select roles whose perspectives would create meaningful debate
-   - Include roles with natural conflicts and synergies
-   - Custom roles should fill gaps not covered by existing roles
-
-For custom roles, provide:
-- Name, description (concerns/priorities), seniority, skills, personality traits
-- Icon name (lucide-react icons), color theme, influence level
-- Why this role is crucial for THIS specific decision
+5. TEAM ROLES (strategic selection):
+   A. IMPORT FROM EXISTING: First, identify which existing custom roles from the database should be imported for this scenario
+      - List role IDs and names from the EXISTING CUSTOM ROLES that fit perfectly
+      - Explain why each imported role is relevant to THIS specific scenario
+   
+   B. SELECT FROM AVAILABLE: Choose 5-8 roles from the standard available roles
+      - Select roles whose perspectives would create meaningful debate
+      - Include roles with natural conflicts and synergies
+   
+   C. SUGGEST NEW CUSTOM ROLES: Only if there are gaps not filled by existing or available roles
+      - Name, description (concerns/priorities), seniority, skills, personality traits
+      - Icon name (lucide-react icons), color theme, influence level
+      - Why this role is crucial for THIS specific decision
 
 6. ROLE DYNAMICS:
    - Identify which roles will likely conflict and why
@@ -100,15 +125,31 @@ Make the scenario feel like a real situation your user would encounter in their 
             decision_context: {
               type: "object",
               properties: {
-                stakes: { type: "string" },
+                stakes: { type: "string", description: "Include specific metrics and numbers" },
                 stakeholders: { type: "array", items: { type: "string" } },
-                success_criteria: { type: "array", items: { type: "string" } },
-                consequences: { type: "string" }
+                success_criteria: { type: "array", items: { type: "string" }, description: "Specific, measurable criteria" },
+                consequences: { type: "string" },
+                external_pressures: { type: "array", items: { type: "string" } },
+                internal_constraints: { type: "array", items: { type: "string" } },
+                key_metrics: { type: "array", items: { type: "string" } }
               }
             },
             key_challenges: {
               type: "array",
               items: { type: "string" }
+            },
+            imported_custom_roles: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  role_id: { type: "string", description: "ID from existing custom roles" },
+                  role_name: { type: "string" },
+                  influence: { type: "number" },
+                  why_relevant: { type: "string" }
+                }
+              },
+              description: "Custom roles to import from existing database"
             },
             existing_roles: {
               type: "array",
@@ -172,6 +213,11 @@ Make the scenario feel like a real situation your user would encounter in their 
       setTemplateScenario(result.scenario);
       setTemplateRoles([
         ...(result.existing_roles || []),
+        ...(result.imported_custom_roles || []).map(icr => ({
+          ...icr,
+          is_imported_role: true,
+          imported_role_id: icr.role_id
+        })),
         ...(result.custom_roles || []).map(cr => ({
           ...cr,
           is_custom_suggestion: true
@@ -185,6 +231,31 @@ Make the scenario feel like a real situation your user would encounter in their 
     setLoading(false);
   };
 
+  const importCustomRoles = () => {
+    const selectedRoleIds = prompt('Enter custom role IDs to import (comma-separated):');
+    if (!selectedRoleIds) return;
+    
+    const ids = selectedRoleIds.split(',').map(id => id.trim());
+    const rolesToImport = existingCustomRoles.filter(r => ids.includes(r.id));
+    
+    if (rolesToImport.length === 0) {
+      toast.error('No matching roles found');
+      return;
+    }
+    
+    const newRoles = rolesToImport.map(r => ({
+      role_id: r.id,
+      role_name: r.name,
+      influence: r.default_influence || 5,
+      is_imported_role: true,
+      imported_role_id: r.id,
+      why_relevant: 'Manually imported by user'
+    }));
+    
+    setTemplateRoles([...templateRoles, ...newRoles]);
+    toast.success(`Imported ${rolesToImport.length} role(s)`);
+  };
+
   const saveTemplate = async () => {
     if (!templateName.trim() || !templateScenario.trim()) {
       toast.error('Name and scenario are required');
@@ -192,8 +263,8 @@ Make the scenario feel like a real situation your user would encounter in their 
     }
 
     try {
-      // First, create any custom roles that don't exist yet
-      const customRolesToCreate = templateRoles.filter(r => r.is_custom_suggestion);
+      // First, create any custom roles that don't exist yet (only new suggestions, not imported ones)
+      const customRolesToCreate = templateRoles.filter(r => r.is_custom_suggestion && !r.is_imported_role);
       
       for (const customRole of customRolesToCreate) {
         await base44.entities.CustomRole.create({
@@ -414,15 +485,27 @@ Make the scenario feel like a real situation your user would encounter in their 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label>Roles ({templateRoles.length})</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addManualRole}
-                  className="gap-1"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add Role
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={importCustomRoles}
+                    className="gap-1"
+                    disabled={existingCustomRoles.length === 0}
+                  >
+                    <Download className="w-3 h-3" />
+                    Import
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addManualRole}
+                    className="gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add Role
+                  </Button>
+                </div>
               </div>
               
               <div className="space-y-2 max-h-60 overflow-y-auto">

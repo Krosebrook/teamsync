@@ -13,7 +13,8 @@ import {
   BarChart3,
   Activity,
   Download,
-  Flame
+  Flame,
+  Briefcase
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { base44 } from '@/api/base44Client';
@@ -49,32 +50,88 @@ ${JSON.stringify(historicalData, null, 2)}
 
 Provide comprehensive analytical insights:
 
-1. DECISION TRADE-OFFS ANALYSIS:
+1. TEAM COMPOSITION EFFECTIVENESS:
+   - Analyze which team compositions were most effective for different scenario types
+   - Identify ideal role combinations that led to balanced decisions
+   - Flag compositions that consistently produced blind spots or groupthink
+   - Recommend optimal team sizes and diversity levels for different decision types
+
+2. DECISION TRADE-OFFS ANALYSIS:
    - Identify and summarize the key trade-offs across all simulations
    - For each trade-off, explain the implications and long-term consequences
    - Highlight any recurring patterns in how teams approach trade-offs
 
-2. PROACTIVE RISK FLAGGING:
+3. PREDICTIVE ANALYTICS - LONG-TERM IMPACTS:
+   - Project potential 6-month, 1-year, and 2-year outcomes for each decision path
+   - Identify leading indicators that predict success or failure
+   - Forecast likely cascading effects of decisions (technical debt, team morale, customer impact)
+   - Estimate probability of needing to reverse or pivot on decisions
+
+4. EXECUTIVE NARRATIVE REPORT:
+   - Generate a concise 3-paragraph executive summary suitable for leadership review
+   - Include key findings, critical risks, and top 3 actionable recommendations
+   - Use business-focused language, avoid technical jargon
+   - Highlight ROI implications and strategic alignment
+
+5. PROACTIVE RISK FLAGGING:
    - Identify potential risks or overlooked factors based on patterns
    - Flag blindspots: what critical perspectives or concerns are consistently missing?
    - Highlight any concerning trends in decision quality or team dynamics
 
-3. FUTURE SIMULATION SUGGESTIONS:
+6. FUTURE SIMULATION SUGGESTIONS:
    - Suggest specific simulation parameters to test hypotheses
    - Recommend roles to include that would provide missing perspectives
    - Suggest scenario modifications to explore edge cases or stress-test decisions
-   - Propose simulations that could mitigate identified risks
 
-4. ROLE SENTIMENT TRENDS: Which roles consistently take similar positions? Any evolving patterns?
+7. ROLE SENTIMENT TRENDS: Which roles consistently take similar positions? Any evolving patterns?
 
-5. RECURRING TENSIONS: What conflicts appear repeatedly? Are they getting better or worse?
+8. RECURRING TENSIONS: What conflicts appear repeatedly? Are they getting better or worse?
 
-6. PREDICTIVE INSIGHTS: Based on patterns, what outcomes are likely for different decision types?
-
-7. RECOMMENDATIONS: What process improvements would reduce friction and improve decisions?`,
+9. RECOMMENDATIONS: What process improvements would reduce friction and improve decisions?`,
         response_json_schema: {
           type: "object",
           properties: {
+            team_composition_analysis: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  scenario_type: { type: "string" },
+                  effective_compositions: { type: "array", items: { type: "string" } },
+                  problematic_compositions: { type: "array", items: { type: "string" } },
+                  optimal_team_size: { type: "string" },
+                  key_insight: { type: "string" }
+                }
+              },
+              description: "Analysis of team composition effectiveness"
+            },
+            long_term_predictions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  decision_path: { type: "string" },
+                  six_month_outlook: { type: "string" },
+                  one_year_outlook: { type: "string" },
+                  two_year_outlook: { type: "string" },
+                  leading_indicators: { type: "array", items: { type: "string" } },
+                  cascading_effects: { type: "array", items: { type: "string" } },
+                  reversal_probability: { type: "number" }
+                }
+              },
+              description: "Predictive analytics on long-term decision impacts"
+            },
+            executive_report: {
+              type: "object",
+              properties: {
+                overview_paragraph: { type: "string" },
+                key_findings_paragraph: { type: "string" },
+                recommendations_paragraph: { type: "string" },
+                top_three_actions: { type: "array", items: { type: "string" } },
+                roi_implications: { type: "string" }
+              },
+              description: "Executive-ready narrative report"
+            },
             trade_off_analysis: {
               type: "array",
               items: {
@@ -513,6 +570,154 @@ Provide comprehensive analytical insights:
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
+          {/* Executive Report */}
+          {insights.executive_report && (
+            <Card className="p-6 bg-gradient-to-br from-slate-50 to-white border-slate-300">
+              <h3 className="font-bold text-lg text-slate-900 mb-4 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-slate-700" />
+                Executive Summary Report
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    {insights.executive_report.overview_paragraph}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-600 mb-2">Key Findings</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    {insights.executive_report.key_findings_paragraph}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-600 mb-2">Strategic Recommendations</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed mb-3">
+                    {insights.executive_report.recommendations_paragraph}
+                  </p>
+                  <div className="space-y-2">
+                    {insights.executive_report.top_three_actions?.map((action, idx) => (
+                      <div key={idx} className="flex items-start gap-2 p-2 bg-slate-100 rounded">
+                        <Badge className="bg-slate-600 text-white text-xs">{idx + 1}</Badge>
+                        <span className="text-sm text-slate-800">{action}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {insights.executive_report.roi_implications && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded">
+                    <h4 className="text-xs font-semibold text-emerald-900 mb-1">ROI Implications</h4>
+                    <p className="text-sm text-emerald-800">{insights.executive_report.roi_implications}</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Team Composition Analysis */}
+          {insights.team_composition_analysis && insights.team_composition_analysis.length > 0 && (
+            <Card className="p-6 bg-cyan-50 border-cyan-200">
+              <h3 className="font-semibold text-cyan-900 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-cyan-600" />
+                Team Composition Effectiveness Analysis
+              </h3>
+              <div className="space-y-4">
+                {insights.team_composition_analysis.map((analysis, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-lg border border-cyan-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-cyan-600 text-white text-xs">{analysis.scenario_type}</Badge>
+                      <span className="text-xs text-slate-600">Optimal size: {analysis.optimal_team_size}</span>
+                    </div>
+                    <p className="text-sm text-slate-700 mb-3 font-medium">{analysis.key_insight}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 bg-emerald-50 rounded">
+                        <p className="text-xs font-medium text-emerald-900 mb-1">Effective Compositions:</p>
+                        <ul className="space-y-0.5">
+                          {analysis.effective_compositions.map((comp, i) => (
+                            <li key={i} className="text-xs text-emerald-800">✓ {comp}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="p-2 bg-rose-50 rounded">
+                        <p className="text-xs font-medium text-rose-900 mb-1">Problematic Patterns:</p>
+                        <ul className="space-y-0.5">
+                          {analysis.problematic_compositions.map((comp, i) => (
+                            <li key={i} className="text-xs text-rose-800">✗ {comp}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Long-Term Predictions */}
+          {insights.long_term_predictions && insights.long_term_predictions.length > 0 && (
+            <Card className="p-6 bg-gradient-to-br from-indigo-50 to-white border-indigo-200">
+              <h3 className="font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-indigo-600" />
+                Predictive Analytics - Long-Term Decision Impacts
+              </h3>
+              <p className="text-xs text-slate-600 mb-4">
+                Forward-looking analysis of potential outcomes over time
+              </p>
+              <div className="space-y-4">
+                {insights.long_term_predictions.map((pred, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-lg border border-indigo-200">
+                    <h4 className="font-medium text-sm text-slate-800 mb-3">{pred.decision_path}</h4>
+                    
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="p-2 bg-blue-50 rounded">
+                          <p className="text-xs font-medium text-blue-900 mb-1">6 Month Outlook</p>
+                          <p className="text-xs text-blue-800">{pred.six_month_outlook}</p>
+                        </div>
+                        <div className="p-2 bg-indigo-50 rounded">
+                          <p className="text-xs font-medium text-indigo-900 mb-1">1 Year Outlook</p>
+                          <p className="text-xs text-indigo-800">{pred.one_year_outlook}</p>
+                        </div>
+                        <div className="p-2 bg-purple-50 rounded">
+                          <p className="text-xs font-medium text-purple-900 mb-1">2 Year Outlook</p>
+                          <p className="text-xs text-purple-800">{pred.two_year_outlook}</p>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-slate-50 rounded">
+                        <p className="text-xs font-medium text-slate-700 mb-1">Leading Indicators to Monitor:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {pred.leading_indicators?.map((indicator, i) => (
+                            <Badge key={i} variant="outline" className="text-xs">{indicator}</Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      {pred.cascading_effects && pred.cascading_effects.length > 0 && (
+                        <div className="p-3 bg-amber-50 rounded border border-amber-200">
+                          <p className="text-xs font-medium text-amber-900 mb-1">Cascading Effects:</p>
+                          <ul className="space-y-0.5">
+                            {pred.cascading_effects.map((effect, i) => (
+                              <li key={i} className="text-xs text-amber-800">→ {effect}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {pred.reversal_probability > 0 && (
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-rose-600" />
+                          <span className="text-xs text-slate-700">
+                            Reversal/pivot probability: <strong>{pred.reversal_probability}%</strong>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
           {/* Role Trends */}
           {insights.role_trends && insights.role_trends.length > 0 && (
             <Card className="p-6">
