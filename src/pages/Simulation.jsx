@@ -24,7 +24,8 @@ import {
   FolderOpen,
   Link as LinkIcon,
   PlayCircle,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Brain
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,6 +50,10 @@ import EnhancedNextSteps from '../components/simulation/EnhancedNextSteps';
 import SimulationPlayback from '../components/simulation/SimulationPlayback';
 import CollaborationPanel from '../components/simulation/CollaborationPanel';
 import RealTimeSync from '../components/simulation/RealTimeSync';
+import ScenarioBuilder from '../components/simulation/ScenarioBuilder';
+import ProfileAnalyzer from '../components/simulation/ProfileAnalyzer';
+import SimulationRunner from '../components/simulation/SimulationRunner';
+import TeamMemberMatcher from '../components/simulation/TeamMemberMatcher';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -79,6 +84,11 @@ export default function SimulationPage() {
   const [collaborationOpen, setCollaborationOpen] = useState(false);
   const [commentTargetRole, setCommentTargetRole] = useState(null);
   const [commentTargetTension, setCommentTargetTension] = useState(null);
+  const [scenarioBuilderOpen, setScenarioBuilderOpen] = useState(false);
+  const [profileAnalyzerOpen, setProfileAnalyzerOpen] = useState(false);
+  const [simulationRunnerOpen, setSimulationRunnerOpen] = useState(false);
+  const [matcherOpen, setMatcherOpen] = useState(false);
+  const [teamMemberProfiles, setTeamMemberProfiles] = useState([]);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -471,11 +481,30 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setTemplateDialogOpen(true)}
+                    onClick={() => setScenarioBuilderOpen(true)}
                     className="gap-2 h-7 text-xs"
                   >
-                    <Sparkles className="w-3 h-3" />
-                    Generate
+                    <Zap className="w-3 h-3" />
+                    Builder
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setProfileAnalyzerOpen(true)}
+                    className="gap-2 h-7 text-xs"
+                  >
+                    <Brain className="w-3 h-3" />
+                    Analyze
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setMatcherOpen(true)}
+                    className="gap-2 h-7 text-xs"
+                    disabled={!scenario || selectedRoles.length === 0}
+                  >
+                    <UsersIcon className="w-3 h-3" />
+                    Match
                   </Button>
                   <Button 
                     variant="outline" 
@@ -636,6 +665,18 @@ CRITICAL INSTRUCTIONS:
                     isRunning={isRunning}
                     simulationId={currentSimulation?.id}
                   />
+                  
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      onClick={() => setSimulationRunnerOpen(true)}
+                      disabled={!scenario || selectedRoles.length < 2}
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <PlayCircle className="w-4 h-4" />
+                      Run AI Simulation
+                    </Button>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
@@ -805,6 +846,67 @@ CRITICAL INSTRUCTIONS:
       />
 
       {currentSimulation && <RealTimeSync simulationId={currentSimulation.id} />}
+
+      <ScenarioBuilder
+        open={scenarioBuilderOpen}
+        onOpenChange={setScenarioBuilderOpen}
+        onScenarioGenerated={(result) => {
+          setTitle(result.title);
+          setScenario(result.scenario);
+          if (result.recommended_roles) {
+            const roles = result.recommended_roles.map(r => ({
+              role: r.role_id,
+              influence: r.influence || 5
+            }));
+            setSelectedRoles(roles);
+          }
+          toast.success('Scenario generated');
+        }}
+        allRoles={allRolesWithCustom}
+      />
+
+      <ProfileAnalyzer
+        open={profileAnalyzerOpen}
+        onClose={() => setProfileAnalyzerOpen(false)}
+        onProfileExtracted={(profile) => {
+          toast.success('Profile extracted - use in team member matching');
+        }}
+      />
+
+      <SimulationRunner
+        open={simulationRunnerOpen}
+        onClose={() => setSimulationRunnerOpen(false)}
+        scenario={scenario}
+        selectedRoles={selectedRoles}
+        teamMemberProfiles={teamMemberProfiles}
+        onSimulationComplete={async (result) => {
+          const simulation = await createMutation.mutateAsync({
+            title,
+            scenario,
+            use_case_type: selectedUseCase?.id || 'custom',
+            selected_roles: selectedRoles,
+            responses: result.responses,
+            tensions: result.tensions,
+            decision_trade_offs: result.decision_trade_offs,
+            summary: result.summary,
+            next_steps: result.next_steps.map(s => ({ ...s, completed: false })),
+            status: 'completed',
+          });
+          setCurrentSimulation(simulation);
+          setActiveTab('results');
+        }}
+      />
+
+      <TeamMemberMatcher
+        open={matcherOpen}
+        onClose={() => setMatcherOpen(false)}
+        scenario={scenario}
+        selectedRoles={selectedRoles}
+        onApplyMatching={(matching) => {
+          setTeamMemberProfiles(matching.optimal_matches || []);
+          setSimulationRunnerOpen(true);
+        }}
+      />
     </div>
   );
 }
