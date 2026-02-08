@@ -54,6 +54,7 @@ import ScenarioBuilder from '../components/simulation/ScenarioBuilder';
 import ProfileAnalyzer from '../components/simulation/ProfileAnalyzer';
 import SimulationRunner from '../components/simulation/SimulationRunner';
 import TeamMemberMatcher from '../components/simulation/TeamMemberMatcher';
+import PlaybookGenerator from '../components/simulation/PlaybookGenerator';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -89,6 +90,7 @@ export default function SimulationPage() {
   const [simulationRunnerOpen, setSimulationRunnerOpen] = useState(false);
   const [matcherOpen, setMatcherOpen] = useState(false);
   const [teamMemberProfiles, setTeamMemberProfiles] = useState([]);
+  const [playbookGeneratorOpen, setPlaybookGeneratorOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -529,6 +531,15 @@ CRITICAL INSTRUCTIONS:
                       <Button 
                         variant="outline" 
                         size="sm"
+                        onClick={() => setPlaybookGeneratorOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <BookOpen className="w-3 h-3" />
+                        Playbook
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
                         onClick={() => setIntegrationsOpen(true)}
                         className="gap-2 h-7 text-xs"
                       >
@@ -906,6 +917,12 @@ CRITICAL INSTRUCTIONS:
           setTeamMemberProfiles(matching.optimal_matches || []);
           setSimulationRunnerOpen(true);
         }}
+      />
+
+      <PlaybookGenerator
+        open={playbookGeneratorOpen}
+        onClose={() => setPlaybookGeneratorOpen(false)}
+        simulation={currentSimulation}
       />
     </div>
   );
