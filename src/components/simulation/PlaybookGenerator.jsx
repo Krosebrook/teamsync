@@ -15,6 +15,12 @@ export default function PlaybookGenerator({ open, onClose, simulation }) {
   const [generatedPlaybook, setGeneratedPlaybook] = useState(null);
   const [playbookName, setPlaybookName] = useState('');
   const [playbookDescription, setPlaybookDescription] = useState('');
+  const [orgContext, setOrgContext] = useState({
+    decisionFrameworks: '',
+    communicationNorms: '',
+    roleGuidelines: '',
+    culturalValues: ''
+  });
 
   const generatePlaybook = async () => {
     if (!simulation) return;
@@ -23,6 +29,14 @@ export default function PlaybookGenerator({ open, onClose, simulation }) {
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an expert at creating actionable decision-making playbooks based on simulation outcomes. Analyze this simulation and create a comprehensive playbook for handling similar scenarios in the future.
+
+ORGANIZATIONAL CONTEXT:
+${orgContext.decisionFrameworks ? `Decision-Making Frameworks: ${orgContext.decisionFrameworks}` : ''}
+${orgContext.communicationNorms ? `Communication Norms: ${orgContext.communicationNorms}` : ''}
+${orgContext.roleGuidelines ? `Role Guidelines: ${orgContext.roleGuidelines}` : ''}
+${orgContext.culturalValues ? `Cultural Values: ${orgContext.culturalValues}` : ''}
+
+CRITICAL: Tailor ALL recommendations to align with the organization's existing frameworks, norms, and values described above. Use their terminology, reference their processes, and adapt strategies to fit their culture.
 
 SIMULATION SCENARIO:
 ${simulation.scenario}
@@ -44,7 +58,7 @@ ${JSON.stringify(simulation.next_steps, null, 2)}
 SUMMARY:
 ${simulation.summary}
 
-Generate a comprehensive, actionable playbook that includes:
+Generate a comprehensive, actionable playbook that ALIGNS WITH THE ORGANIZATION'S CONTEXT and includes:
 
 1. PLAYBOOK METADATA:
    - Name: Clear, descriptive title
@@ -85,10 +99,10 @@ Generate a comprehensive, actionable playbook that includes:
    - How to leverage high-influence roles
 
 7. COMMUNICATION GUIDELINES:
-   - How to frame the decision to different stakeholders
-   - Key talking points for alignment
-   - How to handle objections from specific roles
-   - Escalation paths when consensus fails
+   - How to frame the decision to different stakeholders (using organization's communication norms)
+   - Key talking points for alignment (using organization's terminology)
+   - How to handle objections from specific roles (aligned with cultural values)
+   - Escalation paths when consensus fails (following organization's processes)
 
 8. SUCCESS METRICS & VALIDATION:
    - How to measure if the decision was right
@@ -105,7 +119,14 @@ Generate a comprehensive, actionable playbook that includes:
     - During-meeting checklist (5-7 items)
     - Post-meeting checklist (5-7 items)
 
-Make everything ACTIONABLE and SPECIFIC. Avoid generic advice. Base recommendations on the actual patterns observed in this simulation.`,
+Make everything ACTIONABLE and SPECIFIC. Avoid generic advice. Base recommendations on the actual patterns observed in this simulation.
+
+If organizational context was provided, ensure the playbook:
+- Uses the organization's existing decision-making frameworks as the foundation
+- Follows their communication norms and uses their terminology
+- Respects their role guidelines and cultural values
+- References their specific processes rather than generic best practices
+- Feels native to their organization, not generic consulting advice`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -274,11 +295,55 @@ Make everything ACTIONABLE and SPECIFIC. Avoid generic advice. Base recommendati
         </DialogHeader>
 
         {!generatedPlaybook ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <p className="text-sm text-slate-600">
-              Generate an actionable playbook based on this simulation's outcomes. The playbook will include best practices,
-              tension resolution strategies, trade-off navigation guides, and practical checklists.
+              Generate an actionable playbook based on this simulation's outcomes. Provide your organization's context
+              to create a playbook that aligns with your existing frameworks and culture.
             </p>
+
+            <Card className="p-4 bg-gradient-to-br from-indigo-50 to-white border-indigo-200">
+              <h3 className="font-semibold text-sm text-slate-900 mb-3">
+                Organizational Context (Optional but Recommended)
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs">Decision-Making Frameworks</Label>
+                  <Textarea
+                    placeholder="e.g., 'We use DACI for major decisions, Amazon's two-way door framework for reversible decisions, and require written memos before meetings'"
+                    value={orgContext.decisionFrameworks}
+                    onChange={(e) => setOrgContext({...orgContext, decisionFrameworks: e.target.value})}
+                    className="h-16 resize-none text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Communication Norms</Label>
+                  <Textarea
+                    placeholder="e.g., 'Direct communication preferred, written async-first culture, use Slack for quick decisions, Notion for documentation'"
+                    value={orgContext.communicationNorms}
+                    onChange={(e) => setOrgContext({...orgContext, communicationNorms: e.target.value})}
+                    className="h-16 resize-none text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Role Guidelines & Responsibilities</Label>
+                  <Textarea
+                    placeholder="e.g., 'PMs own product decisions, Eng leads own technical decisions, VP approval needed for >$50k spend, Customer Success has veto power on customer-facing changes'"
+                    value={orgContext.roleGuidelines}
+                    onChange={(e) => setOrgContext({...orgContext, roleGuidelines: e.target.value})}
+                    className="h-16 resize-none text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Cultural Values & Principles</Label>
+                  <Textarea
+                    placeholder="e.g., 'Customer obsession, bias for action, disagree and commit, data-driven decisions, strong opinions loosely held'"
+                    value={orgContext.culturalValues}
+                    onChange={(e) => setOrgContext({...orgContext, culturalValues: e.target.value})}
+                    className="h-16 resize-none text-sm"
+                  />
+                </div>
+              </div>
+            </Card>
             
             <Button
               onClick={generatePlaybook}
@@ -289,12 +354,12 @@ Make everything ACTIONABLE and SPECIFIC. Avoid generic advice. Base recommendati
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Analyzing Simulation & Generating Playbook...
+                  Analyzing Simulation & Generating Personalized Playbook...
                 </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" />
-                  Generate Playbook from Simulation
+                  Generate Personalized Playbook
                 </>
               )}
             </Button>
