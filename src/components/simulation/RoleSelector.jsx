@@ -78,22 +78,38 @@ const PRODUCT_TEAM_ROLES = [
   { id: "analytics", name: "Analytics Lead", icon: Users, color: "indigo", defaultInfluence: 5 },
 ];
 
-const INT_FRONT_OF_HOUSE_ROLES = [
+// Internal Inc - Client-Facing (Outward)
+const INT_FRONT_OF_HOUSE_OUTWARD = [
   { id: "int_web_services", name: "Web Services Director", icon: Globe, color: "blue", defaultInfluence: 7 },
   { id: "int_branding", name: "Branding & Identity Lead", icon: PenTool, color: "purple", defaultInfluence: 7 },
   { id: "int_marketing", name: "Marketing Services Manager", icon: Megaphone, color: "orange", defaultInfluence: 7 },
   { id: "int_content", name: "Content Creation Strategist", icon: FileText, color: "cyan", defaultInfluence: 6 },
-  { id: "int_operations", name: "Operations Manager", icon: Workflow, color: "emerald", defaultInfluence: 8 },
   { id: "int_client_success", name: "Client Success Manager", icon: Handshake, color: "pink", defaultInfluence: 7 },
+  { id: "int_account_exec", name: "Account Executive", icon: Briefcase, color: "indigo", defaultInfluence: 7 },
 ];
 
-const INT_BACK_OF_HOUSE_ROLES = [
+// Internal Inc - Internal Focus (Inward)
+const INT_FRONT_OF_HOUSE_INWARD = [
+  { id: "int_operations", name: "Operations Manager", icon: Workflow, color: "emerald", defaultInfluence: 8 },
+  { id: "int_project_manager", name: "Project Manager", icon: Target, color: "violet", defaultInfluence: 7 },
+  { id: "int_process_improvement", name: "Process Improvement Lead", icon: TrendingUp, color: "cyan", defaultInfluence: 6 },
+];
+
+// Internal Inc - Technology/Infrastructure (Outward)
+const INT_BACK_OF_HOUSE_OUTWARD = [
   { id: "int_technology", name: "Technology Director", icon: Cpu, color: "blue", defaultInfluence: 8 },
   { id: "int_infosec", name: "Information Security Lead", icon: Lock, color: "rose", defaultInfluence: 9 },
+  { id: "int_solutions_architect", name: "Solutions Architect", icon: GitBranch, color: "purple", defaultInfluence: 7 },
+  { id: "int_technical_consultant", name: "Technical Consultant", icon: Settings, color: "teal", defaultInfluence: 7 },
+];
+
+// Internal Inc - Infrastructure/Support (Inward)
+const INT_BACK_OF_HOUSE_INWARD = [
   { id: "int_it_support", name: "IT Support Specialist", icon: Server, color: "slate", defaultInfluence: 5 },
   { id: "int_network_admin", name: "Network Administrator", icon: GitBranch, color: "indigo", defaultInfluence: 6 },
   { id: "int_data_analyst", name: "Data Analytics Specialist", icon: BarChart, color: "violet", defaultInfluence: 6 },
   { id: "int_devops", name: "DevOps Engineer", icon: Settings, color: "teal", defaultInfluence: 7 },
+  { id: "int_systems_admin", name: "Systems Administrator", icon: Database, color: "slate", defaultInfluence: 6 },
 ];
 
 const INT_CORPORATE_ROLES = [
@@ -368,9 +384,9 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         <TabsContent value="intinc" className="mt-3">
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-medium text-slate-600 mb-2">Front of House</p>
+              <p className="text-xs font-medium text-slate-600 mb-2">Front of House - Outward Facing</p>
               <div className="grid gap-2">
-                {INT_FRONT_OF_HOUSE_ROLES.map((role) => (
+                {INT_FRONT_OF_HOUSE_OUTWARD.map((role) => (
                   <RoleCard 
                     key={role.id}
                     role={role}
@@ -384,9 +400,41 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-600 mb-2">Back of House</p>
+              <p className="text-xs font-medium text-slate-600 mb-2">Front of House - Inward Facing</p>
               <div className="grid gap-2">
-                {INT_BACK_OF_HOUSE_ROLES.map((role) => (
+                {INT_FRONT_OF_HOUSE_INWARD.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Back of House - Outward Facing</p>
+              <div className="grid gap-2">
+                {INT_BACK_OF_HOUSE_OUTWARD.map((role) => (
+                  <RoleCard 
+                    key={role.id}
+                    role={role}
+                    selected={isSelected(role.id)}
+                    onToggle={handleToggleRole}
+                    influence={getInfluence(role.id)}
+                    onInfluenceChange={handleInfluenceChange}
+                    colorClasses={colorClasses}
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-600 mb-2">Back of House - Inward Facing</p>
+              <div className="grid gap-2">
+                {INT_BACK_OF_HOUSE_INWARD.map((role) => (
                   <RoleCard 
                     key={role.id}
                     role={role}
