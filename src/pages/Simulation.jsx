@@ -55,6 +55,7 @@ import ProfileAnalyzer from '../components/simulation/ProfileAnalyzer';
 import SimulationRunner from '../components/simulation/SimulationRunner';
 import TeamMemberMatcher from '../components/simulation/TeamMemberMatcher';
 import PlaybookGenerator from '../components/simulation/PlaybookGenerator';
+import PlaybookSelector from '../components/simulation/PlaybookSelector';
 import ScenarioLibrary from '../components/simulation/ScenarioLibrary';
 
 export default function SimulationPage() {
@@ -93,6 +94,8 @@ export default function SimulationPage() {
   const [teamMemberProfiles, setTeamMemberProfiles] = useState([]);
   const [playbookGeneratorOpen, setPlaybookGeneratorOpen] = useState(false);
   const [scenarioLibraryOpen, setScenarioLibraryOpen] = useState(false);
+  const [playbookSelectorOpen, setPlaybookSelectorOpen] = useState(false);
+  const [editingPlaybook, setEditingPlaybook] = useState(null);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -467,6 +470,38 @@ CRITICAL INSTRUCTIONS:
     toast.success(`${playbook.name || 'Playbook'} applied`);
   };
 
+  const handleSelectPlaybook = (playbook) => {
+    try {
+      const parsed = JSON.parse(playbook.output_template);
+      
+      // Apply scenario hints from insights
+      if (parsed.key_insights?.emergent_tensions?.length > 0) {
+        const scenarioHint = `Key considerations: ${parsed.key_insights.emergent_tensions.join(', ')}`;
+        setScenario(prev => prev ? `${prev}\n\n${scenarioHint}` : scenarioHint);
+      }
+
+      // Apply essential roles
+      if (playbook.required_roles?.length > 0) {
+        const newRoles = playbook.required_roles.map(r => ({
+          role: r.role,
+          influence: 7
+        }));
+        setSelectedRoles(newRoles);
+      }
+
+      setTitle(`${playbook.name} - New Simulation`);
+      toast.success(`Applied playbook: ${playbook.name}`);
+    } catch (e) {
+      console.error('Failed to parse playbook', e);
+      handleApplyPlaybook(playbook);
+    }
+  };
+
+  const handleEditPlaybook = (playbook) => {
+    setEditingPlaybook(playbook);
+    setPlaybookGeneratorOpen(true);
+  };
+
   const handleCommentOnRole = (roleId) => {
     setCommentTargetRole(roleId);
     setCommentTargetTension(null);
@@ -564,11 +599,11 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setPlaybooksOpen(true)}
+                    onClick={() => setPlaybookSelectorOpen(true)}
                     className="gap-2 h-7 text-xs"
                   >
                     <FileText className="w-3 h-3" />
-                    Playbooks
+                    Use Playbook
                   </Button>
                   {currentSimulation?.status === 'completed' && (
                     <>
@@ -862,8 +897,7 @@ CRITICAL INSTRUCTIONS:
       <PlaybooksDialog
         open={playbooksOpen}
         onOpenChange={setPlaybooksOpen}
-        onApplyPlaybook={handleApplyPlaybook}
-        allRoles={allRolesWithCustom}
+        onApply={handleApplyPlaybook}
       />
 
       <IntegrationPanel
@@ -971,6 +1005,13 @@ CRITICAL INSTRUCTIONS:
         }}
         simulation={currentSimulation}
         existingPlaybook={editingPlaybook}
+      />
+
+      <PlaybookSelector
+        open={playbookSelectorOpen}
+        onClose={() => setPlaybookSelectorOpen(false)}
+        onSelect={handleSelectPlaybook}
+        onEdit={handleEditPlaybook}
       />
 
       <PlaybookSelector
