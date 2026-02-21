@@ -965,8 +965,19 @@ CRITICAL INSTRUCTIONS:
 
       <PlaybookGenerator
         open={playbookGeneratorOpen}
-        onClose={() => setPlaybookGeneratorOpen(false)}
+        onClose={() => {
+          setPlaybookGeneratorOpen(false);
+          setEditingPlaybook(null);
+        }}
         simulation={currentSimulation}
+        existingPlaybook={editingPlaybook}
+      />
+
+      <PlaybookSelector
+        open={playbookSelectorOpen}
+        onClose={() => setPlaybookSelectorOpen(false)}
+        onSelect={handleSelectPlaybook}
+        onEdit={handleEditPlaybook}
       />
 
       <ScenarioLibrary

@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, BookOpen, Sparkles, Save, AlertCircle, CheckCircle2, TrendingUp } from "lucide-react";
+import { Loader2, BookOpen, Sparkles, Save, AlertCircle, CheckCircle2, TrendingUp, Edit2, Download, FileText } from "lucide-react";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-export default function PlaybookGenerator({ open, onClose, simulation }) {
+export default function PlaybookGenerator({ open, onClose, simulation, existingPlaybook }) {
   const [loading, setLoading] = useState(false);
   const [generatedPlaybook, setGeneratedPlaybook] = useState(null);
   const [playbookName, setPlaybookName] = useState('');
@@ -21,6 +21,21 @@ export default function PlaybookGenerator({ open, onClose, simulation }) {
     roleGuidelines: '',
     culturalValues: ''
   });
+  const [editMode, setEditMode] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  React.useEffect(() => {
+    if (existingPlaybook) {
+      setPlaybookName(existingPlaybook.name);
+      setPlaybookDescription(existingPlaybook.description);
+      try {
+        const parsed = JSON.parse(existingPlaybook.output_template);
+        setGeneratedPlaybook(parsed);
+      } catch (e) {
+        console.error('Failed to parse playbook', e);
+      }
+    }
+  }, [existingPlaybook]);
 
   const generatePlaybook = async () => {
     if (!simulation) return;
@@ -245,7 +260,7 @@ If organizational context was provided, ensure the playbook:
     }
 
     try {
-      await base44.entities.DecisionPlaybook.create({
+      const playbookData = {
         name: playbookName,
         framework: generatedPlaybook.framework,
         description: playbookDescription || generatedPlaybook.description,
@@ -274,14 +289,170 @@ If organizational context was provided, ensure the playbook:
           }
         ],
         output_template: JSON.stringify(generatedPlaybook, null, 2)
-      });
+      };
 
-      toast.success('Playbook saved');
+      if (existingPlaybook) {
+        await base44.entities.DecisionPlaybook.update(existingPlaybook.id, playbookData);
+        toast.success('Playbook updated');
+      } else {
+        await base44.entities.DecisionPlaybook.create(playbookData);
+        toast.success('Playbook saved');
+      }
+      
       onClose();
     } catch (error) {
       toast.error('Failed to save playbook');
       console.error(error);
     }
+  };
+
+  const exportToMarkdown = () => {
+    if (!generatedPlaybook) return;
+
+    let markdown = `# ${playbookName}\n\n${playbookDescription}\n\n`;
+    markdown += `**Framework:** ${generatedPlaybook.framework}\n\n`;
+    
+    if (generatedPlaybook.applicable_scenarios?.length > 0) {
+      markdown += `## Applicable Scenarios\n`;
+      generatedPlaybook.applicable_scenarios.forEach(s => markdown += `- ${s}\n`);
+      markdown += '\n';
+    }
+
+    if (generatedPlaybook.key_insights) {
+      markdown += `## Key Insights\n\n`;
+      if (generatedPlaybook.key_insights.team_composition_strengths?.length > 0) {
+        markdown += `### Team Composition Strengths\n`;
+        generatedPlaybook.key_insights.team_composition_strengths.forEach(s => markdown += `- ${s}\n`);
+        markdown += '\n';
+      }
+    }
+
+    if (generatedPlaybook.best_practices) {
+      markdown += `## Best Practices\n\n`;
+      ['pre_decision', 'during_discussion', 'post_decision'].forEach(phase => {
+        if (generatedPlaybook.best_practices[phase]?.length > 0) {
+          markdown += `### ${phase.replace(/_/g, ' ').toUpperCase()}\n`;
+          generatedPlaybook.best_practices[phase].forEach(p => markdown += `- ${p}\n`);
+          markdown += '\n';
+        }
+      });
+    }
+
+    if (generatedPlaybook.tension_resolution_strategies?.length > 0) {
+      markdown += `## Tension Resolution Strategies\n\n`;
+      generatedPlaybook.tension_resolution_strategies.forEach(t => {
+        markdown += `### ${t.tension_type}\n`;
+        markdown += `**Root Cause:** ${t.root_cause}\n\n`;
+        if (t.resolution_steps?.length > 0) {
+          markdown += `**Resolution Steps:**\n`;
+          t.resolution_steps.forEach((s, i) => markdown += `${i + 1}. ${s}\n`);
+          markdown += '\n';
+        }
+      });
+    }
+
+    if (generatedPlaybook.role_requirements) {
+      markdown += `## Role Requirements\n\n`;
+      markdown += `**Essential Roles:** ${generatedPlaybook.role_requirements.essential_roles?.join(', ') || 'None'}\n\n`;
+      markdown += `**Optional Roles:** ${generatedPlaybook.role_requirements.optional_roles?.join(', ') || 'None'}\n\n`;
+    }
+
+    if (generatedPlaybook.practical_checklist) {
+      markdown += `## Practical Checklist\n\n`;
+      ['pre_meeting', 'during_meeting', 'post_meeting'].forEach(phase => {
+        if (generatedPlaybook.practical_checklist[phase]?.length > 0) {
+          markdown += `### ${phase.replace(/_/g, ' ').toUpperCase()}\n`;
+          generatedPlaybook.practical_checklist[phase].forEach(item => markdown += `- [ ] ${item}\n`);
+          markdown += '\n';
+        }
+      });
+    }
+
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${playbookName.replace(/\s+/g, '_')}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Exported to Markdown');
+  };
+
+  const exportToPDF = async () => {
+    setExporting(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const margin = 20;
+      let y = margin;
+      const lineHeight = 7;
+      const pageHeight = doc.internal.pageSize.height;
+
+      const addText = (text, fontSize = 10, isBold = false) => {
+        if (y > pageHeight - 20) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.setFontSize(fontSize);
+        doc.setFont(undefined, isBold ? 'bold' : 'normal');
+        const lines = doc.splitTextToSize(text, 170);
+        lines.forEach(line => {
+          if (y > pageHeight - 20) {
+            doc.addPage();
+            y = margin;
+          }
+          doc.text(line, margin, y);
+          y += lineHeight;
+        });
+      };
+
+      addText(playbookName, 18, true);
+      y += 5;
+      addText(playbookDescription || '');
+      y += 5;
+      addText(`Framework: ${generatedPlaybook.framework}`, 10, true);
+      y += 10;
+
+      if (generatedPlaybook.applicable_scenarios?.length > 0) {
+        addText('Applicable Scenarios', 14, true);
+        y += 2;
+        generatedPlaybook.applicable_scenarios.forEach(s => addText(`• ${s}`));
+        y += 5;
+      }
+
+      if (generatedPlaybook.best_practices) {
+        addText('Best Practices', 14, true);
+        y += 2;
+        ['pre_decision', 'during_discussion', 'post_decision'].forEach(phase => {
+          if (generatedPlaybook.best_practices[phase]?.length > 0) {
+            addText(phase.replace(/_/g, ' ').toUpperCase(), 12, true);
+            generatedPlaybook.best_practices[phase].forEach(p => addText(`• ${p}`));
+            y += 3;
+          }
+        });
+      }
+
+      if (generatedPlaybook.tension_resolution_strategies?.length > 0) {
+        addText('Tension Resolution Strategies', 14, true);
+        y += 2;
+        generatedPlaybook.tension_resolution_strategies.forEach(t => {
+          addText(t.tension_type, 12, true);
+          addText(`Root Cause: ${t.root_cause}`);
+          if (t.resolution_steps?.length > 0) {
+            addText('Resolution Steps:', 10, true);
+            t.resolution_steps.forEach((s, i) => addText(`${i + 1}. ${s}`));
+          }
+          y += 3;
+        });
+      }
+
+      doc.save(`${playbookName.replace(/\s+/g, '_')}.pdf`);
+      toast.success('Exported to PDF');
+    } catch (error) {
+      toast.error('Export failed');
+      console.error(error);
+    }
+    setExporting(false);
   };
 
   return (
@@ -618,11 +789,21 @@ If organizational context was provided, ensure the playbook:
             <div className="flex gap-2 pt-4 border-t">
               <Button onClick={savePlaybook} className="flex-1 gap-2">
                 <Save className="w-4 h-4" />
-                Save Playbook
+                {existingPlaybook ? 'Update Playbook' : 'Save Playbook'}
               </Button>
-              <Button onClick={() => setGeneratedPlaybook(null)} variant="outline">
-                Generate New
+              <Button onClick={exportToMarkdown} variant="outline" className="gap-2">
+                <FileText className="w-4 h-4" />
+                Markdown
               </Button>
+              <Button onClick={exportToPDF} variant="outline" className="gap-2" disabled={exporting}>
+                {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                PDF
+              </Button>
+              {!existingPlaybook && (
+                <Button onClick={() => setGeneratedPlaybook(null)} variant="outline">
+                  Generate New
+                </Button>
+              )}
             </div>
           </div>
         )}
