@@ -162,6 +162,21 @@ export default function SimulationPage() {
       if (roleData?.description) {
         desc += `\n  Typical concerns: ${roleData.description}`;
       }
+      
+      // Add detailed profile if available
+      if (roleData?.strengths && roleData.strengths.length > 0) {
+        desc += `\n  Key strengths: ${roleData.strengths.join(', ')}`;
+      }
+      if (roleData?.weaknesses && roleData.weaknesses.length > 0) {
+        desc += `\n  Blind spots/weaknesses: ${roleData.weaknesses.join(', ')}`;
+      }
+      if (roleData?.communication_style) {
+        desc += `\n  Communication style: ${roleData.communication_style}`;
+      }
+      if (roleData?.typical_motivations && roleData.typical_motivations.length > 0) {
+        desc += `\n  Core motivations: ${roleData.typical_motivations.join(', ')}`;
+      }
+      
       return desc;
     }).join('\n\n');
 
@@ -172,7 +187,14 @@ SCENARIO: ${scenario}
 PARTICIPATING ROLES:
 ${roleDescriptions}
 
-For each role, deeply analyze their perspective considering their typical priorities, concerns, and risk tolerance. For custom roles, use the "Typical concerns" description as guidance.
+For each role, deeply analyze their perspective considering:
+- Their typical priorities, concerns, and risk tolerance
+- Their specific STRENGTHS and how those shape their viewpoint
+- Their WEAKNESSES/BLIND SPOTS and what they might overlook
+- Their COMMUNICATION STYLE in how they express their position
+- Their CORE MOTIVATIONS driving their recommendation
+
+Use the detailed role profiles provided to create nuanced, realistic responses that reflect each role's unique decision-making patterns.
 
 Return a JSON object with this EXACT structure:
 {
