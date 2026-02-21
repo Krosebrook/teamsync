@@ -26,6 +26,7 @@ import {
   Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Label } from "@/components/ui/label";
 
 const COMPLEXITY_COLORS = {
   simple: "bg-green-100 text-green-700 border-green-200",
@@ -58,6 +59,16 @@ export default function ScenarioLibrary({ open, onClose, onApplyTemplate, curren
   const [selectedConflict, setSelectedConflict] = useState('all');
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [generatedScenarios, setGeneratedScenarios] = useState([]);
+  const [loadingGeneration, setLoadingGeneration] = useState(false);
+  const [generationParams, setGenerationParams] = useState({
+    count: 3,
+    industry: 'general',
+    complexity: 'moderate',
+    includePopularTemplates: true,
+    includeHistory: true,
+    includeTrends: true
+  });
 
   const { data: templates = [] } = useQuery({
     queryKey: ['scenarioLibrary'],
@@ -198,6 +209,123 @@ Return a JSON array of scenarios with this structure for each:
     }
   };
 
+  const generateNewScenarios = async () => {
+    setLoadingGeneration(true);
+    try {
+      // Build context from templates and history
+      const popularTemplates = templates
+        .filter(t => t.use_count > 0)
+        .sort((a, b) => (b.use_count || 0) - (a.use_count || 0))
+        .slice(0, 5);
+
+      const recentSimulations = simulations.slice(0, 5);
+
+      let contextPrompt = `Generate ${generationParams.count} unique, realistic simulation scenarios for a team decision-making platform.`;
+
+      if (generationParams.includePopularTemplates && popularTemplates.length > 0) {
+        contextPrompt += `\n\nPOPULAR EXISTING SCENARIOS (for inspiration, but create NEW scenarios):
+${popularTemplates.map(t => `- ${t.name}: ${t.description}`).join('\n')}`;
+      }
+
+      if (generationParams.includeHistory && recentSimulations.length > 0) {
+        contextPrompt += `\n\nUSER'S RECENT SIMULATION TOPICS (show variety, explore different angles):
+${recentSimulations.map(s => `- ${s.title || s.scenario.substring(0, 100)}`).join('\n')}`;
+      }
+
+      if (generationParams.includeTrends) {
+        contextPrompt += `\n\nCURRENT INDUSTRY TRENDS (2026):
+- AI/ML integration and AI governance challenges
+- Remote/hybrid work decision-making
+- Sustainability and ESG pressures
+- Data privacy and security concerns
+- Economic uncertainty and budget constraints
+- Rapid technology changes (GenAI, automation)
+- Talent shortage and retention issues`;
+      }
+
+      contextPrompt += `\n\nGENERATION REQUIREMENTS:
+- Industry focus: ${generationParams.industry === 'general' ? 'any industry' : INDUSTRY_LABELS[generationParams.industry]}
+- Complexity: ${generationParams.complexity}
+- Create scenarios that are:
+  * Realistic and based on current business challenges
+  * Contain meaningful conflicts between roles
+  * Force difficult trade-off decisions
+  * Include specific details and context
+  * Suggest 4-6 relevant roles with influence levels
+  * Identify 2-4 conflict types present
+
+Each scenario should include:
+1. Compelling name (5-8 words)
+2. Brief description (one sentence explaining when to use this)
+3. Detailed scenario text (3-4 paragraphs with specific context, stakes, and decision points)
+4. Industry category
+5. Complexity level (simple/moderate/complex/advanced)
+6. Conflict types (e.g., "Technical Debt", "Ethical Dilemma", "Resource Allocation")
+7. Suggested roles with influence levels (1-10)
+8. 3-5 relevant tags
+9. Estimated duration (e.g., "20 min", "30 min")
+
+Return as a JSON array of scenario objects.`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: contextPrompt,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            scenarios: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  description: { type: "string" },
+                  scenario_template: { type: "string" },
+                  industry: { type: "string" },
+                  complexity: { type: "string" },
+                  conflict_types: { type: "array", items: { type: "string" } },
+                  suggested_roles: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        role: { type: "string" },
+                        influence: { type: "number" }
+                      }
+                    }
+                  },
+                  tags: { type: "array", items: { type: "string" } },
+                  estimated_duration: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      setGeneratedScenarios(result.scenarios || []);
+      toast.success(`Generated ${result.scenarios?.length || 0} scenarios`);
+    } catch (error) {
+      toast.error('Failed to generate scenarios');
+      console.error(error);
+    } finally {
+      setLoadingGeneration(false);
+    }
+  };
+
+  const saveGeneratedScenario = async (scenario) => {
+    try {
+      await base44.entities.SimulationTemplate.create({
+        ...scenario,
+        is_ai_generated: true,
+        is_public: false
+      });
+      queryClient.invalidateQueries({ queryKey: ['scenarioLibrary'] });
+      toast.success('Scenario saved to library');
+    } catch (error) {
+      toast.error('Failed to save scenario');
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -209,14 +337,18 @@ Return a JSON array of scenarios with this structure for each:
         </DialogHeader>
 
         <Tabs defaultValue="browse" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="w-full grid grid-cols-2">
+          <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="browse">
               <Search className="w-4 h-4 mr-2" />
-              Browse Library
+              Browse
+            </TabsTrigger>
+            <TabsTrigger value="generate">
+              <Zap className="w-4 h-4 mr-2" />
+              Generate
             </TabsTrigger>
             <TabsTrigger value="suggestions">
               <Sparkles className="w-4 h-4 mr-2" />
-              AI Suggestions
+              Suggestions
             </TabsTrigger>
           </TabsList>
 
@@ -308,6 +440,146 @@ Return a JSON array of scenarios with this structure for each:
                   <Filter className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                   <p className="text-sm">No scenarios found matching your filters</p>
                 </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="generate" className="flex-1 flex flex-col overflow-hidden space-y-4 mt-4">
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-lg p-4">
+                <h3 className="font-semibold text-sm text-slate-900 mb-2 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-violet-600" />
+                  AI Scenario Generator
+                </h3>
+                <p className="text-xs text-slate-600 mb-4">
+                  Generate new scenarios based on popular templates, your simulation history, and current industry trends.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Number of Scenarios</Label>
+                    <Select
+                      value={generationParams.count.toString()}
+                      onValueChange={(val) => setGenerationParams({ ...generationParams, count: parseInt(val) })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 scenario</SelectItem>
+                        <SelectItem value="3">3 scenarios</SelectItem>
+                        <SelectItem value="5">5 scenarios</SelectItem>
+                        <SelectItem value="10">10 scenarios</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs">Industry Focus</Label>
+                    <Select
+                      value={generationParams.industry}
+                      onValueChange={(val) => setGenerationParams({ ...generationParams, industry: val })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="general">Any Industry</SelectItem>
+                        {Object.entries(INDUSTRY_LABELS).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs">Complexity Level</Label>
+                    <Select
+                      value={generationParams.complexity}
+                      onValueChange={(val) => setGenerationParams({ ...generationParams, complexity: val })}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="simple">Simple</SelectItem>
+                        <SelectItem value="moderate">Moderate</SelectItem>
+                        <SelectItem value="complex">Complex</SelectItem>
+                        <SelectItem value="advanced">Advanced</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 mb-4 text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={generationParams.includePopularTemplates}
+                      onChange={(e) => setGenerationParams({ ...generationParams, includePopularTemplates: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-slate-700">Use popular templates</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={generationParams.includeHistory}
+                      onChange={(e) => setGenerationParams({ ...generationParams, includeHistory: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-slate-700">Use my history</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={generationParams.includeTrends}
+                      onChange={(e) => setGenerationParams({ ...generationParams, includeTrends: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-slate-700">Include trends</span>
+                  </label>
+                </div>
+
+                <Button
+                  onClick={generateNewScenarios}
+                  disabled={loadingGeneration}
+                  className="w-full gap-2"
+                >
+                  {loadingGeneration ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating Scenarios...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" />
+                      Generate Scenarios
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+              {generatedScenarios.length === 0 ? (
+                <div className="text-center py-12 text-slate-500">
+                  <Sparkles className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                  <p className="text-sm mb-2">No scenarios generated yet</p>
+                  <p className="text-xs text-slate-400">Configure your preferences above and click "Generate Scenarios"</p>
+                </div>
+              ) : (
+                generatedScenarios.map((scenario, idx) => (
+                  <GeneratedScenarioCard
+                    key={idx}
+                    scenario={scenario}
+                    onSave={saveGeneratedScenario}
+                    onApply={() => {
+                      onApplyTemplate(scenario);
+                      onClose();
+                    }}
+                  />
+                ))
               )}
             </div>
           </TabsContent>
@@ -532,6 +804,142 @@ function SuggestionCard({ suggestion, onSave, onApply }) {
               >
                 <Star className="w-3 h-3" />
                 Save
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function GeneratedScenarioCard({ scenario, onSave, onApply }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-sm text-slate-900 truncate">
+                  {scenario.name}
+                </h3>
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  New
+                </Badge>
+              </div>
+
+              <p className="text-xs text-slate-600 mb-2 italic">
+                {scenario.description}
+              </p>
+
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {scenario.industry && (
+                  <Badge variant="outline" className="text-xs">
+                    {INDUSTRY_LABELS[scenario.industry] || scenario.industry}
+                  </Badge>
+                )}
+                {scenario.complexity && (
+                  <Badge className={`text-xs ${COMPLEXITY_COLORS[scenario.complexity]}`}>
+                    {scenario.complexity}
+                  </Badge>
+                )}
+                {scenario.estimated_duration && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <Clock className="w-3 h-3" />
+                    {scenario.estimated_duration}
+                  </Badge>
+                )}
+              </div>
+
+              {!expanded && (
+                <p className="text-xs text-slate-700 line-clamp-2">
+                  {scenario.scenario_template}
+                </p>
+              )}
+
+              {expanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  className="space-y-3 mt-3"
+                >
+                  <div className="p-3 bg-white rounded-lg border border-slate-200">
+                    <p className="text-xs text-slate-700 whitespace-pre-wrap">
+                      {scenario.scenario_template}
+                    </p>
+                  </div>
+
+                  {scenario.conflict_types && scenario.conflict_types.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-600 mb-1">Conflict Types:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {scenario.conflict_types.map((c, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {c}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {scenario.suggested_roles && scenario.suggested_roles.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-600 mb-1">Suggested Roles:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {scenario.suggested_roles.map((r, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {r.role} ({r.influence})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {scenario.tags && scenario.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {scenario.tags.map((tag, idx) => (
+                        <span key={idx} className="text-xs text-slate-500">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Button
+                size="sm"
+                onClick={onApply}
+                className="gap-1 h-7 text-xs whitespace-nowrap"
+              >
+                <ChevronRight className="w-3 h-3" />
+                Use
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onSave(scenario)}
+                className="gap-1 h-7 text-xs whitespace-nowrap"
+              >
+                <Star className="w-3 h-3" />
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setExpanded(!expanded)}
+                className="h-7 text-xs"
+              >
+                {expanded ? 'Less' : 'More'}
               </Button>
             </div>
           </div>
