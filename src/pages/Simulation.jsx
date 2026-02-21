@@ -55,6 +55,7 @@ import ProfileAnalyzer from '../components/simulation/ProfileAnalyzer';
 import SimulationRunner from '../components/simulation/SimulationRunner';
 import TeamMemberMatcher from '../components/simulation/TeamMemberMatcher';
 import PlaybookGenerator from '../components/simulation/PlaybookGenerator';
+import ScenarioLibrary from '../components/simulation/ScenarioLibrary';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -91,6 +92,7 @@ export default function SimulationPage() {
   const [matcherOpen, setMatcherOpen] = useState(false);
   const [teamMemberProfiles, setTeamMemberProfiles] = useState([]);
   const [playbookGeneratorOpen, setPlaybookGeneratorOpen] = useState(false);
+  const [scenarioLibraryOpen, setScenarioLibraryOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -511,11 +513,11 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setSavedTemplatesOpen(true)}
+                    onClick={() => setScenarioLibraryOpen(true)}
                     className="gap-2 h-7 text-xs"
                   >
                     <FolderOpen className="w-3 h-3" />
-                    Templates
+                    Library
                   </Button>
                   <Button 
                     variant="outline" 
@@ -923,6 +925,19 @@ CRITICAL INSTRUCTIONS:
         open={playbookGeneratorOpen}
         onClose={() => setPlaybookGeneratorOpen(false)}
         simulation={currentSimulation}
+      />
+
+      <ScenarioLibrary
+        open={scenarioLibraryOpen}
+        onClose={() => setScenarioLibraryOpen(false)}
+        onApplyTemplate={(template) => {
+          if (template.name) setTitle(template.name);
+          if (template.scenario_template) setScenario(template.scenario_template);
+          if (template.suggested_roles) setSelectedRoles(template.suggested_roles);
+          setActiveTab('setup');
+          toast.success('Scenario applied from library');
+        }}
+        currentSimulation={currentSimulation}
       />
     </div>
   );
