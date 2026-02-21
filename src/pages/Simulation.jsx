@@ -104,6 +104,11 @@ export default function SimulationPage() {
     queryFn: () => base44.entities.CustomRole.list(),
   });
 
+  const { data: roleProfiles = [] } = useQuery({
+    queryKey: ['roleProfiles'],
+    queryFn: () => base44.entities.RoleProfile.list(),
+  });
+
   // Build complete roles list including custom roles
   const allRolesWithCustom = React.useMemo(() => {
     const customRoleObjects = customRoles.map(cr => ({
@@ -158,23 +163,38 @@ export default function SimulationPage() {
 
     const roleDescriptions = selectedRoles.map(r => {
       const roleData = allRoles.find(rd => rd.id === r.role);
+      const roleProfile = roleProfiles.find(p => p.role_id === r.role);
+      
       let desc = `${roleData?.name || r.role} (Influence: ${r.influence}/10)`;
       if (roleData?.description) {
         desc += `\n  Typical concerns: ${roleData.description}`;
       }
       
-      // Add detailed profile if available
-      if (roleData?.strengths && roleData.strengths.length > 0) {
-        desc += `\n  Key strengths: ${roleData.strengths.join(', ')}`;
+      // Prioritize RoleProfile data over custom role data
+      const strengths = roleProfile?.strengths || roleData?.strengths;
+      const weaknesses = roleProfile?.weaknesses || roleData?.weaknesses;
+      const commStyle = roleProfile?.communication_style || roleData?.communication_style;
+      const motivations = roleProfile?.typical_motivations || roleData?.typical_motivations;
+      const decisionApproach = roleProfile?.decision_making_approach;
+      const riskTolerance = roleProfile?.risk_tolerance;
+      
+      if (strengths && strengths.length > 0) {
+        desc += `\n  Key strengths: ${strengths.join(', ')}`;
       }
-      if (roleData?.weaknesses && roleData.weaknesses.length > 0) {
-        desc += `\n  Blind spots/weaknesses: ${roleData.weaknesses.join(', ')}`;
+      if (weaknesses && weaknesses.length > 0) {
+        desc += `\n  Blind spots/weaknesses: ${weaknesses.join(', ')}`;
       }
-      if (roleData?.communication_style) {
-        desc += `\n  Communication style: ${roleData.communication_style}`;
+      if (commStyle) {
+        desc += `\n  Communication style: ${commStyle}`;
       }
-      if (roleData?.typical_motivations && roleData.typical_motivations.length > 0) {
-        desc += `\n  Core motivations: ${roleData.typical_motivations.join(', ')}`;
+      if (decisionApproach) {
+        desc += `\n  Decision-making approach: ${decisionApproach}`;
+      }
+      if (riskTolerance) {
+        desc += `\n  Risk tolerance: ${riskTolerance}`;
+      }
+      if (motivations && motivations.length > 0) {
+        desc += `\n  Core motivations: ${motivations.join(', ')}`;
       }
       
       return desc;

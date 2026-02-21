@@ -48,9 +48,11 @@ import {
   Scale,
   FileSpreadsheet,
   Handshake,
-  Bot
+  Bot,
+  FileUser
 } from "lucide-react";
 import CustomRoleDialog from './CustomRoleDialog';
+import RoleProfileManager from './RoleProfileManager';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -206,10 +208,17 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
+  const [profileManagerOpen, setProfileManagerOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(null);
 
   const { data: customRoles = [] } = useQuery({
     queryKey: ['customRoles'],
     queryFn: () => base44.entities.CustomRole.list(),
+  });
+
+  const { data: roleProfiles = [] } = useQuery({
+    queryKey: ['roleProfiles'],
+    queryFn: () => base44.entities.RoleProfile.list(),
   });
 
   const createMutation = useMutation({
@@ -291,6 +300,15 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
     onRolesChange(selectedRoles.filter(r => r.role !== roleId));
   };
 
+  const handleEditProfile = (role) => {
+    setEditingProfile({ roleId: role.id, roleName: role.name });
+    setProfileManagerOpen(true);
+  };
+
+  const getRoleProfile = (roleId) => {
+    return roleProfiles.find(p => p.role_id === roleId);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
@@ -338,7 +356,9 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
                   influence={getInfluence(role.id)}
                   onInfluenceChange={handleInfluenceChange}
                   colorClasses={colorClasses}
-                />
+                  hasProfile={!!getRoleProfile(role.id)}
+                  onEditProfile={handleEditProfile}
+                  />
               );
             })}
           </div>
@@ -630,11 +650,22 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         onSave={handleSaveRole}
         editRole={editingRole}
       />
+
+      <RoleProfileManager
+        open={profileManagerOpen}
+        onClose={() => {
+          setProfileManagerOpen(false);
+          setEditingProfile(null);
+        }}
+        roleId={editingProfile?.roleId}
+        roleName={editingProfile?.roleName}
+        allRoles={allRoles}
+      />
     </div>
   );
 }
 
-function RoleCard({ role, selected, onToggle, influence, onInfluenceChange, colorClasses, onEdit, onDelete }) {
+function RoleCard({ role, selected, onToggle, influence, onInfluenceChange, colorClasses, onEdit, onDelete, hasProfile, onEditProfile }) {
   const Icon = role.icon;
   
   return (
@@ -663,32 +694,51 @@ function RoleCard({ role, selected, onToggle, influence, onInfluenceChange, colo
           <span className={`text-sm ${selected ? 'font-medium text-slate-800' : 'text-slate-600'} flex-1`}>
             {role.name}
           </span>
-          {role.isCustom && (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(role);
-                }}
-              >
-                <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(role.id);
-                }}
-              >
-                <Trash2 className="w-3 h-3 text-slate-400 hover:text-rose-600" />
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            {hasProfile && (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                Profile
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditProfile(role);
+              }}
+              title="Edit role profile"
+            >
+              <FileUser className="w-3 h-3 text-slate-400 hover:text-violet-600" />
+            </Button>
+            {role.isCustom && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(role);
+                  }}
+                >
+                  <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(role.id);
+                  }}
+                >
+                  <Trash2 className="w-3 h-3 text-slate-400 hover:text-rose-600" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
         
         <AnimatePresence>
