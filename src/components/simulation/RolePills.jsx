@@ -11,9 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 import PersonaTuner from './PersonaTuner';
 
-export default function RolePills({ selectedRoles, onRolesChange, allRoles }) {
+export default function RolePills({ selectedRoles, onRolesChange, allRoles, personaTunings = {}, onPersonaTuningsChange }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [tunerOpen, setTunerOpen] = useState(false);
+  const [tunerRole, setTunerRole] = useState(null);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
