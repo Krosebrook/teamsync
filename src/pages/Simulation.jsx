@@ -101,6 +101,7 @@ export default function SimulationPage() {
   const [playbookTemplatesOpen, setPlaybookTemplatesOpen] = useState(false);
   const [roleSimulatorOpen, setRoleSimulatorOpen] = useState(false);
   const [simulatorTemplate, setSimulatorTemplate] = useState(null);
+  const [environmentalFactors, setEnvironmentalFactors] = useState([]);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
