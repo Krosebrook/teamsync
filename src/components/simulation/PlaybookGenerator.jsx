@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, BookOpen, Sparkles, Save, AlertCircle, CheckCircle2, TrendingUp, Edit2, Download, FileText } from "lucide-react";
+import { Loader2, BookOpen, Sparkles, Save, AlertCircle, CheckCircle2, TrendingUp, Edit2, Download, FileText, BookTemplate } from "lucide-react";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -376,6 +376,34 @@ If organizational context was provided, ensure the playbook:
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Exported to Markdown');
+  };
+
+  const saveAsTemplate = async () => {
+    if (!generatedPlaybook || !playbookName.trim()) {
+      toast.error('Playbook name is required');
+      return;
+    }
+    try {
+      await base44.entities.DecisionPlaybook.create({
+        name: `${playbookName} (Template)`,
+        framework: generatedPlaybook.framework,
+        description: playbookDescription || generatedPlaybook.description,
+        is_template: true,
+        scenario_starter: generatedPlaybook.applicable_scenarios?.slice(0, 2).join('. ') || '',
+        required_roles: generatedPlaybook.role_requirements?.essential_roles?.map(role => ({
+          role, framework_position: 'participant'
+        })) || [],
+        steps: [
+          { order: 1, name: 'Pre-Decision Phase', description: 'Preparation', prompts: generatedPlaybook.best_practices?.pre_decision || [] },
+          { order: 2, name: 'Discussion Phase', description: 'Facilitated discussion', prompts: generatedPlaybook.best_practices?.during_discussion || [] },
+          { order: 3, name: 'Post-Decision Phase', description: 'Follow-up', prompts: generatedPlaybook.best_practices?.post_decision || [] }
+        ],
+        output_template: JSON.stringify(generatedPlaybook, null, 2)
+      });
+      toast.success('Saved as template — accessible in Playbook Templates');
+    } catch (error) {
+      toast.error('Failed to save template');
+    }
   };
 
   const exportToPDF = async () => {
@@ -786,10 +814,14 @@ If organizational context was provided, ensure the playbook:
             )}
 
             {/* Actions */}
-            <div className="flex gap-2 pt-4 border-t">
+            <div className="flex flex-wrap gap-2 pt-4 border-t">
               <Button onClick={savePlaybook} className="flex-1 gap-2">
                 <Save className="w-4 h-4" />
                 {existingPlaybook ? 'Update Playbook' : 'Save Playbook'}
+              </Button>
+              <Button onClick={saveAsTemplate} variant="outline" className="gap-2">
+                <BookTemplate className="w-4 h-4" />
+                Save as Template
               </Button>
               <Button onClick={exportToMarkdown} variant="outline" className="gap-2">
                 <FileText className="w-4 h-4" />
