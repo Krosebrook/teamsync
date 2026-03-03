@@ -472,7 +472,7 @@ export default function DocumentationPage() {
             </div>
             <div>
               <h1 className="text-base font-semibold text-slate-900 tracking-tight">Documentation</h1>
-              <p className="text-xs text-slate-500">Use Cases & Playbook Guide</p>
+              <p className="text-xs text-slate-500">Use Cases, Features & Playbook Guide</p>
             </div>
           </div>
           <a
