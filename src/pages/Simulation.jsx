@@ -821,6 +821,8 @@ CRITICAL INSTRUCTIONS:
                     onRunSimulation={runSimulation}
                     isRunning={isRunning}
                     simulationId={currentSimulation?.id}
+                    environmentalFactors={environmentalFactors}
+                    onEnvironmentalFactorsChange={setEnvironmentalFactors}
                   />
                   
                   <div className="mt-4 flex gap-2">
