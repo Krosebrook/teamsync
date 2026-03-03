@@ -232,9 +232,16 @@ export default function SimulationPage() {
       return desc;
     }).join('\n\n');
 
+    const envContext = environmentalFactors.length > 0
+      ? `\nENVIRONMENTAL CONTEXT (Dynamic factors influencing this decision):\n${environmentalFactors.map(f =>
+          `- [${f.category.toUpperCase()} | Impact: ${f.impact} | Trend: ${f.drift}] ${f.name}${f.current_state ? `: ${f.current_state}` : ''}${f.evolution_hint ? ` (May evolve: ${f.evolution_hint})` : ''}`
+        ).join('\n')}\n`
+      : '';
+
     const prompt = `You are simulating a cross-functional team discussion for a critical product/business decision.
 
 SCENARIO: ${scenario}
+${envContext}
 
 PARTICIPATING ROLES:
 ${roleDescriptions}
