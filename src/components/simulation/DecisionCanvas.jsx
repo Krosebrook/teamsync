@@ -175,7 +175,7 @@ export default function DecisionCanvas({
             w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold
             ${currentStep >= 3 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}
           `}>
-            3
+            4
           </div>
           <Label className="text-sm font-medium text-slate-700">Execute Simulation</Label>
         </div>
