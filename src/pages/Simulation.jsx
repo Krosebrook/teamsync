@@ -246,6 +246,8 @@ ${envContext}
 PARTICIPATING ROLES:
 ${roleDescriptions}
 
+IMPORTANT: If environmental factors are listed above, each role's response, concerns, and recommendations MUST reflect how those factors affect their perspective. Worsening or critical factors should generate new tensions or amplify existing ones. Improving factors may create opportunities that some roles embrace and others resist.
+
 For each role, deeply analyze their perspective considering:
 - Their typical priorities, concerns, and risk tolerance
 - Their specific STRENGTHS and how those shape their viewpoint
