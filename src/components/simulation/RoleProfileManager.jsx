@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, X, Save, Sparkles, Loader2, Trash2, Brain, User, AlertTriangle, Zap } from "lucide-react";
+import { Plus, X, Save, Sparkles, Loader2, Trash2, Brain, User, AlertTriangle, Zap, MessageSquare, Swords } from "lucide-react";
 
 const EMPTY_PROFILE = {
   strengths: [],
@@ -33,6 +33,9 @@ export default function RoleProfileManager({ open, onClose, roleId, roleName, al
   const queryClient = useQueryClient();
   const [loadingAI, setLoadingAI] = useState(false);
   const [loadingPersona, setLoadingPersona] = useState(false);
+  const [loadingTriggers, setLoadingTriggers] = useState(false);
+  const [loadingConflict, setLoadingConflict] = useState(false);
+  const [loadingPhrases, setLoadingPhrases] = useState(false);
   const [tagInputs, setTagInputs] = useState({
     strength: '', weakness: '', motivation: '', trait: '', trigger: '', phrase: '',
     ally: '', friction: '', influenced: ''
@@ -84,6 +87,94 @@ export default function RoleProfileManager({ open, onClose, roleId, roleName, al
       onClose();
     }
   });
+
+  const profileContext = () => `
+Role: "${roleName}"
+Strengths: ${profileData.strengths.join(', ') || 'not set'}
+Weaknesses: ${profileData.weaknesses.join(', ') || 'not set'}
+Communication style: ${profileData.communication_style || 'not set'}
+Motivations: ${profileData.typical_motivations.join(', ') || 'not set'}
+Decision approach: ${profileData.decision_making_approach || 'not set'}
+Risk tolerance: ${profileData.risk_tolerance}
+Personality traits: ${profileData.personality_traits?.join(', ') || 'not set'}
+Current conflict style: ${profileData.conflict_style || 'not set'}
+  `.trim();
+
+  const suggestTriggers = async () => {
+    setLoadingTriggers(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a team psychology expert. Based on this role profile, suggest 3–5 specific emotional triggers — situations, phrases, or dynamics that would make this persona reactive, defensive, or unusually persuasive in a team decision meeting.
+
+${profileContext()}
+
+Return triggers as short, vivid, specific statements (not generic). Each should start with a trigger context like "When...", "If...", or "Being told...".`,
+        response_json_schema: {
+          type: "object",
+          properties: { triggers: { type: "array", items: { type: "string" } } }
+        }
+      });
+      if (result.triggers?.length) {
+        const newTriggers = result.triggers.filter(t => !profileData.emotional_triggers.includes(t));
+        setProfileData(prev => ({ ...prev, emotional_triggers: [...prev.emotional_triggers, ...newTriggers] }));
+        toast.success(`Added ${newTriggers.length} emotional trigger(s)`);
+      }
+    } catch { toast.error('Failed to suggest triggers'); }
+    setLoadingTriggers(false);
+  };
+
+  const suggestConflictStyle = async () => {
+    setLoadingConflict(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Based on this role profile, determine the most realistic conflict style for this persona in team decision-making. Choose exactly one from: avoiding, accommodating, competing, compromising, collaborating.
+
+${profileContext()}
+
+Return the single best-fit conflict style and a 1-sentence rationale.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            conflict_style: { type: "string" },
+            rationale: { type: "string" }
+          }
+        }
+      });
+      if (result.conflict_style) {
+        setProfileData(prev => ({ ...prev, conflict_style: result.conflict_style }));
+        toast.success(`Conflict style set to "${result.conflict_style}"${result.rationale ? ' — ' + result.rationale : ''}`);
+      }
+    } catch { toast.error('Failed to suggest conflict style'); }
+    setLoadingConflict(false);
+  };
+
+  const suggestPhrases = async () => {
+    setLoadingPhrases(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a screenwriter for corporate drama. Based on this role profile, write 4–6 signature phrases this persona characteristically says in team decision meetings. Make them specific, slightly cliché, and instantly recognizable as this role.
+
+${profileContext()}
+
+Examples of good signature phrases:
+- "Have we stress-tested this with real users yet?"
+- "I need to see the numbers before I can sign off on this."
+- "This feels like we're solving the wrong problem."
+
+Return only the phrases as an array of strings.`,
+        response_json_schema: {
+          type: "object",
+          properties: { phrases: { type: "array", items: { type: "string" } } }
+        }
+      });
+      if (result.phrases?.length) {
+        const newPhrases = result.phrases.filter(p => !profileData.signature_phrases.includes(p));
+        setProfileData(prev => ({ ...prev, signature_phrases: [...prev.signature_phrases, ...newPhrases] }));
+        toast.success(`Added ${newPhrases.length} signature phrase(s)`);
+      }
+    } catch { toast.error('Failed to suggest phrases'); }
+    setLoadingPhrases(false);
+  };
 
   const generateCoreProfile = async () => {
     setLoadingAI(true);
@@ -416,16 +507,31 @@ Generate a VIVID, REALISTIC persona with:
 
             {/* Emotional Triggers */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-rose-500" />
-                Emotional Triggers
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-rose-500" />
+                  Emotional Triggers
+                </Label>
+                <Button variant="outline" size="sm" onClick={suggestTriggers} disabled={loadingTriggers} className="gap-1 h-7 text-xs">
+                  {loadingTriggers ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI Suggest
+                </Button>
+              </div>
               <TagInput fieldKey="trigger" field="emotional_triggers" placeholder="e.g., When their timeline is challenged" color="rose" />
             </div>
 
             {/* Conflict Style */}
             <div className="space-y-2">
-              <Label>Conflict Style</Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <Swords className="w-4 h-4 text-orange-500" />
+                  Conflict Style
+                </Label>
+                <Button variant="outline" size="sm" onClick={suggestConflictStyle} disabled={loadingConflict} className="gap-1 h-7 text-xs">
+                  {loadingConflict ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI Suggest
+                </Button>
+              </div>
               <Select value={profileData.conflict_style} onValueChange={(val) => setProfileData({ ...profileData, conflict_style: val })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select conflict style" />
@@ -438,11 +544,29 @@ Generate a VIVID, REALISTIC persona with:
                   <SelectItem value="collaborating">Collaborating — Seeks win-win</SelectItem>
                 </SelectContent>
               </Select>
+              {profileData.conflict_style && (
+                <p className="text-xs text-slate-400 italic">
+                  {profileData.conflict_style === 'avoiding' && 'Tends to withdraw from disagreements to preserve harmony.'}
+                  {profileData.conflict_style === 'accommodating' && 'Prioritizes others\' needs over their own position.'}
+                  {profileData.conflict_style === 'competing' && 'Pursues their own position assertively, even at others\' expense.'}
+                  {profileData.conflict_style === 'compromising' && 'Seeks quick, mutually acceptable solutions with partial concessions.'}
+                  {profileData.conflict_style === 'collaborating' && 'Works to find creative solutions that fully satisfy all parties.'}
+                </p>
+              )}
             </div>
 
             {/* Signature Phrases */}
             <div className="space-y-2">
-              <Label>Signature Phrases</Label>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  Signature Phrases
+                </Label>
+                <Button variant="outline" size="sm" onClick={suggestPhrases} disabled={loadingPhrases} className="gap-1 h-7 text-xs">
+                  {loadingPhrases ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI Suggest
+                </Button>
+              </div>
               <TagInput fieldKey="phrase" field="signature_phrases" placeholder='e.g., "Have we validated this with users?"' color="blue" />
             </div>
 
