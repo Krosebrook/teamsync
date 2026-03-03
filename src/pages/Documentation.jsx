@@ -632,6 +632,7 @@ export default function DocumentationPage() {
               <tbody>
                 {[
                   ["Role Profiles + AI Personas", "★★★", "★★★", "★★"],
+                  ["Persona Tuner (per-role overrides)", "★★★", "★★", "★★★"],
                   ["Environmental Factors", "★★★", "★★★", "★"],
                   ["Outcome Prediction", "★★★", "★★★", "★★"],
                   ["Simulation Playback", "★★", "★", "★★★"],
