@@ -199,6 +199,29 @@ export default function SimulationPage() {
       if (motivations && motivations.length > 0) {
         desc += `\n  Core motivations: ${motivations.join(', ')}`;
       }
+      // Persona fields
+      if (roleProfile?.backstory) {
+        desc += `\n  Backstory: ${roleProfile.backstory}`;
+      }
+      if (roleProfile?.personality_traits?.length > 0) {
+        desc += `\n  Personality traits: ${roleProfile.personality_traits.join('; ')}`;
+      }
+      if (roleProfile?.cognitive_biases?.length > 0) {
+        const biasDesc = roleProfile.cognitive_biases.map(b => `${b.bias} (${b.example || b.description})`).join('; ');
+        desc += `\n  Known cognitive biases: ${biasDesc}`;
+      }
+      if (roleProfile?.emotional_triggers?.length > 0) {
+        desc += `\n  Emotional triggers: ${roleProfile.emotional_triggers.join('; ')}`;
+      }
+      if (roleProfile?.conflict_style) {
+        desc += `\n  Conflict style: ${roleProfile.conflict_style}`;
+      }
+      if (roleProfile?.signature_phrases?.length > 0) {
+        desc += `\n  Signature phrases: "${roleProfile.signature_phrases.join('", "')}"`;
+      }
+      if (roleProfile?.relationship_dynamics?.friction_with?.length > 0) {
+        desc += `\n  Tends to clash with: ${roleProfile.relationship_dynamics.friction_with.join(', ')}`;
+      }
       
       return desc;
     }).join('\n\n');
