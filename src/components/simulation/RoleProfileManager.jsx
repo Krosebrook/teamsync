@@ -179,6 +179,56 @@ Return only the phrases as an array of strings.`,
     setLoadingPhrases(false);
   };
 
+  const inferDomainExpertise = async () => {
+    setLoadingExpertise(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert in organizational roles and professional development. Based on the role name, description, and existing profile data below, infer realistic domain expertise areas and past performance patterns.
+
+${profileContext()}
+Existing domain expertise: ${profileData.domain_expertise_detailed?.map(d => `${d.area} (${d.proficiency_level})`).join(', ') || 'none set'}
+
+TASK 1 — DOMAIN EXPERTISE:
+Infer 4–7 specific domain expertise areas this role would realistically have. For each, assign a proficiency level (beginner/intermediate/advanced/expert) based on how central that domain is to the role. Be specific — not "programming" but "distributed systems design" or "query optimization".
+
+TASK 2 — PERFORMANCE PATTERNS:
+Write 2–4 sentences describing this role's typical past performance patterns in team settings — what they tend to do well consistently, where they struggle, how they show up under pressure, and any notable behavioral tendencies that would be visible in simulations. Make it vivid and specific to the role, not generic.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            domain_expertise_detailed: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  area: { type: "string" },
+                  proficiency_level: { type: "string", enum: ["beginner", "intermediate", "advanced", "expert"] }
+                }
+              }
+            },
+            performance_patterns: { type: "string" }
+          }
+        }
+      });
+
+      if (result.domain_expertise_detailed?.length) {
+        // Merge with existing, avoiding duplicates by area name
+        const existingAreas = new Set((profileData.domain_expertise_detailed || []).map(d => d.area.toLowerCase()));
+        const newExpertise = result.domain_expertise_detailed.filter(d => !existingAreas.has(d.area.toLowerCase()));
+        setProfileData(prev => ({
+          ...prev,
+          domain_expertise_detailed: [...(prev.domain_expertise_detailed || []), ...newExpertise],
+          performance_patterns: prev.performance_patterns || result.performance_patterns || ''
+        }));
+        if (!profileData.performance_patterns && result.performance_patterns) {
+          setProfileData(prev => ({ ...prev, performance_patterns: result.performance_patterns }));
+        }
+        toast.success(`Inferred ${newExpertise.length} expertise area(s)`);
+      }
+    } catch { toast.error('Failed to infer domain expertise'); }
+    setLoadingExpertise(false);
+  };
+
   const generateCoreProfile = async () => {
     setLoadingAI(true);
     try {
