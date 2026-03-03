@@ -1124,6 +1124,15 @@ CRITICAL INSTRUCTIONS:
         }}
         currentSimulation={currentSimulation}
       />
+
+      <OutcomePrediction
+        open={outcomePredictionOpen}
+        onClose={() => setOutcomePredictionOpen(false)}
+        scenario={scenario}
+        selectedRoles={selectedRoles}
+        environmentalFactors={environmentalFactors}
+        allRoles={allRolesWithCustom}
+      />
     </div>
   );
 }
