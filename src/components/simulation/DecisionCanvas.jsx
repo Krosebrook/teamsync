@@ -32,7 +32,9 @@ export default function DecisionCanvas({
   selectedRoles,
   onRunSimulation,
   isRunning,
-  simulationId
+  simulationId,
+  environmentalFactors,
+  onEnvironmentalFactorsChange,
 }) {
   const [activeEditors, setActiveEditors] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
