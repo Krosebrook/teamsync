@@ -56,6 +56,7 @@ import SimulationRunner from '../components/simulation/SimulationRunner';
 import TeamMemberMatcher from '../components/simulation/TeamMemberMatcher';
 import PlaybookGenerator from '../components/simulation/PlaybookGenerator';
 import PlaybookSelector from '../components/simulation/PlaybookSelector';
+import PlaybookTemplatesManager from '../components/simulation/PlaybookTemplatesManager';
 import ScenarioLibrary from '../components/simulation/ScenarioLibrary';
 
 export default function SimulationPage() {
@@ -96,6 +97,7 @@ export default function SimulationPage() {
   const [scenarioLibraryOpen, setScenarioLibraryOpen] = useState(false);
   const [playbookSelectorOpen, setPlaybookSelectorOpen] = useState(false);
   const [editingPlaybook, setEditingPlaybook] = useState(null);
+  const [playbookTemplatesOpen, setPlaybookTemplatesOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -525,6 +527,16 @@ CRITICAL INSTRUCTIONS:
     setPlaybookGeneratorOpen(true);
   };
 
+  const handleApplyPlaybookTemplate = (template) => {
+    if (template.name) setTitle(template.name.replace(' (Template)', '') + ' Decision');
+    if (template.scenario_starter) setScenario(template.scenario_starter);
+    if (template.required_roles?.length > 0) {
+      setSelectedRoles(template.required_roles.map(r => ({ role: r.role, influence: 7 })));
+    }
+    if (template.use_case_type) setSelectedUseCase({ id: template.use_case_type });
+    toast.success(`Template "${template.name}" applied`);
+  };
+
   const handleCommentOnRole = (roleId) => {
     setCommentTargetRole(roleId);
     setCommentTargetTension(null);
@@ -622,11 +634,20 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
+                    onClick={() => setPlaybookTemplatesOpen(true)}
+                    className="gap-2 h-7 text-xs"
+                  >
+                    <FileText className="w-3 h-3" />
+                    Templates
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
                     onClick={() => setPlaybookSelectorOpen(true)}
                     className="gap-2 h-7 text-xs"
                   >
                     <FileText className="w-3 h-3" />
-                    Use Playbook
+                    Playbooks
                   </Button>
                   {currentSimulation?.status === 'completed' && (
                     <>
