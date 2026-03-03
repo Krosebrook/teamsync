@@ -233,15 +233,17 @@ Write 2–4 sentences describing this role's typical past performance patterns i
     setLoadingAI(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create a detailed decision-making profile for: "${roleName}".
+        prompt: `You are an organizational psychologist specializing in team decision-making dynamics. Create a comprehensive decision-making profile for the role: "${roleName}".
 
-Generate:
-1. 4-6 key strengths in decision-making contexts
-2. 3-5 weaknesses or blind spots
-3. Communication style (2-3 sentences)
-4. 4-6 typical motivations
-5. Decision-making approach (1-2 sentences)
-6. Risk tolerance (low/medium/high)`,
+Based solely on the role title and common real-world knowledge about this role, generate:
+1. 4-6 key strengths specific to this role in cross-functional decision-making contexts (be concrete, not generic)
+2. 3-5 blind spots or weaknesses that commonly manifest for this role type in group decisions
+3. Communication style: how this role typically communicates in meetings — tone, directness, preferred medium (2-3 specific sentences)
+4. 4-6 core motivations that drive this role's decisions and priorities
+5. Decision-making approach: their typical framework or process (1-2 sentences)
+6. Risk tolerance: low / medium / high with a brief rationale
+7. 3-5 domain expertise areas with proficiency level (beginner/intermediate/advanced/expert) — choose areas central to this role
+8. Past performance patterns: 2-3 sentences about behavioral tendencies in team settings`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -250,16 +252,133 @@ Generate:
             communication_style: { type: "string" },
             typical_motivations: { type: "array", items: { type: "string" } },
             decision_making_approach: { type: "string" },
-            risk_tolerance: { type: "string" }
+            risk_tolerance: { type: "string", enum: ["low", "medium", "high"] },
+            domain_expertise_detailed: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  area: { type: "string" },
+                  proficiency_level: { type: "string", enum: ["beginner", "intermediate", "advanced", "expert"] }
+                }
+              }
+            },
+            performance_patterns: { type: "string" }
           }
         }
       });
-      setProfileData(prev => ({ ...prev, ...result }));
+      setProfileData(prev => ({
+        ...prev,
+        strengths: result.strengths || prev.strengths,
+        weaknesses: result.weaknesses || prev.weaknesses,
+        communication_style: result.communication_style || prev.communication_style,
+        typical_motivations: result.typical_motivations || prev.typical_motivations,
+        decision_making_approach: result.decision_making_approach || prev.decision_making_approach,
+        risk_tolerance: result.risk_tolerance || prev.risk_tolerance,
+        domain_expertise_detailed: result.domain_expertise_detailed?.length ? result.domain_expertise_detailed : prev.domain_expertise_detailed,
+        performance_patterns: result.performance_patterns || prev.performance_patterns,
+      }));
       toast.success('Core profile generated');
     } catch (error) {
       toast.error('Failed to generate profile');
     } finally {
       setLoadingAI(false);
+    }
+  };
+
+  const generateFullProfile = async () => {
+    // Run core + persona generation together
+    setLoadingAI(true);
+    setLoadingPersona(true);
+    try {
+      const otherRoleNames = allRoles?.filter(r => r.id !== roleId).map(r => r.name).slice(0, 10) || [];
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert organizational psychologist and team dynamics designer. Generate a COMPLETE, richly detailed decision-making profile for the role: "${roleName}".
+
+Other roles this persona will interact with: ${otherRoleNames.join(', ')}
+
+Generate ALL of the following fields in a single pass:
+
+CORE PROFILE:
+- strengths: 5 specific strengths in cross-functional decision-making (avoid generic terms)
+- weaknesses: 4 realistic blind spots/weaknesses in group decisions
+- communication_style: 3 sentences describing tone, directness, and medium preference
+- typical_motivations: 5 core driving motivations
+- decision_making_approach: 2 sentences on their framework and process
+- risk_tolerance: low/medium/high
+- domain_expertise_detailed: 5 key areas with proficiency levels
+- performance_patterns: 3 sentences on behavioral tendencies in team settings
+
+PERSONA:
+- backstory: 4 vivid sentences — career path + formative experiences that shaped their worldview on risk and collaboration
+- personality_traits: 6 specific behavioral traits visible in team meetings (not generic adjectives — behaviors)
+- cognitive_biases: 4 biases with name, description, and a concrete example for this role
+- emotional_triggers: 4 specific situations/phrases that make this persona reactive or defensive
+- conflict_style: one of: avoiding, accommodating, competing, compromising, collaborating
+- signature_phrases: 5 characteristic things this persona says in meetings
+- relationship_dynamics.allies: role names from the list above they naturally align with
+- relationship_dynamics.friction_with: role names they typically clash with
+- relationship_dynamics.influenced_by: what/who shifts their thinking`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            strengths: { type: "array", items: { type: "string" } },
+            weaknesses: { type: "array", items: { type: "string" } },
+            communication_style: { type: "string" },
+            typical_motivations: { type: "array", items: { type: "string" } },
+            decision_making_approach: { type: "string" },
+            risk_tolerance: { type: "string", enum: ["low", "medium", "high"] },
+            domain_expertise_detailed: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  area: { type: "string" },
+                  proficiency_level: { type: "string", enum: ["beginner", "intermediate", "advanced", "expert"] }
+                }
+              }
+            },
+            performance_patterns: { type: "string" },
+            backstory: { type: "string" },
+            personality_traits: { type: "array", items: { type: "string" } },
+            cognitive_biases: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  bias: { type: "string" },
+                  description: { type: "string" },
+                  example: { type: "string" }
+                }
+              }
+            },
+            emotional_triggers: { type: "array", items: { type: "string" } },
+            conflict_style: { type: "string" },
+            signature_phrases: { type: "array", items: { type: "string" } },
+            relationship_dynamics: {
+              type: "object",
+              properties: {
+                allies: { type: "array", items: { type: "string" } },
+                friction_with: { type: "array", items: { type: "string" } },
+                influenced_by: { type: "array", items: { type: "string" } }
+              }
+            }
+          }
+        }
+      });
+
+      setProfileData(prev => ({
+        ...EMPTY_PROFILE,
+        ...prev,
+        ...result,
+        relationship_dynamics: result.relationship_dynamics || prev.relationship_dynamics || { allies: [], friction_with: [], influenced_by: [] }
+      }));
+      toast.success('Full profile generated — all fields populated!');
+    } catch (error) {
+      toast.error('Failed to generate full profile');
+    } finally {
+      setLoadingAI(false);
+      setLoadingPersona(false);
     }
   };
 
