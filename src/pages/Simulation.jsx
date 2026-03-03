@@ -751,6 +751,8 @@ CRITICAL INSTRUCTIONS:
                 selectedRoles={selectedRoles}
                 onRolesChange={setSelectedRoles}
                 allRoles={allRolesWithCustom}
+                personaTunings={personaTunings}
+                onPersonaTuningsChange={setPersonaTunings}
               />
 
               <div className="mt-6 pt-6 border-t border-slate-200">
