@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { X, GripVertical, Plus } from "lucide-react";
+import { X, GripVertical, Plus, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import PersonaTuner from './PersonaTuner';
 
 export default function RolePills({ selectedRoles, onRolesChange, allRoles }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
