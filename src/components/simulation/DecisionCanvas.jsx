@@ -5,9 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, Loader2, CheckCircle2, Users } from "lucide-react";
+import { Play, Loader2, CheckCircle2, Users, Globe } from "lucide-react";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import EnvironmentalFactors from './EnvironmentalFactors';
 
 const DECISION_TYPES = [
   { id: "pre_mortem", name: "Pre-Mortem Analysis", description: "Identify risks before launch" },
