@@ -146,7 +146,29 @@ export default function DecisionCanvas({
         </div>
       </div>
 
-      {/* Step 3: Run */}
+      {/* Step 3: Environmental Factors */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className={`
+            w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold
+            ${currentStep >= 2 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}
+          `}>
+            {currentStep > 2 ? <CheckCircle2 className="w-3 h-3" /> : '3'}
+          </div>
+          <Label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5 text-slate-400" />
+            Environmental Factors
+            <span className="text-xs font-normal text-slate-400">(optional)</span>
+          </Label>
+        </div>
+        <EnvironmentalFactors
+          factors={environmentalFactors || []}
+          onChange={onEnvironmentalFactorsChange}
+          scenario={scenario}
+        />
+      </div>
+
+      {/* Step 4: Run */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <div className={`
