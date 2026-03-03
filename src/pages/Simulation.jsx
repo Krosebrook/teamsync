@@ -438,7 +438,6 @@ CRITICAL INSTRUCTIONS:
     setTitle(sim.title);
     setScenario(sim.scenario);
     setSelectedRoles(sim.selected_roles || []);
-    setSelectedUseCase(USE_CASES.find(uc => uc.id === sim.use_case_type) || null);
     setActiveTab('results');
   };
 
