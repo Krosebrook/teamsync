@@ -11,21 +11,17 @@ import {
   Play, 
   Sparkles, 
   Loader2, 
-  ArrowRight,
-  Zap,
-  LayoutGrid,
-  List,
-  Download,
   RefreshCw,
   GitCompare,
-  ListChecks,
   FileText,
   BarChart3,
   FolderOpen,
   Link as LinkIcon,
   PlayCircle,
   Users as UsersIcon,
-  Brain
+  Brain,
+  BookOpen,
+  Zap
 } from "lucide-react";
 import { toast } from "sonner";
 
