@@ -829,6 +829,15 @@ CRITICAL INSTRUCTIONS:
                   
                   <div className="mt-4 flex gap-2">
                     <Button
+                      onClick={() => setOutcomePredictionOpen(true)}
+                      disabled={!scenario || selectedRoles.length < 2}
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Predict Outcomes
+                    </Button>
+                    <Button
                       onClick={() => setSimulationRunnerOpen(true)}
                       disabled={!scenario || selectedRoles.length < 2}
                       variant="outline"
