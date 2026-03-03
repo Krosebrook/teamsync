@@ -485,6 +485,69 @@ Generate a VIVID, REALISTIC persona with:
               <Label>Core Motivations</Label>
               <TagInput fieldKey="motivation" field="typical_motivations" placeholder="e.g., Revenue growth" color="violet" />
             </div>
+
+            {/* Domain Expertise */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-cyan-600" />
+                  Domain Expertise
+                </Label>
+                <Button variant="outline" size="sm" onClick={inferDomainExpertise} disabled={loadingExpertise} className="gap-1 h-7 text-xs">
+                  {loadingExpertise ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI Infer
+                </Button>
+              </div>
+              {profileData.domain_expertise_detailed?.length > 0 ? (
+                <div className="space-y-1.5">
+                  {profileData.domain_expertise_detailed.map((d, idx) => {
+                    const proficiencyColor = {
+                      expert: 'bg-violet-100 text-violet-800 border-violet-200',
+                      advanced: 'bg-blue-100 text-blue-800 border-blue-200',
+                      intermediate: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+                      beginner: 'bg-slate-100 text-slate-700 border-slate-200',
+                    };
+                    return (
+                      <div key={idx} className="flex items-center gap-2">
+                        <span className="text-sm text-slate-700 flex-1">{d.area}</span>
+                        <Badge className={`text-xs border ${proficiencyColor[d.proficiency_level] || proficiencyColor.intermediate}`}>
+                          {d.proficiency_level}
+                        </Badge>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0"
+                          onClick={() => setProfileData(prev => ({
+                            ...prev,
+                            domain_expertise_detailed: prev.domain_expertise_detailed.filter((_, i) => i !== idx)
+                          }))}>
+                          <X className="w-3 h-3 text-slate-400 hover:text-rose-600" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">Click "AI Infer" to automatically suggest domain expertise based on this role.</p>
+              )}
+            </div>
+
+            {/* Performance Patterns */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
+                Past Performance Patterns
+              </Label>
+              <Textarea
+                value={profileData.performance_patterns}
+                onChange={(e) => setProfileData({ ...profileData, performance_patterns: e.target.value })}
+                placeholder="Notable behavioral patterns, consistent strengths under pressure, recurring challenges in team settings..."
+                className="min-h-[80px] resize-none"
+              />
+              {!profileData.performance_patterns && (
+                <Button variant="ghost" size="sm" onClick={inferDomainExpertise} disabled={loadingExpertise} className="gap-1 h-6 text-xs text-slate-500 p-0">
+                  {loadingExpertise ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  AI infer from role
+                </Button>
+              )}
+            </div>
           </TabsContent>
 
           {/* PERSONA TAB */}
