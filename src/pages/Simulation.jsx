@@ -231,7 +231,30 @@ export default function SimulationPage() {
       if (roleProfile?.relationship_dynamics?.friction_with?.length > 0) {
         desc += `\n  Tends to clash with: ${roleProfile.relationship_dynamics.friction_with.join(', ')}`;
       }
-      
+
+      // Apply persona tuning overrides
+      const tuning = personaTunings[r.role];
+      if (tuning?.enabled) {
+        desc += `\n  --- PERSONA TUNING OVERRIDES (apply these with priority) ---`;
+        desc += `\n  Communication directness: ${tuning.directness_level}/10 (${tuning.directness_level >= 8 ? 'extremely blunt and direct' : tuning.directness_level >= 5 ? 'balanced' : 'very diplomatic and careful'})`;
+        desc += `\n  Contrarianism: ${tuning.contrarianism}/10 (${tuning.contrarianism >= 8 ? 'highly contrarian, challenges almost everything' : tuning.contrarianism >= 5 ? 'moderately questioning' : 'generally agreeable'})`;
+        desc += `\n  Data orientation: ${tuning.data_orientation}/10 (${tuning.data_orientation >= 8 ? 'demands hard data for every claim' : tuning.data_orientation >= 5 ? 'balanced data and intuition' : 'relies primarily on gut and experience'})`;
+        desc += `\n  Urgency bias: ${tuning.urgency_bias}/10 (${tuning.urgency_bias >= 8 ? 'pushes hard to move fast and ship now' : tuning.urgency_bias >= 5 ? 'moderate pace preference' : 'prefers slow deliberate decisions'})`;
+        desc += `\n  Stress level: ${tuning.stress_level}/10 — this persona is under ${tuning.stress_level >= 8 ? 'extreme' : tuning.stress_level >= 5 ? 'moderate' : 'low'} pressure which ${tuning.stress_level >= 7 ? 'amplifies their emotional triggers and makes them more reactive' : 'keeps them mostly composed'}`;
+        if (tuning.risk_tolerance_override) {
+          desc += `\n  Risk tolerance OVERRIDE: ${tuning.risk_tolerance_override}`;
+        }
+        if (tuning.conflict_style_override) {
+          desc += `\n  Conflict style OVERRIDE: ${tuning.conflict_style_override}`;
+        }
+        if (tuning.active_cognitive_biases?.length > 0) {
+          desc += `\n  AMPLIFIED cognitive biases (lean into these heavily): ${tuning.active_cognitive_biases.join(', ')}`;
+        }
+        if (tuning.custom_agenda?.trim()) {
+          desc += `\n  HIDDEN AGENDA (this persona has this private motivation — let it influence their stance subtly, without stating it explicitly): ${tuning.custom_agenda}`;
+        }
+      }
+
       return desc;
     }).join('\n\n');
 
