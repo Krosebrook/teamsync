@@ -12,7 +12,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import {
   BookOpenCheck, Search, Edit2, Trash2, Plus, X, Save, ArrowRight,
-  Sparkles, Loader2, Users, RefreshCw
+  Sparkles, Loader2, Users, MessageSquare
 } from "lucide-react";
 
 export const FRAMEWORK_LABELS = {
@@ -395,7 +395,7 @@ Return only the scenario text, no headings or metadata.`,
 }
 
 // ── Main Templates Browser ─────────────────────────────────────────────────────
-export default function PlaybookTemplatesManager({ open, onClose, onApply }) {
+export default function PlaybookTemplatesManager({ open, onClose, onApply, onSimulate }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [editingTemplate, setEditingTemplate] = useState(null);
@@ -495,6 +495,12 @@ export default function PlaybookTemplatesManager({ open, onClose, onApply }) {
                         <Button size="sm" onClick={() => { onApply(template); onClose(); }} className="gap-1 text-xs h-7">
                           Use <ArrowRight className="w-3 h-3" />
                         </Button>
+                        {onSimulate && template.required_roles?.length >= 2 && (
+                          <Button size="sm" variant="outline" onClick={() => { onSimulate(template); onClose(); }} className="gap-1 text-xs h-7">
+                            <MessageSquare className="w-3 h-3" />
+                            Simulate
+                          </Button>
+                        )}
                         <Button variant="outline" size="icon" className="h-7 w-7" title="Edit" onClick={() => setEditingTemplate(template)}>
                           <Edit2 className="w-3 h-3" />
                         </Button>
