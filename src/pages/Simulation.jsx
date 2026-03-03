@@ -58,6 +58,7 @@ import PlaybookGenerator from '../components/simulation/PlaybookGenerator';
 import PlaybookSelector from '../components/simulation/PlaybookSelector';
 import PlaybookTemplatesManager from '../components/simulation/PlaybookTemplatesManager';
 import ScenarioLibrary from '../components/simulation/ScenarioLibrary';
+import RoleInteractionSimulator from '../components/simulation/RoleInteractionSimulator';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -98,6 +99,8 @@ export default function SimulationPage() {
   const [playbookSelectorOpen, setPlaybookSelectorOpen] = useState(false);
   const [editingPlaybook, setEditingPlaybook] = useState(null);
   const [playbookTemplatesOpen, setPlaybookTemplatesOpen] = useState(false);
+  const [roleSimulatorOpen, setRoleSimulatorOpen] = useState(false);
+  const [simulatorTemplate, setSimulatorTemplate] = useState(null);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -525,6 +528,16 @@ CRITICAL INSTRUCTIONS:
   const handleEditPlaybook = (playbook) => {
     setEditingPlaybook(playbook);
     setPlaybookGeneratorOpen(true);
+  };
+
+  const handleSimulateTemplate = (template) => {
+    // Pre-fill roles from template, then open the role interaction simulator
+    if (template.required_roles?.length > 0) {
+      setSelectedRoles(template.required_roles.map(r => ({ role: r.role, influence: 7 })));
+    }
+    if (template.scenario_starter) setScenario(template.scenario_starter);
+    setSimulatorTemplate(template);
+    setRoleSimulatorOpen(true);
   };
 
   const handleApplyPlaybookTemplate = (template) => {
@@ -1062,6 +1075,18 @@ CRITICAL INSTRUCTIONS:
         open={playbookTemplatesOpen}
         onClose={() => setPlaybookTemplatesOpen(false)}
         onApply={handleApplyPlaybookTemplate}
+        onSimulate={handleSimulateTemplate}
+      />
+
+      <RoleInteractionSimulator
+        open={roleSimulatorOpen}
+        onClose={() => { setRoleSimulatorOpen(false); setSimulatorTemplate(null); }}
+        template={simulatorTemplate}
+        scenario={scenario}
+        selectedRoles={selectedRoles}
+        onComplete={(result) => {
+          toast.success('Interaction simulation complete — results ready in the simulator');
+        }}
       />
 
       <ScenarioLibrary
