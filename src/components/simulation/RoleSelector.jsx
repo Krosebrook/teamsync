@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import CustomRoleDialog from './CustomRoleDialog';
 import RoleProfileManager from './RoleProfileManager';
+import SuggestRolesDialog from './SuggestRolesDialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -210,6 +211,7 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
   const [editingRole, setEditingRole] = useState(null);
   const [profileManagerOpen, setProfileManagerOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
+  const [suggestOpen, setSuggestOpen] = useState(false);
 
   const { data: customRoles = [] } = useQuery({
     queryKey: ['customRoles'],
@@ -318,18 +320,26 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         </Badge>
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          setEditingRole(null);
-          setDialogOpen(true);
-        }}
-        className="w-full gap-2 mb-3"
-      >
-        <Plus className="w-4 h-4" />
-        Create Custom Role
-      </Button>
+      <div className="flex gap-2 mb-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => { setEditingRole(null); setDialogOpen(true); }}
+          className="flex-1 gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Create Custom
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSuggestOpen(true)}
+          className="flex-1 gap-2"
+        >
+          <Sparkles className="w-4 h-4" />
+          AI Suggest
+        </Button>
+      </div>
 
       <Tabs defaultValue="product" className="w-full">
         <TabsList className="w-full grid grid-cols-6 text-[10px]">
@@ -660,6 +670,13 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         roleId={editingProfile?.roleId}
         roleName={editingProfile?.roleName}
         allRoles={allRoles}
+      />
+
+      <SuggestRolesDialog
+        open={suggestOpen}
+        onClose={() => setSuggestOpen(false)}
+        existingRoles={ROLES}
+        existingCustomRoles={customRoles}
       />
     </div>
   );
