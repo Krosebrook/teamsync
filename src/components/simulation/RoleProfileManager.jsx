@@ -38,6 +38,7 @@ export default function RoleProfileManager({ open, onClose, roleId, roleName, al
   const [loadingTriggers, setLoadingTriggers] = useState(false);
   const [loadingConflict, setLoadingConflict] = useState(false);
   const [loadingPhrases, setLoadingPhrases] = useState(false);
+  const [loadingExpertise, setLoadingExpertise] = useState(false);
   const [tagInputs, setTagInputs] = useState({
     strength: '', weakness: '', motivation: '', trait: '', trigger: '', phrase: '',
     ally: '', friction: '', influenced: ''
