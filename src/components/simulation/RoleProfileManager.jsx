@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, X, Save, Sparkles, Loader2, Trash2, Brain, User, AlertTriangle, Zap, MessageSquare, Swords } from "lucide-react";
+import { Plus, X, Save, Sparkles, Loader2, Trash2, Brain, User, AlertTriangle, Zap, MessageSquare, Swords, BookOpen, TrendingUp } from "lucide-react";
 
 const EMPTY_PROFILE = {
   strengths: [],
@@ -26,7 +26,9 @@ const EMPTY_PROFILE = {
   emotional_triggers: [],
   conflict_style: 'compromising',
   signature_phrases: [],
-  relationship_dynamics: { allies: [], friction_with: [], influenced_by: [] }
+  relationship_dynamics: { allies: [], friction_with: [], influenced_by: [] },
+  domain_expertise_detailed: [],
+  performance_patterns: ''
 };
 
 export default function RoleProfileManager({ open, onClose, roleId, roleName, allRoles }) {
