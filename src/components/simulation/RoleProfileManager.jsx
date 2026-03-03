@@ -549,10 +549,14 @@ Generate a VIVID, REALISTIC persona with:
 
           {/* CORE PROFILE TAB */}
           <TabsContent value="core" className="space-y-5 mt-4">
-            <div className="flex justify-end">
+            <div className="flex gap-2">
+              <Button size="sm" onClick={generateFullProfile} disabled={loadingAI || loadingPersona} className="flex-1 gap-2 bg-violet-600 hover:bg-violet-700 text-white">
+                {(loadingAI && loadingPersona) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {(loadingAI && loadingPersona) ? 'Generating...' : 'AI Generate Full Profile'}
+              </Button>
               <Button variant="outline" size="sm" onClick={generateCoreProfile} disabled={loadingAI} className="gap-2">
-                {loadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                {loadingAI ? 'Generating...' : 'AI Generate Core'}
+                {loadingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+                Core Only
               </Button>
             </div>
 
