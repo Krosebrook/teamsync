@@ -105,9 +105,21 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
                           <GripVertical className="w-3 h-3" />
                         </div>
                         
-                        <span className="flex-1 text-sm text-slate-700 font-medium">
+                        <span className="flex-1 text-sm text-slate-700 font-medium truncate">
                           {roleData.name}
                         </span>
+
+                        {personaTunings[selectedRole.role]?.enabled && (
+                          <span title="Persona tuned" className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+                        )}
+
+                        <button
+                          onClick={() => openTuner(selectedRole)}
+                          title="Fine-tune persona"
+                          className="text-slate-300 hover:text-violet-500 transition-colors shrink-0"
+                        >
+                          <Sliders className="w-3 h-3" />
+                        </button>
 
                         <Input
                           type="number"
