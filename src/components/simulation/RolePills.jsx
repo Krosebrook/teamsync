@@ -49,6 +49,16 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
     ));
   };
 
+  const openTuner = (role) => {
+    setTunerRole(role);
+    setTunerOpen(true);
+  };
+
+  const handleSaveTuning = (tuning) => {
+    if (!tunerRole || !onPersonaTuningsChange) return;
+    onPersonaTuningsChange({ ...personaTunings, [tunerRole.role]: tuning });
+  };
+
   const getRoleData = (roleId) => allRoles?.find(r => r.id === roleId);
 
   const filteredAvailableRoles = allRoles?.filter(r => 
