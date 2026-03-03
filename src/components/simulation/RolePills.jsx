@@ -147,6 +147,17 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
         </Droppable>
       </DragDropContext>
 
+      {tunerRole && (
+        <PersonaTuner
+          open={tunerOpen}
+          onClose={() => setTunerOpen(false)}
+          roleId={tunerRole.role}
+          roleName={allRoles?.find(r => r.id === tunerRole.role)?.name || tunerRole.role}
+          tuning={personaTunings[tunerRole.role] || {}}
+          onSave={handleSaveTuning}
+        />
+      )}
+
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button 
