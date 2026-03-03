@@ -7,7 +7,7 @@ import {
   Target, Layers, ArrowRight, CheckCircle2, AlertTriangle, 
   BarChart3, FileText, Settings, Play, Sparkles, Shield, 
   TrendingUp, Clock, MessageSquare, GitBranch, Cpu, HeartHandshake,
-  Map, Lightbulb, UserCheck, Building, Rocket, Eye
+  Map, Lightbulb, UserCheck, Building, Rocket, Eye, Sliders
 } from "lucide-react";
 import { createPageUrl } from '@/utils';
 
