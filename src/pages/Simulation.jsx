@@ -59,6 +59,7 @@ import PlaybookSelector from '../components/simulation/PlaybookSelector';
 import PlaybookTemplatesManager from '../components/simulation/PlaybookTemplatesManager';
 import ScenarioLibrary from '../components/simulation/ScenarioLibrary';
 import RoleInteractionSimulator from '../components/simulation/RoleInteractionSimulator';
+import OutcomePrediction from '../components/simulation/OutcomePrediction';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
