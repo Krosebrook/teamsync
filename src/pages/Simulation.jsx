@@ -1058,11 +1058,10 @@ CRITICAL INSTRUCTIONS:
         onEdit={handleEditPlaybook}
       />
 
-      <PlaybookSelector
-        open={playbookSelectorOpen}
-        onClose={() => setPlaybookSelectorOpen(false)}
-        onSelect={handleSelectPlaybook}
-        onEdit={handleEditPlaybook}
+      <PlaybookTemplatesManager
+        open={playbookTemplatesOpen}
+        onClose={() => setPlaybookTemplatesOpen(false)}
+        onApply={handleApplyPlaybookTemplate}
       />
 
       <ScenarioLibrary
