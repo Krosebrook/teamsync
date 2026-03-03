@@ -615,6 +615,41 @@ export default function DocumentationPage() {
           </TabsContent>
         </Tabs>
 
+        {/* Persona Tuner Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+              <Sliders className="w-5 h-5 text-violet-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Persona Tuner</h3>
+              <p className="text-sm text-slate-500">Per-role behavioral overrides — injected at simulation time</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: "Communication Directness", desc: "Slide from highly diplomatic to brutally direct. Affects how the persona frames objections and pushes back.", color: "blue" },
+              { label: "Contrarianism", desc: "Control how much this persona challenges consensus. High values create a devil's advocate persona.", color: "rose" },
+              { label: "Data Orientation", desc: "Gut/experience-driven vs pure data obsession. Affects what kinds of evidence the role demands.", color: "emerald" },
+              { label: "Urgency Bias", desc: "Slow deliberation vs move-fast mentality. Affects the role's position on timelines and risk tolerance.", color: "amber" },
+              { label: "Stress Level", desc: "Simulates this persona under pressure. High stress amplifies emotional triggers and reactive behavior.", color: "rose" },
+              { label: "Hidden Agenda", desc: "A private motivation that subtly influences the role's stance without being stated explicitly in their response.", color: "violet" },
+            ].map(({ label, desc, color }) => {
+              const c = colorMap[color];
+              return (
+                <div key={label} className={`p-4 rounded-lg border ${c.border} ${c.bg}`}>
+                  <p className={`text-sm font-semibold ${c.icon} mb-1`}>{label}</p>
+                  <p className="text-xs text-slate-600">{desc}</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 space-y-1">
+            <p className="font-semibold text-slate-800">How it works</p>
+            <p>Click the <span className="font-mono bg-white border border-slate-200 px-1 rounded text-xs">⊟</span> sliders icon next to any role in the left panel → adjust traits → click <strong>Apply Tuning</strong>. A violet dot indicates the role has active tuning. All overrides are injected directly into the simulation prompt with priority instructions, overriding the role's default profile where specified.</p>
+          </div>
+        </div>
+
         {/* Feature Map */}
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-slate-900">Platform Feature Map</h3>
