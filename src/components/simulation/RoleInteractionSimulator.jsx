@@ -957,6 +957,9 @@ Also provide: overall_score (0–100), summary, strengths (3 items), improvement
                   prompt={practicePrompt}
                   onRespond={handleUserRespond}
                   disabled={false}
+                  userRole={userRole}
+                  scenario={scenarioText}
+                  dialogueSoFar={turns}
                 />
               </div>
             )}
