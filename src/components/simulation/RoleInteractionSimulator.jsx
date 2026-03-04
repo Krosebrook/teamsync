@@ -145,13 +145,45 @@ function DialogueBubble({ turn, roleColor, isNew, isUserTurn }) {
   );
 }
 
-function PracticePrompt({ prompt, onRespond, disabled }) {
+function PracticePrompt({ prompt, onRespond, disabled, userRole, scenario, dialogueSoFar }) {
   const [text, setText] = useState('');
+  const [turnDebrief, setTurnDebrief] = useState(null);
+  const [debriefLoading, setDebriefLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!text.trim()) return;
-    onRespond(text.trim());
+    const submitted = text.trim();
+    onRespond(submitted);
     setText('');
+
+    // Post-submit turn debrief
+    setDebriefLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a brief, punchy decision-making coach. The user just submitted this response as "${userRole}":
+
+"${submitted}"
+
+Context — SCENARIO: ${scenario}
+
+Give a short turn debrief (max 3 sentences) covering:
+1. What they did well
+2. One specific thing to do differently next time
+3. One sentence on the stakeholder impact of their response
+
+Be direct and actionable. No fluff.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            well_done: { type: "string" },
+            improve: { type: "string" },
+            stakeholder_impact: { type: "string" }
+          }
+        }
+      });
+      setTurnDebrief(result);
+    } catch (_) {}
+    setDebriefLoading(false);
   };
 
   return (
@@ -163,6 +195,31 @@ function PracticePrompt({ prompt, onRespond, disabled }) {
       <p className="text-xs font-semibold text-violet-800 flex items-center gap-1.5">
         <Target className="w-3.5 h-3.5" /> Your Turn — {prompt}
       </p>
+
+      {/* Turn debrief (shown after submit) */}
+      <AnimatePresence>
+        {(debriefLoading || turnDebrief) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border border-emerald-200 bg-white rounded p-2.5 space-y-1.5"
+          >
+            <p className="text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
+              <BookOpen className="w-3 h-3" /> Turn Debrief
+              {debriefLoading && <Loader2 className="w-3 h-3 animate-spin ml-auto" />}
+            </p>
+            {turnDebrief && !debriefLoading && (
+              <>
+                <p className="text-xs text-emerald-700"><span className="font-semibold">✓</span> {turnDebrief.well_done}</p>
+                <p className="text-xs text-amber-700"><span className="font-semibold">→</span> {turnDebrief.improve}</p>
+                <p className="text-xs text-slate-600 italic">{turnDebrief.stakeholder_impact}</p>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -173,6 +230,16 @@ function PracticePrompt({ prompt, onRespond, disabled }) {
           if (e.key === 'Enter' && e.metaKey) handleSubmit();
         }}
       />
+
+      {/* Live coach overlay */}
+      <LiveCoachOverlay
+        text={text}
+        userRole={userRole}
+        scenario={scenario}
+        dialogueSoFar={dialogueSoFar}
+        active={text.length >= 30}
+      />
+
       <div className="flex justify-between items-center">
         <span className="text-xs text-slate-400">⌘ + Enter to submit</span>
         <Button size="sm" onClick={handleSubmit} disabled={!text.trim() || disabled} className="gap-1.5">
