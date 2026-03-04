@@ -643,6 +643,15 @@ CRITICAL INSTRUCTIONS:
                   <Button 
                     variant="outline" 
                     size="sm"
+                    onClick={() => setAiWizardOpen(true)}
+                    className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    AI Wizard
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
                     onClick={() => setScenarioBuilderOpen(true)}
                     className="gap-2 h-7 text-xs"
                   >
