@@ -102,6 +102,7 @@ export default function SimulationPage() {
   const [environmentalFactors, setEnvironmentalFactors] = useState([]);
   const [outcomePredictionOpen, setOutcomePredictionOpen] = useState(false);
   const [personaTunings, setPersonaTunings] = useState({});
+  const [aiWizardOpen, setAiWizardOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
