@@ -21,7 +21,8 @@ import {
   Users as UsersIcon,
   Brain,
   BookOpen,
-  Zap
+  Zap,
+  Wand2
 } from "lucide-react";
 import { toast } from "sonner";
 
