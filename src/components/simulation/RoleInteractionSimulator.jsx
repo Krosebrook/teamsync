@@ -12,8 +12,9 @@ import { Label } from "@/components/ui/label";
 import {
   Loader2, PlayCircle, Users, Zap, MessageSquare, AlertTriangle, CheckCircle2,
   ChevronDown, ChevronUp, Swords, Send, RefreshCw, Brain, Target, Star,
-  Sparkles, ChevronRight, Trophy, TrendingUp, Settings2
+  Sparkles, ChevronRight, Trophy, TrendingUp, Settings2, BookOpen
 } from "lucide-react";
+import LiveCoachOverlay from './LiveCoachOverlay';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
