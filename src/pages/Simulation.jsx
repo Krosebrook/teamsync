@@ -1166,6 +1166,19 @@ CRITICAL INSTRUCTIONS:
         environmentalFactors={environmentalFactors}
         allRoles={allRolesWithCustom}
       />
+
+      <AITemplateWizard
+        open={aiWizardOpen}
+        onClose={() => setAiWizardOpen(false)}
+        allRoles={allRolesWithCustom}
+        onApply={(tpl) => {
+          setTitle(tpl.title || '');
+          setScenario(tpl.scenario || '');
+          if (tpl.roles?.length > 0) setSelectedRoles(tpl.roles);
+          if (tpl.decisionType) setSelectedUseCase({ id: tpl.decisionType });
+          setActiveTab('setup');
+        }}
+      />
     </div>
   );
 }
