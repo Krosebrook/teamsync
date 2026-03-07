@@ -22,6 +22,13 @@ const DEFAULT_TUNING = {
   suppressed_biases: [],                 // biases to suppress from profile
   custom_agenda: '',                     // hidden agenda / private motivation
   stress_level: 3,                       // 1 (relaxed) → 10 (high stress)
+  // Extended communication tuning
+  emotional_expressiveness: 5,           // 1 (stoic) → 10 (highly expressive)
+  political_savvy: 5,                    // 1 (naïve) → 10 (highly political)
+  empathy_level: 5,                      // 1 (transactional) → 10 (highly empathetic)
+  formality_override: null,              // null = use profile default
+  // Custom injected context fields
+  custom_context_fields: [],             // [{ key: string, value: string }]
   enabled: false,                        // whether tuning is active for this role
 };
 
