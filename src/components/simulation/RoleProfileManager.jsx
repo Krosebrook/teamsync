@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, X, Save, Sparkles, Loader2, Trash2, Brain, User, AlertTriangle, Zap, MessageSquare, Swords, BookOpen, TrendingUp } from "lucide-react";
+import { Plus, X, Save, Sparkles, Loader2, Trash2, Brain, User, AlertTriangle, Zap, MessageSquare, Swords, BookOpen, TrendingUp, Settings2, PenLine } from "lucide-react";
 
 const EMPTY_PROFILE = {
   strengths: [],

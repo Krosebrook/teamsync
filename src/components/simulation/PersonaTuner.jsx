@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { X, Plus, RotateCcw, Sliders, Sparkles, Brain, Zap, MessageSquare, Swords } from "lucide-react";
+import { X, Plus, RotateCcw, Sliders, Sparkles, Brain, Zap, MessageSquare, Swords, PenLine } from "lucide-react";
 
 // Default tuning state — all at "neutral" (no override)
 const DEFAULT_TUNING = {
