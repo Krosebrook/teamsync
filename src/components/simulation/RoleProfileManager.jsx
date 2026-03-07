@@ -861,6 +861,245 @@ Generate a VIVID, REALISTIC persona with:
               </div>
             </div>
           </TabsContent>
+
+          {/* ADVANCED TAB */}
+          <TabsContent value="advanced" className="space-y-6 mt-4">
+            <p className="text-xs text-slate-500">
+              Fine-grained communication and conflict preferences, plus custom fields for advanced persona tuning.
+            </p>
+
+            {/* Communication Preferences */}
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+                Communication Preferences
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Directness Style</Label>
+                  <Select
+                    value={profileData.communication_preferences?.directness || 'balanced'}
+                    onValueChange={(v) => setProfileData(prev => ({
+                      ...prev,
+                      communication_preferences: { ...prev.communication_preferences, directness: v }
+                    }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DIRECTNESS_OPTIONS.map(o => (
+                        <SelectItem key={o} value={o} className="text-xs capitalize">{o}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Decision Basis</Label>
+                  <Select
+                    value={profileData.communication_preferences?.decision_basis || 'balanced'}
+                    onValueChange={(v) => setProfileData(prev => ({
+                      ...prev,
+                      communication_preferences: { ...prev.communication_preferences, decision_basis: v }
+                    }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DECISION_BASIS_OPTIONS.map(o => (
+                        <SelectItem key={o} value={o} className="text-xs capitalize">{o.replace('-', ' ')}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Formality Level</Label>
+                  <Select
+                    value={profileData.communication_preferences?.formality || 'adaptive'}
+                    onValueChange={(v) => setProfileData(prev => ({
+                      ...prev,
+                      communication_preferences: { ...prev.communication_preferences, formality: v }
+                    }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FORMALITY_OPTIONS.map(o => (
+                        <SelectItem key={o} value={o} className="text-xs capitalize">{o}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Preferred Medium</Label>
+                  <Select
+                    value={profileData.communication_preferences?.medium_preference || 'no preference'}
+                    onValueChange={(v) => setProfileData(prev => ({
+                      ...prev,
+                      communication_preferences: { ...prev.communication_preferences, medium_preference: v }
+                    }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MEDIUM_OPTIONS.map(o => (
+                        <SelectItem key={o} value={o} className="text-xs capitalize">{o}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Conflict Resolution Preferences */}
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                <Swords className="w-3.5 h-3.5 text-orange-500" />
+                Conflict Resolution Preferences
+              </p>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Escalation Threshold</Label>
+                <p className="text-xs text-slate-400">How quickly does this persona escalate conflicts?</p>
+                <Select
+                  value={profileData.conflict_preferences?.escalation_threshold || 'medium'}
+                  onValueChange={(v) => setProfileData(prev => ({
+                    ...prev,
+                    conflict_preferences: { ...prev.conflict_preferences, escalation_threshold: v }
+                  }))}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESCALATION_THRESHOLD_OPTIONS.map(o => (
+                      <SelectItem key={o} value={o} className="text-xs capitalize">{o}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Negotiation Style</Label>
+                <Select
+                  value={profileData.conflict_preferences?.negotiation_style || ''}
+                  onValueChange={(v) => setProfileData(prev => ({
+                    ...prev,
+                    conflict_preferences: { ...prev.conflict_preferences, negotiation_style: v }
+                  }))}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Select negotiation style..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NEGOTIATION_STYLES.map(s => (
+                      <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">De-escalation Tactics</Label>
+                <p className="text-xs text-slate-400">What does this persona do to cool down a heated discussion?</p>
+                <TagInput
+                  fieldKey="deescalation"
+                  field="conflict_preferences"
+                  placeholder='e.g., "Proposes a parking-lot for contentious items"'
+                  color="blue"
+                  isConflictPref="de_escalation_tactics"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Post-Conflict Behavior</Label>
+                <Textarea
+                  value={profileData.conflict_preferences?.post_conflict_behavior || ''}
+                  onChange={(e) => setProfileData(prev => ({
+                    ...prev,
+                    conflict_preferences: { ...prev.conflict_preferences, post_conflict_behavior: e.target.value }
+                  }))}
+                  placeholder="How this persona behaves after a disagreement — grudge-holder, quick to move on, seeks reconciliation..."
+                  className="min-h-[60px] resize-none text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Custom Fields */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                <PenLine className="w-3.5 h-3.5 text-violet-500" />
+                Custom Persona Fields
+              </p>
+              <p className="text-xs text-slate-400">
+                Add any custom attribute to this persona — the AI will incorporate it in simulations.
+              </p>
+
+              {/* Existing custom fields */}
+              {(profileData.custom_fields || []).length > 0 && (
+                <div className="space-y-2">
+                  {profileData.custom_fields.map((cf, idx) => (
+                    <div key={idx} className="flex items-start gap-2 p-2.5 border border-violet-200 bg-violet-50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-violet-800">{cf.key}</p>
+                        <p className="text-xs text-slate-700 mt-0.5 whitespace-pre-wrap">{cf.value}</p>
+                      </div>
+                      <button
+                        onClick={() => setProfileData(prev => ({
+                          ...prev,
+                          custom_fields: prev.custom_fields.filter((_, i) => i !== idx)
+                        }))}
+                        className="shrink-0 text-slate-300 hover:text-rose-500"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add new custom field */}
+              <Card className="border-slate-200">
+                <CardContent className="p-3 space-y-2">
+                  <Input
+                    value={customFieldInput.key}
+                    onChange={(e) => setCustomFieldInput(prev => ({ ...prev, key: e.target.value }))}
+                    placeholder='Field name (e.g., "Political Savvy", "MBTI Type", "Leadership Style")'
+                    className="h-8 text-xs"
+                  />
+                  <Textarea
+                    value={customFieldInput.value}
+                    onChange={(e) => setCustomFieldInput(prev => ({ ...prev, value: e.target.value }))}
+                    placeholder="Value or description..."
+                    className="min-h-[55px] resize-none text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 h-7 text-xs"
+                    disabled={!customFieldInput.key.trim() || !customFieldInput.value.trim()}
+                    onClick={() => {
+                      setProfileData(prev => ({
+                        ...prev,
+                        custom_fields: [...(prev.custom_fields || []), { key: customFieldInput.key.trim(), value: customFieldInput.value.trim() }]
+                      }));
+                      setCustomFieldInput({ key: '', value: '' });
+                    }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Field
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
 
         <DialogFooter className="gap-2 mt-4">
