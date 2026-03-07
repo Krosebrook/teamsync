@@ -370,6 +370,67 @@ export default function PersonaTuner({ open, onClose, roleName, roleId, tuning, 
                 className="min-h-[70px] resize-none text-xs"
               />
             </div>
+
+            {/* SECTION: Custom Context Fields */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                <PenLine className="w-3.5 h-3.5 text-violet-500" />
+                Custom Context Injections
+              </p>
+              <p className="text-xs text-slate-400">
+                Inject any additional context about this persona — the AI will use it during the simulation.
+              </p>
+
+              {(local.custom_context_fields || []).length > 0 && (
+                <div className="space-y-1.5">
+                  {local.custom_context_fields.map((cf, idx) => (
+                    <div key={idx} className="flex items-start gap-2 p-2 border border-violet-200 bg-violet-50 rounded text-xs">
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-violet-800">{cf.key}: </span>
+                        <span className="text-slate-700">{cf.value}</span>
+                      </div>
+                      <button
+                        onClick={() => set('custom_context_fields', local.custom_context_fields.filter((_, i) => i !== idx))}
+                        className="shrink-0 text-slate-300 hover:text-rose-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-1.5 p-2.5 border border-slate-200 rounded-lg bg-slate-50">
+                <Input
+                  value={customFieldInput.key}
+                  onChange={(e) => setCustomFieldInput(prev => ({ ...prev, key: e.target.value }))}
+                  placeholder='Label (e.g., "Current project pressure", "Team loyalty")'
+                  className="h-7 text-xs"
+                />
+                <Textarea
+                  value={customFieldInput.value}
+                  onChange={(e) => setCustomFieldInput(prev => ({ ...prev, value: e.target.value }))}
+                  placeholder="Context value..."
+                  className="min-h-[45px] resize-none text-xs"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-xs gap-1 px-2"
+                  disabled={!customFieldInput.key.trim() || !customFieldInput.value.trim()}
+                  onClick={() => {
+                    set('custom_context_fields', [
+                      ...(local.custom_context_fields || []),
+                      { key: customFieldInput.key.trim(), value: customFieldInput.value.trim() }
+                    ]);
+                    setCustomFieldInput({ key: '', value: '' });
+                  }}
+                >
+                  <Plus className="w-3 h-3" />
+                  Add
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
