@@ -567,14 +567,18 @@ Generate a VIVID, REALISTIC persona with:
         </DialogHeader>
 
         <Tabs defaultValue="core" className="mt-2">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="core" className="gap-2">
-              <Brain className="w-4 h-4" />
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="core" className="gap-1.5 text-xs">
+              <Brain className="w-3.5 h-3.5" />
               Core Profile
             </TabsTrigger>
-            <TabsTrigger value="persona" className="gap-2">
-              <Sparkles className="w-4 h-4" />
+            <TabsTrigger value="persona" className="gap-1.5 text-xs">
+              <Sparkles className="w-3.5 h-3.5" />
               AI Persona
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className="gap-1.5 text-xs">
+              <Settings2 className="w-3.5 h-3.5" />
+              Advanced
             </TabsTrigger>
           </TabsList>
 
