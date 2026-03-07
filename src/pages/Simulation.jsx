@@ -240,6 +240,18 @@ export default function SimulationPage() {
         desc += `\n  Data orientation: ${tuning.data_orientation}/10 (${tuning.data_orientation >= 8 ? 'demands hard data for every claim' : tuning.data_orientation >= 5 ? 'balanced data and intuition' : 'relies primarily on gut and experience'})`;
         desc += `\n  Urgency bias: ${tuning.urgency_bias}/10 (${tuning.urgency_bias >= 8 ? 'pushes hard to move fast and ship now' : tuning.urgency_bias >= 5 ? 'moderate pace preference' : 'prefers slow deliberate decisions'})`;
         desc += `\n  Stress level: ${tuning.stress_level}/10 — this persona is under ${tuning.stress_level >= 8 ? 'extreme' : tuning.stress_level >= 5 ? 'moderate' : 'low'} pressure which ${tuning.stress_level >= 7 ? 'amplifies their emotional triggers and makes them more reactive' : 'keeps them mostly composed'}`;
+        if (tuning.emotional_expressiveness != null) {
+          desc += `\n  Emotional expressiveness: ${tuning.emotional_expressiveness}/10 (${tuning.emotional_expressiveness >= 8 ? 'visibly emotional and expressive' : tuning.emotional_expressiveness <= 3 ? 'stoic, hard to read' : 'moderately expressive'})`;
+        }
+        if (tuning.political_savvy != null) {
+          desc += `\n  Political savvy: ${tuning.political_savvy}/10 (${tuning.political_savvy >= 8 ? 'highly politically aware, frames everything strategically' : tuning.political_savvy <= 3 ? 'naïve, speaks bluntly without political calculation' : 'moderate political awareness'})`;
+        }
+        if (tuning.empathy_level != null) {
+          desc += `\n  Empathy: ${tuning.empathy_level}/10 (${tuning.empathy_level >= 8 ? 'deeply considers others\' perspectives and feelings' : tuning.empathy_level <= 3 ? 'transactional, focuses on outcomes not feelings' : 'balanced empathy'})`;
+        }
+        if (tuning.formality_override) {
+          desc += `\n  Formality OVERRIDE: ${tuning.formality_override}`;
+        }
         if (tuning.risk_tolerance_override) {
           desc += `\n  Risk tolerance OVERRIDE: ${tuning.risk_tolerance_override}`;
         }
@@ -251,6 +263,12 @@ export default function SimulationPage() {
         }
         if (tuning.custom_agenda?.trim()) {
           desc += `\n  HIDDEN AGENDA (this persona has this private motivation — let it influence their stance subtly, without stating it explicitly): ${tuning.custom_agenda}`;
+        }
+        if (tuning.custom_context_fields?.length > 0) {
+          desc += `\n  CUSTOM CONTEXT:`;
+          tuning.custom_context_fields.forEach(cf => {
+            desc += `\n    - ${cf.key}: ${cf.value}`;
+          });
         }
       }
 
