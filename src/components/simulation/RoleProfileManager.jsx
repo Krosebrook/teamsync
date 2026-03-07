@@ -81,12 +81,15 @@ export default function RoleProfileManager({ open, onClose, roleId, roleName, al
     enabled: !!roleId && open
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (existingProfile) {
       setProfileData({
         ...EMPTY_PROFILE,
         ...existingProfile,
-        relationship_dynamics: existingProfile.relationship_dynamics || { allies: [], friction_with: [], influenced_by: [] }
+        relationship_dynamics: existingProfile.relationship_dynamics || { allies: [], friction_with: [], influenced_by: [] },
+        communication_preferences: existingProfile.communication_preferences || EMPTY_PROFILE.communication_preferences,
+        conflict_preferences: existingProfile.conflict_preferences || EMPTY_PROFILE.conflict_preferences,
+        custom_fields: existingProfile.custom_fields || [],
       });
     } else {
       setProfileData(EMPTY_PROFILE);
