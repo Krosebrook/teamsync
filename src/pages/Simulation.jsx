@@ -22,7 +22,8 @@ import {
   Brain,
   BookOpen,
   Zap,
-  Wand2
+  Wand2,
+  Flame
 } from "lucide-react";
 import { toast } from "sonner";
 
