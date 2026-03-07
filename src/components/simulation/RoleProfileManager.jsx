@@ -28,8 +28,35 @@ const EMPTY_PROFILE = {
   signature_phrases: [],
   relationship_dynamics: { allies: [], friction_with: [], influenced_by: [] },
   domain_expertise_detailed: [],
-  performance_patterns: ''
+  performance_patterns: '',
+  // Advanced fields
+  communication_preferences: {
+    directness: 'balanced',
+    decision_basis: 'balanced',
+    formality: 'adaptive',
+    medium_preference: 'no preference',
+  },
+  conflict_preferences: {
+    de_escalation_tactics: [],
+    negotiation_style: '',
+    escalation_threshold: 'medium',
+    post_conflict_behavior: '',
+  },
+  custom_fields: [], // [{ key: string, value: string }]
 };
+
+const DIRECTNESS_OPTIONS = ['direct', 'diplomatic', 'balanced'];
+const DECISION_BASIS_OPTIONS = ['data-driven', 'intuitive', 'balanced'];
+const FORMALITY_OPTIONS = ['formal', 'casual', 'adaptive'];
+const MEDIUM_OPTIONS = ['written', 'verbal', 'no preference'];
+const ESCALATION_THRESHOLD_OPTIONS = ['low', 'medium', 'high'];
+const NEGOTIATION_STYLES = [
+  'Principled negotiation — focuses on interests not positions',
+  'Competitive — aims to win as much as possible',
+  'Collaborative — seeks creative win-win outcomes',
+  'Avoidant — defers or delays confrontation',
+  'Accommodating — concedes readily to preserve harmony',
+];
 
 export default function RoleProfileManager({ open, onClose, roleId, roleName, allRoles }) {
   const queryClient = useQueryClient();
