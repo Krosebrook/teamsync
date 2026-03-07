@@ -517,7 +517,7 @@ Generate a VIVID, REALISTIC persona with:
     }
   };
 
-  const TagInput = ({ fieldKey, placeholder, field, subfield, color = 'slate' }) => {
+  const TagInput = ({ fieldKey, placeholder, field, subfield, color = 'slate', isConflictPref }) => {
     const colorMap = {
       green: 'bg-green-50 border-green-200',
       amber: 'bg-amber-50 border-amber-200',
@@ -526,9 +526,46 @@ Generate a VIVID, REALISTIC persona with:
       blue: 'bg-blue-50 border-blue-200',
       slate: 'bg-slate-50 border-slate-200'
     };
-    const tags = subfield
-      ? (profileData.relationship_dynamics?.[field] || [])
-      : (profileData[field] || []);
+
+    let tags;
+    if (isConflictPref) {
+      tags = profileData.conflict_preferences?.[isConflictPref] || [];
+    } else if (subfield) {
+      tags = profileData.relationship_dynamics?.[field] || [];
+    } else {
+      tags = profileData[field] || [];
+    }
+
+    const handleAdd = () => {
+      const val = tagInputs[fieldKey]?.trim();
+      if (!val) return;
+      if (isConflictPref) {
+        setProfileData(prev => ({
+          ...prev,
+          conflict_preferences: {
+            ...prev.conflict_preferences,
+            [isConflictPref]: [...(prev.conflict_preferences?.[isConflictPref] || []), val]
+          }
+        }));
+      } else {
+        addTag(field, subfield);
+      }
+      setTagInputs(prev => ({ ...prev, [fieldKey]: '' }));
+    };
+
+    const handleRemove = (idx) => {
+      if (isConflictPref) {
+        setProfileData(prev => ({
+          ...prev,
+          conflict_preferences: {
+            ...prev.conflict_preferences,
+            [isConflictPref]: (prev.conflict_preferences?.[isConflictPref] || []).filter((_, i) => i !== idx)
+          }
+        }));
+      } else {
+        removeTag(field, idx, subfield);
+      }
+    };
 
     return (
       <div className="space-y-2">
@@ -537,10 +574,10 @@ Generate a VIVID, REALISTIC persona with:
             value={tagInputs[fieldKey] || ''}
             onChange={(e) => setTagInputs(prev => ({ ...prev, [fieldKey]: e.target.value }))}
             placeholder={placeholder}
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag(field, subfield))}
+            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
             className="text-sm"
           />
-          <Button type="button" size="sm" variant="outline" onClick={() => addTag(field, subfield)}>
+          <Button type="button" size="sm" variant="outline" onClick={handleAdd}>
             <Plus className="w-4 h-4" />
           </Button>
         </div>
@@ -548,7 +585,7 @@ Generate a VIVID, REALISTIC persona with:
           {tags.map((t, idx) => (
             <Badge key={idx} variant="outline" className={`gap-1 text-xs ${colorMap[color]}`}>
               {t}
-              <X className="w-3 h-3 cursor-pointer hover:text-rose-600" onClick={() => removeTag(field, idx, subfield)} />
+              <X className="w-3 h-3 cursor-pointer hover:text-rose-600" onClick={() => handleRemove(idx)} />
             </Badge>
           ))}
         </div>
