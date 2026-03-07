@@ -68,8 +68,9 @@ export default function RoleProfileManager({ open, onClose, roleId, roleName, al
   const [loadingExpertise, setLoadingExpertise] = useState(false);
   const [tagInputs, setTagInputs] = useState({
     strength: '', weakness: '', motivation: '', trait: '', trigger: '', phrase: '',
-    ally: '', friction: '', influenced: ''
+    ally: '', friction: '', influenced: '', deescalation: ''
   });
+  const [customFieldInput, setCustomFieldInput] = useState({ key: '', value: '' });
   const [profileData, setProfileData] = useState(EMPTY_PROFILE);
 
   const { data: existingProfile } = useQuery({
