@@ -87,6 +87,7 @@ function TraitSlider({ label, description, value, onChange, min = 1, max = 10, l
 export default function PersonaTuner({ open, onClose, roleName, roleId, tuning, onSave }) {
   const [local, setLocal] = useState({ ...DEFAULT_TUNING, ...tuning });
   const [biasInput, setBiasInput] = useState('');
+  const [customFieldInput, setCustomFieldInput] = useState({ key: '', value: '' });
 
   useEffect(() => {
     setLocal({ ...DEFAULT_TUNING, ...tuning });
