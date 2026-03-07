@@ -1209,6 +1209,24 @@ CRITICAL INSTRUCTIONS:
           setActiveTab('setup');
         }}
       />
+
+      <StressTestLibrary
+        open={stressTestLibraryOpen}
+        onClose={() => setStressTestLibraryOpen(false)}
+        currentSimulation={currentSimulation ? { ...currentSimulation, scenario } : { title, scenario, use_case_type: selectedUseCase?.id }}
+        selectedRoles={selectedRoles}
+        personaTunings={personaTunings}
+        environmentalFactors={environmentalFactors}
+        onLoadTemplate={(template) => {
+          if (template.name) setTitle(template.name);
+          if (template.scenario) setScenario(template.scenario);
+          if (template.selected_roles?.length > 0) setSelectedRoles(template.selected_roles);
+          if (template.persona_tunings) setPersonaTunings(template.persona_tunings);
+          if (template.environmental_factors) setEnvironmentalFactors(template.environmental_factors);
+          if (template.use_case_type) setSelectedUseCase({ id: template.use_case_type });
+          setActiveTab('setup');
+        }}
+      />
     </div>
   );
 }
