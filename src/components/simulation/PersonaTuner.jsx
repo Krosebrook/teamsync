@@ -198,6 +198,68 @@ export default function PersonaTuner({ open, onClose, roleName, roleId, tuning, 
               />
             </div>
 
+            {/* SECTION: Communication Style Tuning */}
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+                Communication Style
+              </p>
+
+              <TraitSlider
+                label="Emotional Expressiveness"
+                description="How much does this persona show emotion in meetings?"
+                value={local.emotional_expressiveness}
+                onChange={(v) => set('emotional_expressiveness', v)}
+                lowLabel="Stoic / poker face"
+                highLabel="Highly expressive"
+                color="violet"
+              />
+
+              <TraitSlider
+                label="Political Savvy"
+                description="How aware is this persona of office politics and power dynamics?"
+                value={local.political_savvy}
+                onChange={(v) => set('political_savvy', v)}
+                lowLabel="Naïve / blunt"
+                highLabel="Highly political"
+                color="amber"
+              />
+
+              <TraitSlider
+                label="Empathy Level"
+                description="How much does this persona consider others' feelings and circumstances?"
+                value={local.empathy_level}
+                onChange={(v) => set('empathy_level', v)}
+                lowLabel="Transactional"
+                highLabel="Deeply empathetic"
+                color="emerald"
+              />
+
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold text-slate-700">Formality Override</p>
+                <p className="text-xs text-slate-400">Adjust how formally this persona communicates</p>
+                <div className="flex gap-2">
+                  {['formal', 'adaptive', 'casual'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => set('formality_override', local.formality_override === f ? null : f)}
+                      className={`flex-1 py-1.5 text-xs rounded border transition-all capitalize
+                        ${local.formality_override === f
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+                {local.formality_override && (
+                  <button onClick={() => set('formality_override', null)} className="text-xs text-slate-400 hover:text-rose-500">
+                    ✕ Clear override
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* SECTION: Risk Tolerance Override */}
             <div className="space-y-2">
               <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
