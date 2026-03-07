@@ -707,6 +707,15 @@ CRITICAL INSTRUCTIONS:
                     <FolderOpen className="w-3 h-3" />
                     Library
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setStressTestLibraryOpen(true)}
+                    className="gap-2 h-7 text-xs text-rose-600 border-rose-200 hover:bg-rose-50"
+                  >
+                    <Flame className="w-3 h-3" />
+                    Stress Tests
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
