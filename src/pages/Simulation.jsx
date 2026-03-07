@@ -58,6 +58,7 @@ import ScenarioLibrary from '../components/simulation/ScenarioLibrary';
 import RoleInteractionSimulator from '../components/simulation/RoleInteractionSimulator';
 import OutcomePrediction from '../components/simulation/OutcomePrediction';
 import AITemplateWizard from '../components/simulation/AITemplateWizard';
+import StressTestLibrary from '../components/simulation/StressTestLibrary';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
