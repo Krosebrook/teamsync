@@ -505,7 +505,7 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
       setConnectingFrom(null);
     } else {
       setConnectingFrom(fromId);
-      toast.info('Now click the target node's → button to connect', { duration: 2000 });
+      toast.info("Now click the target node's → button to connect", { duration: 2000 });
     }
   };
 
