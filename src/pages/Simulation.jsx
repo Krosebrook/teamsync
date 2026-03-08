@@ -1045,6 +1045,7 @@ CRITICAL INSTRUCTIONS:
                 allRoles={allRolesWithCustom}
                 open={personaChatOpen}
                 onClose={() => setPersonaChatOpen(false)}
+                onTranscriptsChange={setPersonaTranscripts}
               />
             </div>
           ) : (
