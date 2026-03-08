@@ -1024,26 +1024,37 @@ CRITICAL INSTRUCTIONS:
             </Tabs>
           </div>
 
-          {/* RIGHT: Context / Impact Panel */}
-          <div className="w-80 border-l border-slate-200 bg-white p-4 overflow-y-auto">
-            <ContextPanel 
-              simulation={currentSimulation}
-            />
-
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
-                History
-              </h3>
-              <SimulationHistory 
-                simulations={simulations}
-                onSelect={compareMode ? toggleCompareSimulation : loadSimulation}
-                selectedId={currentSimulation?.id}
-                isLoading={loadingSimulations}
-                compareMode={compareMode}
-                compareSelected={compareSimulations.map(s => s.id)}
+          {/* RIGHT: Context / Impact Panel OR Persona Chat */}
+          {personaChatOpen && currentSimulation?.status === 'completed' ? (
+            <div className="w-80 shrink-0 flex flex-col overflow-hidden">
+              <PersonaChat
+                simulation={currentSimulation}
+                allRoles={allRolesWithCustom}
+                open={personaChatOpen}
+                onClose={() => setPersonaChatOpen(false)}
               />
             </div>
-          </div>
+          ) : (
+            <div className="w-80 border-l border-slate-200 bg-white p-4 overflow-y-auto">
+              <ContextPanel 
+                simulation={currentSimulation}
+              />
+
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                  History
+                </h3>
+                <SimulationHistory 
+                  simulations={simulations}
+                  onSelect={compareMode ? toggleCompareSimulation : loadSimulation}
+                  selectedId={currentSimulation?.id}
+                  isLoading={loadingSimulations}
+                  compareMode={compareMode}
+                  compareSelected={compareSimulations.map(s => s.id)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
