@@ -859,6 +859,13 @@ CRITICAL INSTRUCTIONS:
                     <RefreshCw className="w-3 h-3" />
                     New
                   </Button>
+                  <a
+                    href={createPageUrl('Analytics')}
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors"
+                  >
+                    <BarChart3 className="w-3 h-3" />
+                    Analytics
+                  </a>
                 </>
               )}
             </div>
