@@ -182,7 +182,9 @@ export default function DecisionCanvas({
 
         <Button
           onClick={onRunSimulation}
-          disabled={!title.trim() || !scenario.trim() || selectedRoles.length < 2 || isRunning}
+          disabled={!(title || '').trim() || !(scenario || '').trim() || (selectedRoles || []).length < 2 || isRunning}
+          aria-disabled={!(title || '').trim() || !(scenario || '').trim() || (selectedRoles || []).length < 2 || isRunning}
+          aria-label="Run simulation"
           className="w-full h-10 bg-slate-800 hover:bg-slate-900 text-white gap-2"
         >
           {isRunning ? (
