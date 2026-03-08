@@ -1285,6 +1285,14 @@ CRITICAL INSTRUCTIONS:
         allRoles={allRolesWithCustom}
       />
 
+      <DecisionTreeBuilder
+        open={treeBuilderOpen}
+        onClose={() => setTreeBuilderOpen(false)}
+        simulation={currentSimulation}
+        allRoles={allRolesWithCustom}
+        environmentalFactors={environmentalFactors}
+      />
+
       <StressTestLibrary
         open={stressTestLibraryOpen}
         onClose={() => setStressTestLibraryOpen(false)}
