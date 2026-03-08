@@ -462,6 +462,9 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
   const [title, setTitle] = useState(simulation?.title ? `${simulation.title} — Branch Tree` : 'Decision Tree');
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pathSelectMode, setPathSelectMode] = useState(false);
+  const [selectedPath, setSelectedPath] = useState([]);
+  const [showPlaybook, setShowPlaybook] = useState(false);
   const canvasRef = useRef(null);
   const panStart = useRef(null);
 
