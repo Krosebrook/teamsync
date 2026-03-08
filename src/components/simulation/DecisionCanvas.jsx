@@ -38,7 +38,7 @@ export default function DecisionCanvas({
 }) {
   const [activeEditors, setActiveEditors] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const currentStep = !decisionType ? 1 : !scenario.trim() ? 2 : 3;
+  const currentStep = !decisionType ? 1 : !(scenario || '').trim() ? 2 : 3;
 
   useEffect(() => {
     const loadUser = async () => {

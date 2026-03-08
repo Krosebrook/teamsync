@@ -62,7 +62,7 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
   const getRoleData = (roleId) => allRoles?.find(r => r.id === roleId);
 
   const filteredAvailableRoles = allRoles?.filter(r => 
-    !selectedRoles.find(sr => sr.role === r.id) &&
+    !(selectedRoles || []).find(sr => sr.role === r.id) &&
     r.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 

@@ -25,7 +25,7 @@ export default function SimulationRunner({
   const [summary, setSummary] = useState(null);
   const [progress, setProgress] = useState(0);
 
-  const totalSteps = selectedRoles.length + 3; // roles + tensions + tradeoffs + summary
+  const totalSteps = (selectedRoles || []).length + 3; // roles + tensions + tradeoffs + summary
 
   const runSimulation = async () => {
     setRunning(true);
