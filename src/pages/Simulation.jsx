@@ -764,6 +764,15 @@ CRITICAL INSTRUCTIONS:
                         <MessageSquare className="w-3 h-3" />
                         Interview
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPdfExportOpen(true)}
+                        className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                      >
+                        <FileDown className="w-3 h-3" />
+                        PDF Report
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
