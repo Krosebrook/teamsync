@@ -24,7 +24,8 @@ import {
   Zap,
   Wand2,
   Flame,
-  ClipboardList
+  ClipboardList,
+  MessageSquare
 } from "lucide-react";
 import { toast } from "sonner";
 
