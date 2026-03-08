@@ -1222,6 +1222,12 @@ CRITICAL INSTRUCTIONS:
         }}
       />
 
+      <DebriefBoard
+        open={debriefBoardOpen}
+        onClose={() => setDebriefBoardOpen(false)}
+        simulation={currentSimulation}
+      />
+
       <StressTestLibrary
         open={stressTestLibraryOpen}
         onClose={() => setStressTestLibraryOpen(false)}
