@@ -585,6 +585,29 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleExportJSON} title="Export JSON">
               <Download className="w-3.5 h-3.5" />
             </Button>
+            <Button
+              size="sm"
+              variant={pathSelectMode ? "default" : "outline"}
+              className={`h-7 gap-1.5 text-xs ${pathSelectMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'text-indigo-700 border-indigo-200 hover:bg-indigo-50'}`}
+              onClick={() => {
+                if (pathSelectMode && selectedPath.length >= 2) {
+                  setShowPlaybook(true);
+                } else {
+                  setPathSelectMode(p => !p);
+                  if (!pathSelectMode) setSelectedPath([]);
+                }
+              }}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              {pathSelectMode
+                ? selectedPath.length >= 2 ? `Generate Playbook (${selectedPath.length})` : `Select path nodes…`
+                : 'Org Playbook'}
+            </Button>
+            {pathSelectMode && (
+              <Button size="sm" variant="ghost" className="h-7 text-xs text-slate-400" onClick={() => { setPathSelectMode(false); setSelectedPath([]); }}>
+                Cancel
+              </Button>
+            )}
             <Button size="sm" className="h-7 gap-1.5 text-xs" onClick={handleSave} disabled={saving}>
               <Save className="w-3.5 h-3.5" />
               {saving ? 'Saving…' : 'Save'}
