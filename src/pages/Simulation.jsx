@@ -1265,6 +1265,14 @@ CRITICAL INSTRUCTIONS:
         simulation={currentSimulation}
       />
 
+      <SimulationPDFExport
+        open={pdfExportOpen}
+        onClose={() => setPdfExportOpen(false)}
+        simulation={currentSimulation}
+        personaTranscripts={personaTranscripts}
+        allRoles={allRolesWithCustom}
+      />
+
       <StressTestLibrary
         open={stressTestLibraryOpen}
         onClose={() => setStressTestLibraryOpen(false)}
