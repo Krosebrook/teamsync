@@ -114,6 +114,8 @@ export default function SimulationPage() {
   const [stressTestLibraryOpen, setStressTestLibraryOpen] = useState(false);
   const [debriefBoardOpen, setDebriefBoardOpen] = useState(false);
   const [personaChatOpen, setPersonaChatOpen] = useState(false);
+  const [pdfExportOpen, setPdfExportOpen] = useState(false);
+  const [personaTranscripts, setPersonaTranscripts] = useState({});
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
