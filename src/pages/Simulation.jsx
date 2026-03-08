@@ -813,6 +813,15 @@ CRITICAL INSTRUCTIONS:
                         <PlayCircle className="w-3 h-3" />
                         Playback
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTreeBuilderOpen(true)}
+                        className="gap-2 h-7 text-xs text-violet-700 border-violet-200 hover:bg-violet-50"
+                      >
+                        <GitBranch className="w-3 h-3" />
+                        Branch Tree
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
