@@ -708,5 +708,15 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
         </div>
       </DialogContent>
     </Dialog>
+
+    <OrgPlaybookGenerator
+      open={showPlaybook}
+      onClose={() => { setShowPlaybook(false); setPathSelectMode(false); }}
+      nodes={nodes}
+      edges={edges}
+      selectedPath={selectedPath}
+      simulation={simulation}
+      allRoles={allRoles}
+    />
   );
 }
