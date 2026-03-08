@@ -66,6 +66,7 @@ import StressTestLibrary from '../components/simulation/StressTestLibrary';
 import DebriefBoard from '../components/simulation/DebriefBoard';
 import PersonaChat from '../components/simulation/PersonaChat';
 import SimulationPDFExport from '../components/simulation/SimulationPDFExport';
+import DecisionTreeBuilder from '../components/simulation/DecisionTreeBuilder';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
