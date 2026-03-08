@@ -111,6 +111,7 @@ export default function SimulationPage() {
   const [aiWizardOpen, setAiWizardOpen] = useState(false);
   const [stressTestLibraryOpen, setStressTestLibraryOpen] = useState(false);
   const [debriefBoardOpen, setDebriefBoardOpen] = useState(false);
+  const [personaChatOpen, setPersonaChatOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
