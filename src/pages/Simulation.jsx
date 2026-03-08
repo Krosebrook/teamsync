@@ -679,32 +679,35 @@ CRITICAL INSTRUCTIONS:
               ) : (
                 <>
                   <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={enterCompareMode}
-                    className="gap-2 h-7 text-xs"
-                    disabled={simulations.length < 2}
+                   variant="outline" 
+                   size="sm"
+                   onClick={enterCompareMode}
+                   className="gap-2 h-7 text-xs"
+                   disabled={simulations.length < 2}
+                   aria-label="Compare simulations"
                   >
-                    <GitCompare className="w-3 h-3" />
-                    Compare
+                   <GitCompare className="w-3 h-3" aria-hidden="true" />
+                   Compare
                   </Button>
                   <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setAiWizardOpen(true)}
-                    className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
+                   variant="outline" 
+                   size="sm"
+                   onClick={() => setAiWizardOpen(true)}
+                   className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
+                   aria-label="Open AI Wizard"
                   >
-                    <Sparkles className="w-3 h-3" />
-                    AI Wizard
+                   <Sparkles className="w-3 h-3" aria-hidden="true" />
+                   AI Wizard
                   </Button>
                   <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setScenarioBuilderOpen(true)}
-                    className="gap-2 h-7 text-xs"
+                   variant="outline" 
+                   size="sm"
+                   onClick={() => setScenarioBuilderOpen(true)}
+                   className="gap-2 h-7 text-xs"
+                   aria-label="Open scenario builder"
                   >
-                    <Zap className="w-3 h-3" />
-                    Builder
+                   <Zap className="w-3 h-3" aria-hidden="true" />
+                   Builder
                   </Button>
                   <Button 
                     variant="outline" 
