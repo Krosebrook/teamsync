@@ -565,6 +565,7 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[98vw] w-[1300px] max-h-[95vh] h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
         {/* Header */}
