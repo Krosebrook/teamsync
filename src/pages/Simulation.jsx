@@ -739,6 +739,15 @@ CRITICAL INSTRUCTIONS:
                   </Button>
                   {currentSimulation?.status === 'completed' && (
                     <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDebriefBoardOpen(true)}
+                        className="gap-2 h-7 text-xs text-slate-700 border-slate-300 hover:bg-slate-50"
+                      >
+                        <ClipboardList className="w-3 h-3" />
+                        Debrief
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
