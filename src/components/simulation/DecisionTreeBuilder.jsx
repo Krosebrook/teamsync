@@ -630,6 +630,13 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
 
           {/* Canvas */}
           <div className="flex-1 overflow-hidden relative bg-slate-100">
+            {/* Path select banner */}
+            {pathSelectMode && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 bg-indigo-600 text-white text-xs px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5" />
+                Click nodes in order to build your success path — {selectedPath.length} selected
+              </div>
+            )}
             <div
               ref={canvasRef}
               className="w-full h-full cursor-default canvas-bg"
