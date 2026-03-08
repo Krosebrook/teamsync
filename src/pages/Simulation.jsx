@@ -30,6 +30,7 @@ import {
   GitBranch
 } from "lucide-react";
 import { toast } from "sonner";
+import { createPageUrl } from '@/utils';
 
 import { ROLES } from '../components/simulation/RoleSelector';
 import RolePills from '../components/simulation/RolePills';
