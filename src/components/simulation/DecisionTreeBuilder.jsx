@@ -10,8 +10,9 @@ import { base44 } from '@/api/base44Client';
 import {
   GitBranch, Plus, Trash2, Save, Play, ZoomIn, ZoomOut,
   RotateCcw, ChevronRight, Zap, Flag, CheckCircle2,
-  GitMerge, HelpCircle, Settings, X, ArrowRight, Eye, Download
+  GitMerge, HelpCircle, Settings, X, ArrowRight, Eye, Download, BookOpen
 } from "lucide-react";
+import OrgPlaybookGenerator from "./OrgPlaybookGenerator";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
