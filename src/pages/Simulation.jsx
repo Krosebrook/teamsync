@@ -25,7 +25,8 @@ import {
   Wand2,
   Flame,
   ClipboardList,
-  MessageSquare
+  MessageSquare,
+  FileDown
 } from "lucide-react";
 import { toast } from "sonner";
 
