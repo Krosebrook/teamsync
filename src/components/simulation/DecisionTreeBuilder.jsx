@@ -518,6 +518,13 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
 
   const handleCanvasClick = () => { setSelectedNode(null); setSelectedEdge(null); };
 
+  const togglePathNode = (id) => {
+    if (!pathSelectMode) return;
+    setSelectedPath(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
