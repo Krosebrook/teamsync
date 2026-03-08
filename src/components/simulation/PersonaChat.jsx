@@ -168,7 +168,7 @@ function MessageBubble({ msg, allRoles }) {
   );
 }
 
-export default function PersonaChat({ simulation, allRoles, open, onClose }) {
+export default function PersonaChat({ simulation, allRoles, open, onClose, onTranscriptsChange }) {
   const [selectedPersonaId, setSelectedPersonaId] = useState(null);
   const [messages, setMessages] = useState({});  // keyed by personaId
   const [input, setInput] = useState('');
