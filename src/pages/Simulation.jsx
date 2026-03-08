@@ -118,6 +118,7 @@ export default function SimulationPage() {
   const [personaChatOpen, setPersonaChatOpen] = useState(false);
   const [pdfExportOpen, setPdfExportOpen] = useState(false);
   const [personaTranscripts, setPersonaTranscripts] = useState({});
+  const [treeBuilderOpen, setTreeBuilderOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
