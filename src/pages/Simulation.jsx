@@ -862,7 +862,7 @@ CRITICAL INSTRUCTIONS:
         </div>
       </header>
 
-      <main className="h-[calc(100vh-57px)] flex">
+      <main id="main-content" aria-label="Simulation workspace" className="h-[calc(100vh-57px)] flex">
         {/* Three Column Layout */}
         <div className="flex-1 flex">
           
