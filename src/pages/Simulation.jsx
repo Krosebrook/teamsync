@@ -64,6 +64,7 @@ import AITemplateWizard from '../components/simulation/AITemplateWizard';
 import StressTestLibrary from '../components/simulation/StressTestLibrary';
 import DebriefBoard from '../components/simulation/DebriefBoard';
 import PersonaChat from '../components/simulation/PersonaChat';
+import SimulationPDFExport from '../components/simulation/SimulationPDFExport';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
