@@ -719,5 +719,6 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
       simulation={simulation}
       allRoles={allRoles}
     />
+    </>
   );
 }
