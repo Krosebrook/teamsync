@@ -26,7 +26,8 @@ import {
   Flame,
   ClipboardList,
   MessageSquare,
-  FileDown
+  FileDown,
+  GitBranch
 } from "lucide-react";
 import { toast } from "sonner";
 
