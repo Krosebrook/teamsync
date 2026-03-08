@@ -189,6 +189,10 @@ export default function PersonaChat({ simulation, allRoles, open, onClose, onTra
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages.length, loading]);
 
+  useEffect(() => {
+    onTranscriptsChange?.(messages);
+  }, [messages]);
+
   const activeResponse = simulation?.responses?.find(r => r.role === activePersonaId);
 
   const buildSystemPrompt = () => {
