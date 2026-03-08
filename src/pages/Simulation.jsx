@@ -632,8 +632,21 @@ CRITICAL INSTRUCTIONS:
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Skip link for keyboard/screen reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-slate-900 focus:text-white focus:px-4 focus:py-2 focus:rounded focus:text-sm"
+      >
+        Skip to main content
+      </a>
+
+      {/* Screen reader live region for status updates */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only" id="status-announcer">
+        {isRunning ? `Analyzing ${selectedRoles.length} perspectives...` : ''}
+      </div>
+
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
+      <header aria-label="Application header" className="border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
