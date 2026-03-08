@@ -751,6 +751,15 @@ CRITICAL INSTRUCTIONS:
                         <ClipboardList className="w-3 h-3" />
                         Debrief
                       </Button>
+                      <Button
+                        variant={personaChatOpen ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPersonaChatOpen(p => !p)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        Interview
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
