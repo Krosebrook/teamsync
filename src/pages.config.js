@@ -49,11 +49,13 @@
  */
 import Documentation from './pages/Documentation';
 import Simulation from './pages/Simulation';
+import Analytics from './pages/Analytics';
 
 
 export const PAGES = {
     "Documentation": Documentation,
     "Simulation": Simulation,
+    "Analytics": Analytics,
 }
 
 export const pagesConfig = {
