@@ -659,8 +659,11 @@ export default function DecisionTreeBuilder({ open, onClose, simulation, allRole
                   <NodeCard
                     key={node.id}
                     node={node}
-                    isSelected={selectedNode === node.id}
-                    onSelect={(id) => { setSelectedNode(id); setSelectedEdge(null); }}
+                    isSelected={pathSelectMode ? selectedPath.includes(node.id) : selectedNode === node.id}
+                    onSelect={(id) => {
+                      if (pathSelectMode) { togglePathNode(id); }
+                      else { setSelectedNode(id); setSelectedEdge(null); }
+                    }}
                     onDragEnd={dragNode}
                     onDelete={deleteNode}
                     onStartEdge={startEdge}
