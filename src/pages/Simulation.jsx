@@ -23,7 +23,8 @@ import {
   BookOpen,
   Zap,
   Wand2,
-  Flame
+  Flame,
+  ClipboardList
 } from "lucide-react";
 import { toast } from "sonner";
 
