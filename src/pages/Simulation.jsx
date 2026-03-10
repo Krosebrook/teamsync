@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1103,6 +1103,19 @@ CRITICAL INSTRUCTIONS:
                   compareMode={compareMode}
                   compareSelected={compareSimulations.map(s => s.id)}
                 />
+                {currentSimulation?.status === 'completed' && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <ForkSimulationButton
+                      simulation={currentSimulation}
+                      variant="outline"
+                      size="sm"
+                      onForkCreated={(fork) => {
+                        queryClient.invalidateQueries({ queryKey: ['simulations'] });
+                        toast.success(`Fork ready — load it from history to edit`);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
