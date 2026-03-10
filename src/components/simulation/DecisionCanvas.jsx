@@ -9,6 +9,7 @@ import { Play, Loader2, CheckCircle2, Users, Globe } from "lucide-react";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import EnvironmentalFactors from './EnvironmentalFactors';
+import { useCursorTracking } from './useCursorTracking';
 
 const DECISION_TYPES = [
   { id: "pre_mortem", name: "Pre-Mortem Analysis", description: "Identify risks before launch" },
