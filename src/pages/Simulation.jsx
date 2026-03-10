@@ -48,7 +48,6 @@ import AnalyticsDashboard from '../components/simulation/AnalyticsDashboard';
 import SavedTemplates from '../components/simulation/SavedTemplates';
 import PlaybooksDialog from '../components/simulation/PlaybooksDialog';
 import IntegrationPanel from '../components/simulation/IntegrationPanel';
-import WebhookManager from '../components/simulation/WebhookManager';
 import EnhancedNextSteps from '../components/simulation/EnhancedNextSteps';
 import SimulationPlayback from '../components/simulation/SimulationPlayback';
 import CollaborationPanel from '../components/simulation/CollaborationPanel';
@@ -828,15 +827,7 @@ CRITICAL INSTRUCTIONS:
                         <LinkIcon className="w-3 h-3" />
                         Export
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setWebhooksOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <Zap className="w-3 h-3" />
-                        Webhooks
-                      </Button>
+
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -1182,9 +1173,9 @@ CRITICAL INSTRUCTIONS:
       />
 
       <WebhookManager
-        open={webhooksOpen}
-        onOpenChange={setWebhooksOpen}
-      />
+         open={webhookManagerOpen}
+         onOpenChange={setWebhookManagerOpen}
+       />
 
       <SimulationPlayback
         simulation={currentSimulation}
