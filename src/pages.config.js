@@ -49,15 +49,17 @@
  */
 import Analytics from './pages/Analytics';
 import Documentation from './pages/Documentation';
-import Simulation from './pages/Simulation';
 import INTStudio from './pages/INTStudio';
+import Simulation from './pages/Simulation';
+import AnalyticsNew from './pages/AnalyticsNew';
 
 
 export const PAGES = {
     "Analytics": Analytics,
     "Documentation": Documentation,
-    "Simulation": Simulation,
     "INTStudio": INTStudio,
+    "Simulation": Simulation,
+    "AnalyticsNew": AnalyticsNew,
 }
 
 export const pagesConfig = {
