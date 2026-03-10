@@ -123,6 +123,25 @@ Deno.serve(async (req) => {
       return Response.json({ teams: data.teams.nodes });
     }
 
+    if (action === 'getMembers') {
+      const { teamId } = params;
+      const query = `
+        query($teamId: String!) {
+          team(id: $teamId) {
+            members {
+              nodes {
+                id
+                name
+                email
+              }
+            }
+          }
+        }
+      `;
+      const data = await linearQuery(query, { teamId });
+      return Response.json({ members: data.team?.members?.nodes || [] });
+    }
+
     return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

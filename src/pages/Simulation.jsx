@@ -69,6 +69,7 @@ import DebriefBoard from '../components/simulation/DebriefBoard';
 import PersonaChat from '../components/simulation/PersonaChat';
 import SimulationPDFExport from '../components/simulation/SimulationPDFExport';
 import DecisionTreeBuilder from '../components/simulation/DecisionTreeBuilder';
+import ForkSimulationButton from '../components/simulation/ForkSimulationButton';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
