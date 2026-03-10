@@ -39,6 +39,7 @@ export default function DecisionCanvas({
   const [activeEditors, setActiveEditors] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const currentStep = !decisionType ? 1 : !(scenario || '').trim() ? 2 : 3;
+  const trackCursor = useCursorTracking(simulationId);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -131,14 +132,23 @@ export default function DecisionCanvas({
         <div className="space-y-2">
           <Input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              trackCursor('title', 0, e.target.selectionStart, true);
+            }}
+            onBlur={() => trackCursor('title', 0, 0, false)}
             placeholder="Decision title"
             className="h-9 border-slate-200"
             disabled={!decisionType}
           />
           <Textarea
             value={scenario}
-            onChange={(e) => setScenario(e.target.value)}
+            onChange={(e) => {
+              setScenario(e.target.value);
+              const lineNum = scenario.substring(0, e.target.selectionStart).split('\n').length - 1;
+              trackCursor('scenario', lineNum, e.target.selectionStart, true);
+            }}
+            onBlur={() => trackCursor('scenario', 0, 0, false)}
             placeholder="Describe the decision context, constraints, and objectives..."
             className="min-h-[160px] resize-none border-slate-200"
             disabled={!decisionType}
