@@ -50,12 +50,14 @@
 import Analytics from './pages/Analytics';
 import Documentation from './pages/Documentation';
 import Simulation from './pages/Simulation';
+import INTStudio from './pages/INTStudio';
 
 
 export const PAGES = {
     "Analytics": Analytics,
     "Documentation": Documentation,
     "Simulation": Simulation,
+    "INTStudio": INTStudio,
 }
 
 export const pagesConfig = {
