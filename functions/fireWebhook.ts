@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { crypto } from 'npm:@std/crypto@0.208.0';
 
 async function signPayload(payload, secret) {
   const encoder = new TextEncoder();
