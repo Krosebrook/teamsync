@@ -70,6 +70,9 @@ import PersonaChat from '../components/simulation/PersonaChat';
 import SimulationPDFExport from '../components/simulation/SimulationPDFExport';
 import DecisionTreeBuilder from '../components/simulation/DecisionTreeBuilder';
 import ForkSimulationButton from '../components/simulation/ForkSimulationButton';
+import StressTestRunner from '../components/simulation/StressTestRunner';
+import CollaborationCursors from '../components/simulation/CollaborationCursors';
+import WebhookManager from '../components/simulation/WebhookManager';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -122,6 +125,8 @@ export default function SimulationPage() {
   const [pdfExportOpen, setPdfExportOpen] = useState(false);
   const [personaTranscripts, setPersonaTranscripts] = useState({});
   const [treeBuilderOpen, setTreeBuilderOpen] = useState(false);
+  const [stressTestRunnerOpen, setStressTestRunnerOpen] = useState(false);
+  const [webhookManagerOpen, setWebhookManagerOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
@@ -136,6 +141,11 @@ export default function SimulationPage() {
   const { data: roleProfiles = [] } = useQuery({
     queryKey: ['roleProfiles'],
     queryFn: () => base44.entities.RoleProfile.list(),
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
   // Build complete roles list including custom roles
@@ -647,6 +657,11 @@ CRITICAL INSTRUCTIONS:
         {isRunning ? `Analyzing ${selectedRoles.length} perspectives...` : ''}
       </div>
 
+      {/* Collaboration cursors */}
+      {currentSimulation && currentUser && (
+        <CollaborationCursors simulationId={currentSimulation.id} currentUser={currentUser} />
+      )}
+
       {/* Header */}
       <header aria-label="Application header" className="border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="px-6 py-3">
@@ -839,6 +854,24 @@ CRITICAL INSTRUCTIONS:
                       >
                         <GitBranch className="w-3 h-3" />
                         Branch Tree
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setStressTestRunnerOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <Zap className="w-3 h-3" />
+                        Stress Test
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setWebhookManagerOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <LinkIcon className="w-3 h-3" />
+                        Webhooks
                       </Button>
                       <Button 
                         variant="outline" 
@@ -1347,6 +1380,18 @@ CRITICAL INSTRUCTIONS:
           if (template.use_case_type) setSelectedUseCase({ id: template.use_case_type });
           setActiveTab('setup');
         }}
+      />
+
+      <StressTestRunner
+        open={stressTestRunnerOpen}
+        onOpenChange={setStressTestRunnerOpen}
+        template={editingTemplate || templates[0]}
+        simulation={currentSimulation}
+      />
+
+      <WebhookManager
+        open={webhookManagerOpen}
+        onOpenChange={setWebhookManagerOpen}
       />
     </div>
   );
