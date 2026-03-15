@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileDown, CheckSquare, Lightbulb, GraduationCap, MessageSquare, AlertTriangle } from "lucide-react";
+import { Loader2, FileDown, CheckSquare, Lightbulb, MessageSquare, AlertTriangle, FileJson } from "lucide-react";
 import { toast } from 'sonner';
 import { jsPDF } from 'jspdf';
 
