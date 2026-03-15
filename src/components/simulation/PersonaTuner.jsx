@@ -468,10 +468,61 @@ export default function PersonaTuner({ open, onClose, roleName, roleId, tuning, 
           </div>
         </div>
 
+        {/* Save as Template inline panel */}
+        {saveTemplateOpen && (
+          <div className="mx-6 mb-2 p-3 border border-violet-200 bg-violet-50 rounded-lg space-y-2">
+            <p className="text-xs font-semibold text-violet-800">Save as Reusable Template</p>
+            <Input
+              value={templateName}
+              onChange={e => setTemplateName(e.target.value)}
+              placeholder="Template name (e.g. Risk-Averse CFO)"
+              className="h-7 text-xs"
+            />
+            <Textarea
+              value={templateDesc}
+              onChange={e => setTemplateDesc(e.target.value)}
+              placeholder="Short description (optional)"
+              className="min-h-[48px] resize-none text-xs"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="h-6 text-xs" onClick={() => setSaveTemplateOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="h-6 text-xs bg-violet-600 hover:bg-violet-700 text-white gap-1"
+                disabled={!templateName.trim() || saveTemplateMutation.isPending}
+                onClick={handleSaveTemplate}
+              >
+                <Save className="w-3 h-3" />
+                Save
+              </Button>
+            </div>
+          </div>
+        )}
+
         <DialogFooter className="gap-2 pt-2">
           <Button variant="outline" size="sm" onClick={handleReset} className="mr-auto gap-1 text-slate-500">
             <RotateCcw className="w-3.5 h-3.5" />
             Reset
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLibraryOpen(true)}
+            className="gap-1 text-violet-600 border-violet-200 hover:bg-violet-50"
+          >
+            <BookMarked className="w-3.5 h-3.5" />
+            Library
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSaveTemplateOpen(v => !v)}
+            className="gap-1 text-slate-600"
+          >
+            <Save className="w-3.5 h-3.5" />
+            Save
           </Button>
           <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
           <Button size="sm" onClick={handleSave} className="gap-1 bg-violet-600 hover:bg-violet-700 text-white">
@@ -479,6 +530,12 @@ export default function PersonaTuner({ open, onClose, roleName, roleId, tuning, 
             Apply Tuning
           </Button>
         </DialogFooter>
+
+        <PersonaTemplateLibrary
+          open={libraryOpen}
+          onClose={() => setLibraryOpen(false)}
+          onApply={(tuningConfig) => setLocal({ ...DEFAULT_TUNING, ...tuningConfig, enabled: true })}
+        />
       </DialogContent>
     </Dialog>
   );
