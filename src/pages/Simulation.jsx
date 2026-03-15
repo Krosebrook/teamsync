@@ -1424,6 +1424,14 @@ CRITICAL INSTRUCTIONS:
           toast.success(`What If branch ready — load it from history to run`);
         }}
       />
+
+      <MultiStageSimulation
+        open={multiStageOpen}
+        onClose={() => setMultiStageOpen(false)}
+        baseSimulation={currentSimulation}
+        selectedRoles={selectedRoles}
+        allRoles={allRolesWithCustom}
+      />
     </div>
   );
 }
