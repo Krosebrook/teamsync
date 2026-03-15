@@ -127,6 +127,7 @@ export default function SimulationPage() {
   const [treeBuilderOpen, setTreeBuilderOpen] = useState(false);
   const [stressTestRunnerOpen, setStressTestRunnerOpen] = useState(false);
   const [webhookManagerOpen, setWebhookManagerOpen] = useState(false);
+  const [whatIfOpen, setWhatIfOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
