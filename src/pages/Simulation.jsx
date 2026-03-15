@@ -787,6 +787,15 @@ CRITICAL INSTRUCTIONS:
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => setWhatIfOpen(true)}
+                        className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
+                      >
+                        <GitBranch className="w-3 h-3" />
+                        What If
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setDebriefBoardOpen(true)}
                         className="gap-2 h-7 text-xs text-slate-700 border-slate-300 hover:bg-slate-50"
                       >
