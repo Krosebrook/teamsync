@@ -74,6 +74,7 @@ import CollaborationCursors from '../components/simulation/CollaborationCursors'
 import WebhookManager from '../components/simulation/WebhookManager';
 import WhatIfBranch from '../components/simulation/WhatIfBranch';
 import NetworkGraph from '../components/simulation/NetworkGraph';
+import MultiStageSimulation from '../components/simulation/MultiStageSimulation';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -129,6 +130,7 @@ export default function SimulationPage() {
   const [stressTestRunnerOpen, setStressTestRunnerOpen] = useState(false);
   const [webhookManagerOpen, setWebhookManagerOpen] = useState(false);
   const [whatIfOpen, setWhatIfOpen] = useState(false);
+  const [multiStageOpen, setMultiStageOpen] = useState(false);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
