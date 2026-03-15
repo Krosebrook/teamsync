@@ -72,6 +72,7 @@ import ForkSimulationButton from '../components/simulation/ForkSimulationButton'
 import StressTestRunner from '../components/simulation/StressTestRunner';
 import CollaborationCursors from '../components/simulation/CollaborationCursors';
 import WebhookManager from '../components/simulation/WebhookManager';
+import WhatIfBranch from '../components/simulation/WhatIfBranch';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
