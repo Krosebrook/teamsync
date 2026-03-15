@@ -1060,6 +1060,13 @@ CRITICAL INSTRUCTIONS:
                         </div>
                       )}
 
+                      {/* Network Graph */}
+                      {currentSimulation.tensions?.length > 0 && (
+                        <div className="border-b border-slate-200 pb-6">
+                          <NetworkGraph simulation={currentSimulation} />
+                        </div>
+                      )}
+
                       {/* Role Responses */}
                       <div>
                         <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
