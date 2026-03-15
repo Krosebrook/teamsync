@@ -517,8 +517,34 @@ function buildPDF(simulation, personaTranscripts, allRoles) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+function buildJSON(simulation, personaTranscripts) {
+  return {
+    export_version: '1.0',
+    exported_at: new Date().toISOString(),
+    simulation: {
+      id: simulation.id,
+      title: simulation.title,
+      scenario: simulation.scenario,
+      use_case_type: simulation.use_case_type,
+      status: simulation.status,
+      created_date: simulation.created_date,
+      version_number: simulation.version_number,
+      version_label: simulation.version_label,
+      tags: simulation.tags,
+      selected_roles: simulation.selected_roles,
+      responses: simulation.responses,
+      tensions: simulation.tensions,
+      decision_trade_offs: simulation.decision_trade_offs,
+      summary: simulation.summary,
+      next_steps: simulation.next_steps,
+    },
+    persona_transcripts: personaTranscripts || {},
+  };
+}
+
 export default function SimulationPDFExport({ simulation, personaTranscripts, allRoles, open, onClose }) {
   const [generating, setGenerating] = useState(false);
+  const [generatingJson, setGeneratingJson] = useState(false);
 
   const handleExport = async () => {
     if (!simulation) return;
@@ -534,6 +560,25 @@ export default function SimulationPDFExport({ simulation, personaTranscripts, al
       toast.error('Failed to generate PDF');
     }
     setGenerating(false);
+  };
+
+  const handleJsonExport = () => {
+    if (!simulation) return;
+    setGeneratingJson(true);
+    try {
+      const data = buildJSON(simulation, personaTranscripts);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `simulation-${(simulation.title || 'export').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('JSON export downloaded');
+    } catch (err) {
+      toast.error('Failed to export JSON');
+    }
+    setGeneratingJson(false);
   };
 
   const hasTranscripts = personaTranscripts && Object.values(personaTranscripts).some(msgs => msgs?.length > 0);
