@@ -73,6 +73,7 @@ import StressTestRunner from '../components/simulation/StressTestRunner';
 import CollaborationCursors from '../components/simulation/CollaborationCursors';
 import WebhookManager from '../components/simulation/WebhookManager';
 import WhatIfBranch from '../components/simulation/WhatIfBranch';
+import NetworkGraph from '../components/simulation/NetworkGraph';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
