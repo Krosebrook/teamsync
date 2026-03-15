@@ -1395,6 +1395,16 @@ CRITICAL INSTRUCTIONS:
         open={webhookManagerOpen}
         onOpenChange={setWebhookManagerOpen}
       />
+
+      <WhatIfBranch
+        simulation={currentSimulation}
+        open={whatIfOpen}
+        onClose={() => setWhatIfOpen(false)}
+        onBranchCreated={(fork) => {
+          queryClient.invalidateQueries({ queryKey: ['simulations'] });
+          toast.success(`What If branch ready — load it from history to run`);
+        }}
+      />
     </div>
   );
 }
