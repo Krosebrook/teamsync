@@ -8,7 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { X, Plus, RotateCcw, Sliders, Sparkles, Brain, Zap, MessageSquare, Swords, PenLine } from "lucide-react";
+import { X, Plus, RotateCcw, Sliders, Sparkles, Brain, Zap, MessageSquare, Swords, PenLine, BookMarked, Save } from "lucide-react";
+import { useState as useStateAlias } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+import PersonaTemplateLibrary from './PersonaTemplateLibrary';
 
 // Default tuning state — all at "neutral" (no override)
 const DEFAULT_TUNING = {
