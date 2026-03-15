@@ -93,6 +93,35 @@ export default function PersonaTuner({ open, onClose, roleName, roleId, tuning, 
   const [local, setLocal] = useState({ ...DEFAULT_TUNING, ...tuning });
   const [biasInput, setBiasInput] = useState('');
   const [customFieldInput, setCustomFieldInput] = useState({ key: '', value: '' });
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDesc, setTemplateDesc] = useState('');
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const saveTemplateMutation = useMutation({
+    mutationFn: (data) => base44.entities.PersonaTemplate.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['persona_templates'] });
+      toast.success('Template saved to library');
+      setSaveTemplateOpen(false);
+      setTemplateName('');
+      setTemplateDesc('');
+    },
+  });
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) return;
+    saveTemplateMutation.mutate({
+      name: templateName.trim(),
+      description: templateDesc.trim(),
+      base_role: roleId,
+      tags: [],
+      tuning: { ...local, enabled: true },
+      is_public: false,
+      use_count: 0,
+    });
+  };
 
   useEffect(() => {
     setLocal({ ...DEFAULT_TUNING, ...tuning });
