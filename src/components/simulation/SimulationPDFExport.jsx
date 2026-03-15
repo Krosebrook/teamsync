@@ -629,14 +629,25 @@ export default function SimulationPDFExport({ simulation, personaTranscripts, al
             </p>
           )}
 
-          <Button
-            className="w-full gap-2 bg-slate-800 hover:bg-slate-700"
-            onClick={handleExport}
-            disabled={generating || !simulation}
-          >
-            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-            {generating ? 'Generating PDF...' : 'Download PDF Report'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              className="flex-1 gap-2 bg-slate-800 hover:bg-slate-700"
+              onClick={handleExport}
+              disabled={generating || !simulation}
+            >
+              {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              {generating ? 'Generating…' : 'Download PDF'}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 gap-2"
+              onClick={handleJsonExport}
+              disabled={generatingJson || !simulation}
+            >
+              {generatingJson ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileJson className="w-4 h-4" />}
+              {generatingJson ? 'Exporting…' : 'Export JSON'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
