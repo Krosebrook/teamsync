@@ -860,6 +860,15 @@ CRITICAL INSTRUCTIONS:
                         <GitBranch className="w-3 h-3" />
                         Branch Tree
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setMultiStageOpen(true)}
+                        className="gap-2 h-7 text-xs text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+                      >
+                        <GitBranch className="w-3 h-3" />
+                        Multi-Stage
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
