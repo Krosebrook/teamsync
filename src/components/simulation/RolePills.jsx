@@ -160,6 +160,18 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
         />
       )}
 
+      <CustomRoleLibrary
+        open={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        selectedRoles={selectedRoles}
+        onAddRole={(role) => {
+          const exists = selectedRoles.find(r => r.role === role.id);
+          if (!exists) {
+            onRolesChange([...selectedRoles, { role: role.id, influence: role.defaultInfluence || 5 }]);
+          }
+        }}
+      />
+
       <Button
         variant="outline"
         size="sm"
