@@ -17,6 +17,9 @@ import SensitivityDashboard from '../components/analytics/SensitivityDashboard';
 import KnowledgeGraphView from '../components/analytics/KnowledgeGraphView';
 import NLQueryPanel from '../components/analytics/NLQueryPanel';
 import CoreChartsGrid from '../components/analytics/CoreChartsGrid';
+import InfluenceDistribution from '../components/analytics/InfluenceDistribution';
+import ConsensusTrends from '../components/analytics/ConsensusTrends';
+import RoleImpactReport from '../components/analytics/RoleImpactReport';
 
 const DATE_RANGES = [
   { label: 'Last 7 days', value: '7d', days: 7 },
