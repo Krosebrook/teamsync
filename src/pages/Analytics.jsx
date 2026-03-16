@@ -299,6 +299,24 @@ export default function AnalyticsPage() {
               <TabsContent value="query" className="mt-6">
                 <NLQueryPanel simulations={simulations} outcomes={outcomes} />
               </TabsContent>
+
+              <TabsContent value="report" className="mt-6 space-y-10">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-800 mb-1">Influence Distribution</h2>
+                  <p className="text-xs text-slate-500 mb-4">How influence is allocated across roles — average, share, and tier breakdown.</p>
+                  <InfluenceDistribution simulations={filteredSimulations} />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-800 mb-1">Consensus Trends</h2>
+                  <p className="text-xs text-slate-500 mb-4">Team alignment score over time, derived from confidence, tensions, and risk tolerance agreement.</p>
+                  <ConsensusTrends simulations={filteredSimulations} />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-800 mb-1">Role Impact Report</h2>
+                  <p className="text-xs text-slate-500 mb-4">How each role shaped final outcomes — influence, action ownership, tension involvement, and composite impact score.</p>
+                  <RoleImpactReport simulations={filteredSimulations} />
+                </div>
+              </TabsContent>
             </Tabs>
           </>
         )}
