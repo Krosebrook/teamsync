@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend
 } from 'recharts';
-import { ChevronDown, ChevronUp, Users, Target, AlertTriangle, TrendingUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, Target, TrendingUp } from 'lucide-react';
 
 const COLORS = [
   '#8b5cf6','#3b82f6','#06b6d4','#f43f5e','#f59e0b',
