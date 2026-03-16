@@ -353,6 +353,18 @@ Be specific and practical. Consider what this role typically cares about in prod
             </div>
           </div>
 
+          {/* Backstory */}
+          <div className="space-y-2">
+            <Label htmlFor="backstory">Backstory</Label>
+            <Textarea
+              id="backstory"
+              value={backstory}
+              onChange={(e) => setBackstory(e.target.value)}
+              placeholder="A character backstory explaining how this persona came to hold their views, their past experiences, and what shaped their decision-making style..."
+              className="min-h-[80px] resize-none"
+            />
+          </div>
+
           {/* Communication Style */}
           <div className="space-y-2">
             <Label htmlFor="comm-style">Communication Style</Label>
