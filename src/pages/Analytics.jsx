@@ -279,6 +279,9 @@ export default function AnalyticsPage() {
                 <TabsTrigger value="query" className="text-xs data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded px-3 py-1.5">
                   NL Query
                 </TabsTrigger>
+                <TabsTrigger value="report" className="text-xs data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded px-3 py-1.5">
+                  Simulation Report
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">
