@@ -160,6 +160,16 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
         />
       )}
 
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full justify-start gap-2 h-8 border-dashed text-violet-600 border-violet-200 hover:bg-violet-50"
+        onClick={() => setLibraryOpen(true)}
+      >
+        <BookOpen className="w-3 h-3" />
+        Custom Role Library
+      </Button>
+
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button 
