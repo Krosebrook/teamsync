@@ -17,6 +17,7 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
   const [searchQuery, setSearchQuery] = useState('');
   const [tunerOpen, setTunerOpen] = useState(false);
   const [tunerRole, setTunerRole] = useState(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
