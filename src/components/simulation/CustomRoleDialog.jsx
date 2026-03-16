@@ -70,6 +70,7 @@ export default function CustomRoleDialog({ open, onOpenChange, onSave, editRole 
 6. 2-4 potential weaknesses or blind spots
 7. Communication style description (1-2 sentences)
 8. 3-5 typical motivations that drive this role's decisions
+9. A short backstory (2-3 sentences) explaining how this persona came to hold their views
 
 Be specific and practical. Consider what this role typically cares about in product/business decisions.`,
         response_json_schema: {
@@ -82,7 +83,8 @@ Be specific and practical. Consider what this role typically cares about in prod
             strengths: { type: "array", items: { type: "string" } },
             weaknesses: { type: "array", items: { type: "string" } },
             communication_style: { type: "string" },
-            typical_motivations: { type: "array", items: { type: "string" } }
+            typical_motivations: { type: "array", items: { type: "string" } },
+            backstory: { type: "string" }
           }
         }
       });
