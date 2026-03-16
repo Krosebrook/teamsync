@@ -31,6 +31,7 @@ export default function CustomRoleDialog({ open, onOpenChange, onSave, editRole 
   const [weaknesses, setWeaknesses] = useState(editRole?.weaknesses || []);
   const [communicationStyle, setCommunicationStyle] = useState(editRole?.communication_style || '');
   const [typicalMotivations, setTypicalMotivations] = useState(editRole?.typical_motivations || []);
+  const [backstory, setBackstory] = useState(editRole?.backstory || '');
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [newStrength, setNewStrength] = useState('');
