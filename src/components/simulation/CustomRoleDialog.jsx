@@ -49,6 +49,9 @@ export default function CustomRoleDialog({ open, onOpenChange, onSave, editRole 
       setWeaknesses(editRole.weaknesses || []);
       setCommunicationStyle(editRole.communication_style || '');
       setTypicalMotivations(editRole.typical_motivations || []);
+      setBackstory(editRole.backstory || '');
+    } else {
+      setBackstory('');
     }
   }, [editRole]);
 
@@ -101,6 +104,7 @@ Be specific and practical. Consider what this role typically cares about in prod
     setWeaknesses(aiSuggestions.weaknesses || []);
     setCommunicationStyle(aiSuggestions.communication_style || '');
     setTypicalMotivations(aiSuggestions.typical_motivations || []);
+    if (aiSuggestions.backstory) setBackstory(aiSuggestions.backstory);
     setAiSuggestions(null);
   };
 
@@ -117,7 +121,8 @@ Be specific and practical. Consider what this role typically cares about in prod
       strengths,
       weaknesses,
       communication_style: communicationStyle,
-      typical_motivations: typicalMotivations
+      typical_motivations: typicalMotivations,
+      backstory,
     });
     
     // Reset form
