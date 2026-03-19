@@ -154,6 +154,13 @@ export default function SimulationPage() {
     queryFn: () => base44.auth.me(),
   });
 
+  // Show onboarding for new users
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed && simulations.length === 0) {
+      setOnboardingOpen(true);
+    }
+  }, [currentUser, simulations.length]);
+
   // Build complete roles list including custom roles
   const allRolesWithCustom = React.useMemo(() => {
     const customRoleObjects = customRoles.map(cr => ({
