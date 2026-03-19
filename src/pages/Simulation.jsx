@@ -731,6 +731,16 @@ Return a single JSON object with the exact schema provided.`;
                   <Button 
                    variant="outline" 
                    size="sm"
+                   onClick={() => setOnboardingOpen(true)}
+                   className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                   aria-label="Start guided setup"
+                  >
+                   <Sparkles className="w-3 h-3" aria-hidden="true" />
+                   Guided Setup
+                  </Button>
+                  <Button 
+                   variant="outline" 
+                   size="sm"
                    onClick={() => setAiWizardOpen(true)}
                    className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
                    aria-label="Open AI Wizard"
@@ -1449,6 +1459,24 @@ Return a single JSON object with the exact schema provided.`;
         baseSimulation={currentSimulation}
         selectedRoles={selectedRoles}
         allRoles={allRolesWithCustom}
+      />
+
+      <OnboardingWizard
+        open={onboardingOpen}
+        onClose={() => setOnboardingOpen(false)}
+        allRoles={allRolesWithCustom}
+        onLaunchSimulation={({ title: t, scenario: s, selectedRoles: r, useCaseType: u, runImmediately }) => {
+          setTitle(t || '');
+          setScenario(s || '');
+          if (r?.length > 0) setSelectedRoles(r);
+          if (u) setSelectedUseCase({ id: u });
+          setActiveTab('setup');
+          if (runImmediately) {
+            // Small delay to let state settle then run
+            setTimeout(() => runSimulation(), 100);
+          }
+          toast.success(runImmediately ? 'Running simulation…' : 'Simulation saved as draft');
+        }}
       />
     </div>
   );
