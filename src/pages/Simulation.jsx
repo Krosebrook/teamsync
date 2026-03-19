@@ -322,73 +322,82 @@ export default function SimulationPage() {
         ).join('\n')}\n`
       : '';
 
-    const prompt = `You are simulating a cross-functional team discussion for a critical product/business decision.
+    const roleRiseBlocks = selectedRoles.map(r => {
+      const roleData = allRoles.find(rd => rd.id === r.role);
+      const roleProfile = roleProfiles.find(p => p.role_id === r.role);
+      const roleName = roleData?.name || r.role.replace(/_/g, ' ');
+      const tuning = personaTunings[r.role];
 
+      let block = `--- ROLE: ${roleName} (Influence: ${r.influence}/10) ---
+You are simulating ${roleName}. Reason through each step before responding:
+
+STEP 1 — SCAN: What does this scenario mean for ${roleName}? What's personally and professionally at stake?
+STEP 2 — RISK FILTER: What biases does ${roleName} carry? What will they over- or under-weight?
+STEP 3 — POSITION: What is ${roleName}'s concrete recommendation? No hedging.
+STEP 4 — CONCERNS: Top 2-3 objections or risks ${roleName} would raise.
+STEP 5 — TENSION CHECK: Which other roles in this room will ${roleName} clash with, and why?
+STEP 6 — COMMUNICATE: Deliver the position in ${roleName}'s authentic voice.
+
+Profile context:`;
+
+      if (roleData?.description) block += `\n- Typical concerns: ${roleData.description}`;
+      const strengths = roleProfile?.strengths || roleData?.strengths;
+      const weaknesses = roleProfile?.weaknesses || roleData?.weaknesses;
+      const commStyle = roleProfile?.communication_style || roleData?.communication_style;
+      const motivations = roleProfile?.typical_motivations || roleData?.typical_motivations;
+      if (strengths?.length) block += `\n- Strengths: ${strengths.join(', ')}`;
+      if (weaknesses?.length) block += `\n- Blind spots: ${weaknesses.join(', ')}`;
+      if (commStyle) block += `\n- Communication style: ${commStyle}`;
+      if (motivations?.length) block += `\n- Core motivations: ${motivations.join(', ')}`;
+      if (roleProfile?.risk_tolerance) block += `\n- Risk tolerance: ${roleProfile.risk_tolerance}`;
+      if (roleProfile?.conflict_style) block += `\n- Conflict style: ${roleProfile.conflict_style}`;
+      if (roleProfile?.signature_phrases?.length) block += `\n- Signature phrases: "${roleProfile.signature_phrases.join('", "')}"`;
+      if (roleProfile?.cognitive_biases?.length) block += `\n- Known biases: ${roleProfile.cognitive_biases.map(b => b.bias).join(', ')}`;
+      if (roleProfile?.relationship_dynamics?.friction_with?.length) block += `\n- Tends to clash with: ${roleProfile.relationship_dynamics.friction_with.join(', ')}`;
+
+      if (tuning?.enabled) {
+        block += `\n--- PERSONA TUNING (apply with priority) ---`;
+        block += `\n- Directness: ${tuning.directness_level}/10`;
+        block += `\n- Contrarianism: ${tuning.contrarianism}/10`;
+        block += `\n- Data orientation: ${tuning.data_orientation}/10`;
+        block += `\n- Urgency bias: ${tuning.urgency_bias}/10`;
+        block += `\n- Stress level: ${tuning.stress_level}/10`;
+        if (tuning.risk_tolerance_override) block += `\n- Risk tolerance OVERRIDE: ${tuning.risk_tolerance_override}`;
+        if (tuning.conflict_style_override) block += `\n- Conflict style OVERRIDE: ${tuning.conflict_style_override}`;
+        if (tuning.active_cognitive_biases?.length) block += `\n- Amplified biases: ${tuning.active_cognitive_biases.join(', ')}`;
+        if (tuning.custom_agenda?.trim()) block += `\n- Hidden agenda (subtle, don't state explicitly): ${tuning.custom_agenda}`;
+      }
+
+      return block;
+    }).join('\n\n');
+
+    const prompt = `ROLE: You are a simulation engine running a cross-functional team decision discussion.
+
+INPUT:
 SCENARIO: ${scenario}
+USE CASE TYPE: ${selectedUseCase?.id || 'custom'}
 ${envContext}
 
-PARTICIPATING ROLES:
-${roleDescriptions}
+PARTICIPATING ROLES WITH CHAIN-OF-THOUGHT INSTRUCTIONS:
+${roleRiseBlocks}
 
-IMPORTANT: If environmental factors are listed above, each role's response, concerns, and recommendations MUST reflect how those factors affect their perspective. Worsening or critical factors should generate new tensions or amplify existing ones. Improving factors may create opportunities that some roles embrace and others resist.
+${envContext ? 'IMPORTANT: Environmental factors MUST be reflected in each role\'s concerns and recommendations.' : ''}
 
-For each role, deeply analyze their perspective considering:
-- Their typical priorities, concerns, and risk tolerance
-- Their specific STRENGTHS and how those shape their viewpoint
-- Their WEAKNESSES/BLIND SPOTS and what they might overlook
-- Their COMMUNICATION STYLE in how they express their position
-- Their CORE MOTIVATIONS driving their recommendation
+TENSION DETECTION (after generating all role responses):
+You are now a neutral organizational psychologist. Identify:
+1. Pairs of roles with conflicting positions or values
+2. For each conflict: severity, root cause, and which biases are colliding
+3. Hidden alignments — roles that seem to conflict but share an underlying goal
+4. The single most dangerous tension that could derail this decision
 
-Use the detailed role profiles provided to create nuanced, realistic responses that reflect each role's unique decision-making patterns.
+DECISION SYNTHESIS:
+You are now a senior decision facilitator. Synthesize:
+1. CONSENSUS SCAN: What do most roles agree on, even if they disagree on approach?
+2. WEDGE ISSUES: 2-3 things the team will NOT naturally resolve
+3. TRADEOFFS: Frame the core decision as A vs B — forced choice with known costs
+4. NEXT STEPS: 3-5 specific, assignable actions with owner role, priority, confidence %
 
-Return a JSON object with this EXACT structure:
-{
-  "responses": [
-    {
-      "role": "role_id (exact role ID from above)",
-      "position": "2-3 sentence summary of their stance",
-      "concerns": ["concern 1", "concern 2", "concern 3"],
-      "risk_tolerance": "low | medium | high",
-      "recommendation": "Their specific recommendation",
-      "primary_driver": "The core motivation/principle driving their position (1 sentence)"
-    }
-  ],
-  "tensions": [
-    {
-      "between": ["role1_id", "role2_id"],
-      "description": "Description of the conflict",
-      "severity": "low | medium | high | critical"
-    }
-  ],
-  "decision_trade_offs": [
-    {
-      "trade_off": "Name of the trade-off",
-      "option_a": "Description of one path",
-      "option_b": "Description of alternative path"
-    }
-  ],
-  "summary": "2-3 paragraphs synthesizing the discussion. Include: (1) Main areas of consensus (2) Key points of contention (3) Decision-making framework based on the primary drivers identified",
-  "next_steps": [
-    {
-      "action": "Specific, actionable step",
-      "owner_role": "role_id best suited to own this",
-      "priority": "low | medium | high",
-      "confidence": 85
-    }
-  ]
-}
-
-CRITICAL INSTRUCTIONS:
-- PRIMARY DRIVER: For each role's response, identify the ONE core principle/motivation driving their position
-- TRADE-OFFS: Extract 2-4 major decision trade-offs implicit in the scenario
-- SUMMARY: Don't just summarize - explicitly call out what's driving each role and where the fundamental tensions lie
-- NEXT STEPS: 
-  * Extract 3-5 concrete, specific actions
-  * Confidence score (0-100) based on: alignment across roles, clarity of action, likelihood of success
-  * Higher confidence = more agreement + clearer path
-  * Lower confidence = controversial + needs more research
-- Consider influence levels when weighing perspectives
-- Identify REAL tensions - don't smooth over conflicts`;
+Return a single JSON object with the exact schema provided.`;
 
     try {
       const simulation = await createMutation.mutateAsync({
