@@ -91,65 +91,46 @@ export default function SimulationRunner({
   };
 
   const generateRoleResponse = async (role, memberProfile) => {
-    const profileContext = memberProfile ? `
+    const roleName = role.role.replace(/_/g, ' ');
+    const profileLines = memberProfile ? `
 TEAM MEMBER PROFILE:
 - Name: ${memberProfile.name}
-- Decision-Making Biases: ${JSON.stringify(memberProfile.decision_biases || [])}
+- Decision-Making Biases: ${(memberProfile.decision_biases || []).join(', ') || 'Unknown'}
 - Conflict Resolution Style: ${memberProfile.conflict_style || 'Unknown'}
 - Communication Style: ${memberProfile.communication_style || 'Unknown'}
 - Risk Tolerance: ${memberProfile.risk_tolerance || 'Unknown'}
-- Domain Expertise: ${JSON.stringify(memberProfile.domain_expertise || [])}
-- Key Strengths: ${JSON.stringify(memberProfile.strengths || [])}
-- Past Performance Patterns: ${memberProfile.performance_patterns || 'Unknown'}
-` : '';
+- Key Strengths: ${(memberProfile.strengths || []).join(', ') || 'Unknown'}
+- Past Performance Patterns: ${memberProfile.performance_patterns || 'Unknown'}` : '';
 
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are simulating the perspective of a ${role.role.replace(/_/g, ' ')} with influence level ${role.influence}/10 in a decision-making scenario.
+      prompt: `ROLE: You are simulating ${roleName} — a ${roleName} with the following profile:
+- Influence level: ${role.influence}/10 (affects how assertively they advocate)
+${profileLines}
 
-SCENARIO:
-${scenario}
+INPUT: The team is deciding on the following:
+SCENARIO: ${scenario}
 
-${profileContext}
+STEPS (Chain of Thought — reason step by step before responding):
+1. SCAN: What does this scenario mean for my role? What's at stake for me personally and professionally?
+2. RISK FILTER: Run this through my known biases. What am I likely to over- or under-weight?
+3. POSITION: What is my actual recommendation? Be specific — no hedge answers.
+4. CONCERNS: What are my top 2-3 objections or risks I'd surface?
+5. TENSION CHECK: Which other roles in the room do I predict will disagree with me, and why?
+6. COMMUNICATE: Deliver my position in my authentic voice — using my communication style and signature phrases.
 
-As this role, provide your stance on the decision scenario. Be authentic to the role's typical concerns and priorities${memberProfile ? ', and incorporate the team member\'s specific profile characteristics, biases, and tendencies' : ''}.
-
-Consider:
-- What are your primary concerns?
-- What is your position on the decision?
-- What do you recommend?
-- What risks do you see?
-- What trade-offs are you willing/unwilling to make?
-${memberProfile ? `- How do your known biases (${memberProfile.decision_biases?.join(', ')}) influence your stance?` : ''}
-${memberProfile ? `- How does your ${memberProfile.conflict_style} conflict style affect your approach?` : ''}`,
+EXPECTATION: Return structured JSON with the exact schema provided.`,
       response_json_schema: {
         type: "object",
         properties: {
           role: { type: "string" },
-          position: { type: "string", description: "Clear stance on the decision" },
-          concerns: { 
-            type: "array", 
-            items: { type: "string" },
-            description: "Top 3-5 concerns from this role's perspective"
-          },
-          recommendation: { type: "string", description: "What this role recommends" },
-          risk_tolerance: { 
-            type: "string", 
-            enum: ["low", "medium", "high"],
-            description: "Risk tolerance for this decision"
-          },
-          primary_driver: { 
-            type: "string",
-            description: "What's driving this role's position (e.g., customer satisfaction, cost reduction, speed to market)"
-          },
-          non_negotiables: {
-            type: "array",
-            items: { type: "string" },
-            description: "What this role absolutely won't compromise on"
-          },
-          bias_manifestation: {
-            type: "string",
-            description: "How known biases are affecting this stance (if profile provided)"
-          }
+          position: { type: "string", description: "1-3 sentence clear stance" },
+          concerns: { type: "array", items: { type: "string" }, description: "Top 2-3 concerns" },
+          recommendation: { type: "string", description: "Concrete recommendation with tradeoffs acknowledged" },
+          risk_tolerance: { type: "string", enum: ["low", "medium", "high"] },
+          primary_driver: { type: "string", description: "What's driving this position" },
+          predicted_tensions_with: { type: "array", items: { type: "string" }, description: "Roles they predict will disagree" },
+          authentic_voice_quote: { type: "string", description: "How they would actually say this in a meeting" },
+          bias_manifestation: { type: "string", description: "How known biases are affecting this stance" }
         }
       }
     });
@@ -159,23 +140,18 @@ ${memberProfile ? `- How does your ${memberProfile.conflict_style} conflict styl
 
   const detectTensions = async (responses) => {
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Analyze the following role responses from a decision simulation and detect tensions between them.
+      prompt: `ROLE: You are a neutral organizational psychologist observing this team discussion.
 
-ROLE RESPONSES:
+INPUT: Here are the responses from each team member:
 ${JSON.stringify(responses, null, 2)}
 
-Identify:
-1. Conflicting positions or recommendations
-2. Competing priorities or concerns
-3. Incompatible non-negotiables
-4. Different risk tolerances creating friction
-5. Underlying bias conflicts (if profile data shows bias manifestations)
+STEPS:
+1. Identify pairs of roles with conflicting positions or values
+2. For each conflict: classify severity (low/medium/high/critical), describe the root cause, and name which cognitive biases are colliding
+3. Flag any "hidden alignments" — roles that seem to conflict but actually share an underlying goal
+4. Identify the single most dangerous tension that could derail this decision
 
-For each tension:
-- Which roles are in tension
-- What is the nature of the conflict
-- How severe is it (low, medium, high, critical)
-- Is this a fundamental values conflict or a tactical disagreement?`,
+EXPECTATION: Return tensions array with the exact schema provided.`,
       response_json_schema: {
         type: "object",
         properties: {
@@ -187,6 +163,8 @@ For each tension:
                 between: { type: "array", items: { type: "string" } },
                 description: { type: "string" },
                 severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
+                root_cause: { type: "string" },
+                hidden_alignment_if_any: { type: "string" },
                 nature: { type: "string", enum: ["values", "tactical", "resource", "timeline", "risk_tolerance"] },
                 resolution_difficulty: { type: "string", enum: ["easy", "moderate", "difficult", "requires_escalation"] }
               }
@@ -237,23 +215,21 @@ Identify trade-offs where choosing one path means sacrificing another. Focus on:
 
   const generateSummary = async (responses, tensions, tradeOffs) => {
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Generate a comprehensive simulation outcome summary.
+      prompt: `ROLE: You are a senior decision facilitator. Your job is to synthesize a team simulation into actionable clarity.
 
-ROLE RESPONSES:
-${JSON.stringify(responses, null, 2)}
+INPUT:
+- Scenario: ${scenario}
+- Role responses: ${JSON.stringify(responses, null, 2)}
+- Tensions: ${JSON.stringify(tensions, null, 2)}
+- Trade-offs: ${JSON.stringify(tradeOffs, null, 2)}
 
-DETECTED TENSIONS:
-${JSON.stringify(tensions, null, 2)}
+STEPS:
+1. CONSENSUS SCAN: What do most roles actually agree on, even if they disagree on approach?
+2. WEDGE ISSUES: What are the 2-3 things the team will NOT naturally resolve without a structured decision?
+3. TRADEOFFS: Frame the core decision as A vs B — not as a spectrum, but as a forced choice with known costs
+4. NEXT STEPS: Generate 3-5 specific, assignable actions with owner role, priority, and confidence %
 
-IDENTIFIED TRADE-OFFS:
-${JSON.stringify(tradeOffs, null, 2)}
-
-Provide:
-1. Final Decision Outcome: Did the team reach a clear decision? If so, what? If not, why not?
-2. Executive Summary: 2-3 paragraphs summarizing the simulation
-3. Key Trade-Offs Navigated: How the team approached major trade-offs
-4. Critical Tensions: Most important conflicts and whether they were resolved
-5. Next Steps: 5-7 actionable items with owners and priorities`,
+EXPECTATION: Return {summary, consensus_points, wedge_issues, decision_trade_offs, next_steps, final_decision}`,
       response_json_schema: {
         type: "object",
         properties: {
