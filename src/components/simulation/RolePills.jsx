@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { X, GripVertical, Plus, Sliders, BookOpen } from "lucide-react";
+import { X, GripVertical, Plus, Sliders, BookOpen, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,6 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import PersonaTuner from './PersonaTuner';
 import CustomRoleLibrary from './CustomRoleLibrary';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { useState } from 'react';
 
 export default function RolePills({ selectedRoles, onRolesChange, allRoles, personaTunings = {}, onPersonaTuningsChange }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
