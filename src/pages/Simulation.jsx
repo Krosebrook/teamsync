@@ -774,6 +774,24 @@ Return a single JSON object.`;
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => setShareOpen(true)}
+                        className="gap-2 h-7 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
+                      >
+                        <Share2 className="w-3 h-3" />
+                        Share
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVersionHistoryOpen(true)}
+                        className="gap-2 h-7 text-xs"
+                      >
+                        <History className="w-3 h-3" />
+                        Versions
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setWhatIfOpen(true)}
                         className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
                       >
