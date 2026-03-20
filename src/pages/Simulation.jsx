@@ -998,6 +998,20 @@ Return a single JSON object.`;
 
               <div className="flex-1 overflow-y-auto">
                 <TabsContent value="setup" className="p-6 mt-0">
+                  {/* Empty state when user has no simulations */}
+                  {!loadingSimulations && simulations.length === 0 && !currentSimulation ? (
+                    <EmptyDashboard
+                      onRunTemplate={(template) => {
+                        setTitle(template.name || '');
+                        setScenario(template.scenario_template || '');
+                        if (template.suggested_roles?.length > 0) setSelectedRoles(template.suggested_roles);
+                        if (template.industry) setSelectedUseCase({ id: template.industry });
+                      }}
+                      onStartFromScratch={() => {
+                        // Just scroll past the empty state — the canvas is below
+                      }}
+                    />
+                  ) : (
                   <DecisionCanvas
                     title={title}
                     setTitle={setTitle}
