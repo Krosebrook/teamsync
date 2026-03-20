@@ -7,6 +7,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import Team from '@/pages/Team';
+import Webhooks from '@/pages/Webhooks';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -58,11 +60,8 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
-      <Route path="/Webhooks" element={
-        <LayoutWrapper currentPageName="Webhooks">
-          <Webhooks />
-        </LayoutWrapper>
-      } />
+      <Route path="/Team" element={<Team />} />
+      <Route path="/Webhooks" element={<Webhooks />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
