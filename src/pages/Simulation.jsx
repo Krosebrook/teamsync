@@ -150,6 +150,9 @@ export default function SimulationPage() {
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const [simFilters, setSimFilters] = useState({ search: '', status: 'all', useCase: 'all', sort: 'newest' });
   const [simTags, setSimTags] = useState([]);
+  const [decisionTreeCanvasOpen, setDecisionTreeCanvasOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentTarget, setCommentTarget] = useState(null);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
