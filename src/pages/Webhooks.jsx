@@ -319,16 +319,19 @@ export default function WebhooksPage() {
 
               <div>
                 <label className="text-xs font-medium text-slate-600 block mb-2">Events to Subscribe *</label>
-                <div className="space-y-2 p-3 bg-slate-50 rounded border border-slate-200">
+                <div className="space-y-3 p-3 bg-slate-50 rounded border border-slate-200">
                   {EVENT_TYPES.map(event => (
-                    <label key={event.id} className="flex items-center gap-2 cursor-pointer">
+                    <label key={event.id} className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors">
                       <input
                         type="checkbox"
                         checked={formData.events.includes(event.id)}
                         onChange={() => toggleEvent(event.id)}
-                        className="rounded border-slate-300"
+                        className="rounded border-slate-300 mt-0.5"
                       />
-                      <span className="text-sm text-slate-700">{event.label}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-700">{event.label}</p>
+                        <p className="text-xs text-slate-500">{event.desc}</p>
+                      </div>
                     </label>
                   ))}
                 </div>
