@@ -27,7 +27,10 @@ import {
   ClipboardList,
   MessageSquare,
   FileDown,
-  GitBranch
+  GitBranch,
+  Share2,
+  History,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { createPageUrl } from '@/utils';
