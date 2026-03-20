@@ -87,6 +87,8 @@ import SimulationSearchFilter, { applyFilters } from '../components/simulation/S
 import SimulationCard from '../components/simulation/SimulationCard';
 import TagsInput from '../components/simulation/TagsInput';
 import PlaybookStepsPanel from '../components/simulation/PlaybookStepsPanel';
+import DecisionTreeCanvas from '../components/simulation/DecisionTreeCanvas';
+import SimulationCommentsPanel from '../components/simulation/SimulationCommentsPanel';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
