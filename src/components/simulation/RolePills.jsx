@@ -13,7 +13,6 @@ import PersonaTuner from './PersonaTuner';
 import CustomRoleLibrary from './CustomRoleLibrary';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useState } from 'react';
 
 export default function RolePills({ selectedRoles, onRolesChange, allRoles, personaTunings = {}, onPersonaTuningsChange }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
