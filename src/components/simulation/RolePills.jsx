@@ -71,7 +71,27 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
     onPersonaTuningsChange({ ...personaTunings, [tunerRole.role]: tuning });
   };
 
+  const handleApplyPersonaTemplate = (template, roleId) => {
+    if (template.tuning && onPersonaTuningsChange) {
+      onPersonaTuningsChange({ 
+        ...personaTunings, 
+        [roleId]: { ...template.tuning, enabled: true } 
+      });
+    }
+    setPersonaPickerOpen(false);
+    setPersonaPickerRole(null);
+  };
+
   const getRoleData = (roleId) => allRoles?.find(r => r.id === roleId);
+
+  const getMatchingPersonaTemplates = (roleId) => {
+    const roleData = getRoleData(roleId);
+    if (!roleData) return [];
+    // Match by base_role if available, or by role name similarity
+    return personaTemplates.filter(pt => 
+      pt.base_role === roleId || pt.base_role === roleData.name?.toLowerCase().replace(/\s/g, '_')
+    );
+  };
 
   const filteredAvailableRoles = allRoles?.filter(r => 
     !(selectedRoles || []).find(sr => sr.role === r.id) &&
