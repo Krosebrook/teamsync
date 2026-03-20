@@ -83,7 +83,6 @@ import OutcomeLogger from '../components/simulation/OutcomeLogger';
 import EmptyDashboard from '../components/simulation/EmptyDashboard';
 import ShareSimulationModal from '../components/simulation/ShareSimulationModal';
 import VersionHistoryPanel from '../components/simulation/VersionHistoryPanel';
-import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 import SimulationSearchFilter, { applyFilters } from '../components/simulation/SimulationSearchFilter';
 import SimulationCard from '../components/simulation/SimulationCard';
 import TagsInput from '../components/simulation/TagsInput';
@@ -827,6 +826,7 @@ Return a single JSON object.`;
                         size="sm"
                         onClick={() => window.print()}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                        title="Export simulation to PDF"
                       >
                         <FileDown className="w-3 h-3" />
                         Export PDF
