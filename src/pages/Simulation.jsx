@@ -462,17 +462,6 @@ Return a single JSON object.`;
 
     setCurrentSimulation(finalSim);
     setIsRunning(false);
-
-    // Fire webhooks on completion
-    try {
-      await base44.functions.invoke('fireWebhookOnTension', {
-        simulationId: simulation.id,
-        tensions: tensions
-      });
-    } catch (err) {
-      console.error('Webhook firing failed:', err);
-    }
-
     toast.success('Simulation complete!');
   };
 
@@ -835,11 +824,21 @@ Return a single JSON object.`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPdfExportOpen(true)}
+                        onClick={async () => {
+                          try {
+                            const response = await base44.functions.invoke('generateSimulationPDF', {
+                              simulationId: currentSimulation.id
+                            });
+                            // PDF download is handled by the function response
+                            toast.success('PDF downloaded');
+                          } catch (err) {
+                            toast.error('PDF generation failed');
+                          }
+                        }}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                       >
                         <FileDown className="w-3 h-3" />
-                        PDF Report
+                        Export PDF
                       </Button>
                       <Button 
                         variant="outline" 
@@ -931,6 +930,27 @@ Return a single JSON object.`;
                   >
                     <BarChart3 className="w-3 h-3" />
                     Analytics
+                  </a>
+                  <a
+                    href="/Team"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Users className="w-3 h-3" />
+                    Team
+                  </a>
+                  <a
+                    href="/Webhooks"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Zap className="w-3 h-3" />
+                    Webhooks
+                  </a>
+                  <a
+                    href="/Settings"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Settings className="w-3 h-3" />
+                    Settings
                   </a>
                 </>
               )}
