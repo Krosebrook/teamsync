@@ -1012,6 +1012,7 @@ Return a single JSON object.`;
                       }}
                     />
                   ) : (
+                  <>
                   <DecisionCanvas
                     title={title}
                     setTitle={setTitle}
@@ -1057,6 +1058,7 @@ Return a single JSON object.`;
                       Run AI Simulation
                     </Button>
                   </div>
+                  </>
                   )}
                 </TabsContent>
 
