@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,7 +83,6 @@ import OutcomeLogger from '../components/simulation/OutcomeLogger';
 import EmptyDashboard from '../components/simulation/EmptyDashboard';
 import ShareSimulationModal from '../components/simulation/ShareSimulationModal';
 import VersionHistoryPanel from '../components/simulation/VersionHistoryPanel';
-import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 import SimulationSearchFilter, { applyFilters } from '../components/simulation/SimulationSearchFilter';
 import SimulationCard from '../components/simulation/SimulationCard';
 import TagsInput from '../components/simulation/TagsInput';
@@ -173,15 +172,6 @@ export default function SimulationPage() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-  });
-
-  const { data: simulationOutcome } = useQuery({
-    queryKey: ['simulationOutcome', currentSimulation?.id],
-    queryFn: () => {
-      if (!currentSimulation?.id) return null;
-      return base44.entities.SimulationOutcome.filter({ simulation_id: currentSimulation.id }).then(results => results[0] || null);
-    },
-    enabled: !!currentSimulation?.id,
   });
 
   // Show onboarding for new users
@@ -472,6 +462,17 @@ Return a single JSON object.`;
 
     setCurrentSimulation(finalSim);
     setIsRunning(false);
+
+    // Fire webhooks on completion
+    try {
+      await base44.functions.invoke('fireWebhookOnTension', {
+        simulationId: simulation.id,
+        tensions: tensions
+      });
+    } catch (err) {
+      console.error('Webhook firing failed:', err);
+    }
+
     toast.success('Simulation complete!');
   };
 
@@ -834,11 +835,11 @@ Return a single JSON object.`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.print()}
+                        onClick={() => setPdfExportOpen(true)}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                       >
                         <FileDown className="w-3 h-3" />
-                        Export PDF
+                        PDF Report
                       </Button>
                       <Button 
                         variant="outline" 
@@ -1078,15 +1079,12 @@ Return a single JSON object.`;
                 </TabsContent>
 
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
-                   {currentSimulation && currentSimulation.status === 'completed' && (
-                     <>
-                       {/* PDF Report (hidden but renderable for print) */}
-                       <SimulationPDFReport simulation={currentSimulation} outcome={simulationOutcome} />
-
-                       {/* Playbook steps sidebar panel */}
-                       {selectedPlaybook?.steps?.length > 0 && (
-                         <PlaybookStepsPanel playbook={selectedPlaybook} />
-                       )}
+                  {currentSimulation && currentSimulation.status === 'completed' && (
+                    <>
+                      {/* Playbook steps sidebar panel */}
+                      {selectedPlaybook?.steps?.length > 0 && (
+                        <PlaybookStepsPanel playbook={selectedPlaybook} />
+                      )}
 
                       {/* Synthesis failure banner */}
                       {currentSimulation._synthesisFailed && (
