@@ -56,6 +56,14 @@ const AIBadge = () => (
 );
 
 export default function OnboardingWizard({ open, onClose, onLaunchSimulation, allRoles }) {
+  // Check onboarding_completed on mount — never show if already done
+  useEffect(() => {
+    if (!open) return;
+    base44.auth.me().then(user => {
+      if (user?.onboarding_completed) onClose();
+    }).catch(() => {});
+  }, [open]);
+
   const [step, setStep] = useState(1);
   const [scenario, setScenario] = useState('');
   const [selectedRoles, setSelectedRoles] = useState([]);
