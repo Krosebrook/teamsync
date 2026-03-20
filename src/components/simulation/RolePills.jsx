@@ -145,6 +145,37 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
                           <span title="Persona tuned" className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
                         )}
 
+                        {getMatchingPersonaTemplates(selectedRole.role).length > 0 && (
+                          <Popover open={personaPickerRole === selectedRole.role && personaPickerOpen} onOpenChange={(open) => {
+                            setPersonaPickerOpen(open);
+                            if (!open) setPersonaPickerRole(null);
+                          }}>
+                            <PopoverTrigger asChild>
+                              <button
+                                onClick={() => { setPersonaPickerRole(selectedRole.role); setPersonaPickerOpen(true); }}
+                                title="Apply persona template"
+                                className="text-slate-300 hover:text-blue-500 transition-colors shrink-0"
+                              >
+                                <ChevronDown className="w-3 h-3" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-56 p-2" align="start">
+                              <div className="space-y-1">
+                                {getMatchingPersonaTemplates(selectedRole.role).map(template => (
+                                  <button
+                                    key={template.id}
+                                    onClick={() => handleApplyPersonaTemplate(template, selectedRole.role)}
+                                    className="w-full text-left px-2 py-1.5 text-xs hover:bg-blue-50 rounded transition-colors"
+                                  >
+                                    <div className="font-medium text-slate-700">{template.name}</div>
+                                    <div className="text-slate-500 text-xs">{template.description?.substring(0, 40)}...</div>
+                                  </button>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+
                         <button
                           onClick={() => openTuner(selectedRole)}
                           title="Fine-tune persona"
