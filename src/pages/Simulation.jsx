@@ -89,7 +89,6 @@ import TagsInput from '../components/simulation/TagsInput';
 import PlaybookStepsPanel from '../components/simulation/PlaybookStepsPanel';
 import DecisionTreeCanvas from '../components/simulation/DecisionTreeCanvas';
 import SimulationCommentsPanel from '../components/simulation/SimulationCommentsPanel';
-import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -463,6 +462,17 @@ Return a single JSON object.`;
 
     setCurrentSimulation(finalSim);
     setIsRunning(false);
+
+    // Fire webhooks on completion
+    try {
+      await base44.functions.invoke('fireWebhookOnTension', {
+        simulationId: simulation.id,
+        tensions: tensions
+      });
+    } catch (err) {
+      console.error('Webhook firing failed:', err);
+    }
+
     toast.success('Simulation complete!');
   };
 
@@ -825,12 +835,11 @@ Return a single JSON object.`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.print()}
+                        onClick={() => setPdfExportOpen(true)}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                        title="Export simulation to PDF"
                       >
                         <FileDown className="w-3 h-3" />
-                        Export PDF
+                        PDF Report
                       </Button>
                       <Button 
                         variant="outline" 
@@ -1070,9 +1079,8 @@ Return a single JSON object.`;
                 </TabsContent>
 
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
-                   {currentSimulation && currentSimulation.status === 'completed' && (
-                     <>
-                       <SimulationPDFReport simulation={currentSimulation} outcome={null} />
+                  {currentSimulation && currentSimulation.status === 'completed' && (
+                    <>
                       {/* Playbook steps sidebar panel */}
                       {selectedPlaybook?.steps?.length > 0 && (
                         <PlaybookStepsPanel playbook={selectedPlaybook} />
