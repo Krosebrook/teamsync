@@ -1048,6 +1048,19 @@ Return a single JSON object.`;
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
                   {currentSimulation && currentSimulation.status === 'completed' && (
                     <>
+                      {/* Playbook steps sidebar panel */}
+                      {selectedPlaybook?.steps?.length > 0 && (
+                        <PlaybookStepsPanel playbook={selectedPlaybook} />
+                      )}
+
+                      {/* Synthesis failure banner */}
+                      {currentSimulation._synthesisFailed && (
+                        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          Decision synthesis unavailable — re-run to retry
+                        </div>
+                      )}
+
                       {/* Summary */}
                       {currentSimulation.summary && (
                         <div className="border-b border-slate-200 pb-6">
@@ -1073,6 +1086,14 @@ Return a single JSON object.`;
                         </div>
                       )}
 
+                      {/* Tension failure banner */}
+                      {currentSimulation._tensionsFailed && (
+                        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          Tension analysis unavailable for this run — re-run to retry
+                        </div>
+                      )}
+
                       {/* Tensions */}
                       {currentSimulation.tensions && currentSimulation.tensions.length > 0 && (
                         <div className="border-b border-slate-200 pb-6">
@@ -1095,7 +1116,6 @@ Return a single JSON object.`;
                         <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                           Role Perspectives
                         </h3>
-                        
                         <div className="space-y-2">
                           {currentSimulation.responses?.map((response, index) => {
                             const roleConfig = currentSimulation.selected_roles?.find(
@@ -1103,7 +1123,7 @@ Return a single JSON object.`;
                             );
                             return (
                               <ResponseCard 
-                                key={response.role}
+                                key={response.role + index}
                                 response={response}
                                 influence={roleConfig?.influence}
                                 index={index}
@@ -1112,6 +1132,14 @@ Return a single JSON object.`;
                             );
                           })}
                         </div>
+                      </div>
+
+                      {/* Outcome Logger */}
+                      <div className="border-t border-slate-200 pt-6">
+                        <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
+                          Outcome Tracking
+                        </h3>
+                        <OutcomeLogger simulation={currentSimulation} />
                       </div>
                     </>
                   )}
