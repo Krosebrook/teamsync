@@ -1057,6 +1057,7 @@ Return a single JSON object.`;
                       Run AI Simulation
                     </Button>
                   </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
