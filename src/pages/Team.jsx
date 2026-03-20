@@ -186,7 +186,8 @@ export default function TeamPage() {
         ) : members.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-lg">
             <User className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-600 font-medium mb-3">No team members yet</p>
+            <p className="text-slate-600 font-medium mb-2">No team members yet</p>
+            <p className="text-sm text-slate-500 mb-4">Add your team to map real people to simulation roles</p>
             <Button onClick={() => handleOpenDialog()} variant="outline">
               Add your first team member
             </Button>
