@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import PersonaTuner from './PersonaTuner';
 import CustomRoleLibrary from './CustomRoleLibrary';
+import TeamMemberSelector from './TeamMemberSelector';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
