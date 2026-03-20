@@ -176,7 +176,8 @@ export default function WebhooksPage() {
         ) : webhooks.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-lg">
             <Clock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-600 font-medium mb-3">No webhooks configured</p>
+            <p className="text-slate-600 font-medium mb-2">No webhooks configured</p>
+            <p className="text-sm text-slate-500 mb-4">Add one to fire events to Slack, n8n, Zapier, or any HTTP endpoint</p>
             <Button onClick={() => handleOpenDialog()} variant="outline">
               Create your first webhook
             </Button>
