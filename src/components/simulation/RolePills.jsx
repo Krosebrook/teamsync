@@ -23,6 +23,7 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [personaPickerRole, setPersonaPickerRole] = useState(null);
   const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
+  const [teamMemberMappings, setTeamMemberMappings] = useState({});
 
   const { data: personaTemplates = [] } = useQuery({
     queryKey: ['personaTemplates'],
