@@ -1,171 +1,287 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Play, Zap, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, Play, Save, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-export default function StressTestRunner({ open, onOpenChange, template, simulation }) {
-  const [iterations, setIterations] = useState(50);
-  const [activeTestId, setActiveTestId] = useState(null);
+const ENVIRONMENT_FACTORS = {
+  budget_pressure: { label: 'Budget Pressure', levels: ['none', 'moderate', 'severe'] },
+  time_pressure: { label: 'Time Pressure', levels: ['none', 'tight deadline', 'crisis mode'] },
+  team_conflict: { label: 'Team Conflict', levels: ['none', 'existing friction', 'hostile'] },
+  market_pressure: { label: 'Market Pressure', levels: ['none', 'competitor threat', 'existential'] },
+  regulatory_scrutiny: { label: 'Regulatory Scrutiny', levels: ['none', 'increased', 'investigation'] },
+};
+
+function ConfigPanel({ testConfig, setTestConfig, onRun, isRunning }) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="text-sm font-medium">Test Name</label>
+        <Input
+          placeholder="e.g., Budget Crunch Scenario"
+          value={testConfig.name}
+          onChange={(e) => setTestConfig({ ...testConfig, name: e.target.value })}
+          className="mt-1"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium">Iterations</label>
+        <div className="flex gap-2 mt-2">
+          {[3, 5, 10, 25].map((num) => (
+            <Button
+              key={num}
+              variant={testConfig.iterations === num ? 'default' : 'outline'}
+              onClick={() => setTestConfig({ ...testConfig, iterations: num })}
+              className="flex-1"
+            >
+              {num}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium">Environmental Factors</h3>
+        {Object.entries(ENVIRONMENT_FACTORS).map(([key, { label, levels }]) => (
+          <div key={key} className="space-y-2">
+            <p className="text-xs text-slate-600">{label}</p>
+            <div className="flex gap-1">
+              {levels.map((level) => (
+                <Button
+                  key={level}
+                  variant={testConfig.environmental_factors[key] === level ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() =>
+                    setTestConfig({
+                      ...testConfig,
+                      environmental_factors: { ...testConfig.environmental_factors, [key]: level },
+                    })
+                  }
+                  className="flex-1 text-xs"
+                >
+                  {level || 'None'}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Button
+        onClick={onRun}
+        disabled={!testConfig.name || isRunning}
+        className="w-full"
+        size="lg"
+      >
+        {isRunning ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Running...
+          </>
+        ) : (
+          <>
+            <Play className="w-4 h-4 mr-2" />
+            Run Stress Test
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
+function ResultsPanel({ result, onSaveTemplate, onClose }) {
+  if (!result.aggregate_stats) return null;
+
+  const stats = result.aggregate_stats;
+  const failureModes = stats.failure_modes || {};
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs text-slate-600">Success Rate</p>
+            <p className="text-2xl font-bold">{Math.round(stats.success_rate || 0)}%</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs text-slate-600">Avg Tensions</p>
+            <p className="text-2xl font-bold">{Math.round(stats.avg_tensions || 0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs text-slate-600">Avg Quality</p>
+            <p className="text-2xl font-bold">{Math.round(stats.avg_decision_quality || 0)}/100</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs text-slate-600">Resilience</p>
+            <p className="text-2xl font-bold">{Math.round(stats.resilience_score || 0)}/100</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {result.results?.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Iterations Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b">
+                  <tr>
+                    <th className="text-left py-2 px-2 font-medium">Iteration</th>
+                    <th className="text-left py-2 px-2 font-medium">Outcome</th>
+                    <th className="text-left py-2 px-2 font-medium">Tensions</th>
+                    <th className="text-left py-2 px-2 font-medium">Consensus</th>
+                    <th className="text-left py-2 px-2 font-medium">Quality</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {result.results.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="py-2 px-2">{idx + 1}</td>
+                      <td className="py-2 px-2">
+                        <Badge variant={r.outcome === 'success' ? 'default' : 'outline'}>
+                          {r.outcome}
+                        </Badge>
+                      </td>
+                      <td className="py-2 px-2">{r.tensions_count || 0}</td>
+                      <td className="py-2 px-2">{r.consensus_achieved ? 'Yes' : 'No'}</td>
+                      <td className="py-2 px-2">{Math.round(r.decision_quality_score || 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {Object.keys(failureModes).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Failure Modes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(failureModes).map(([mode, count]) => (
+              <div key={mode} className="flex items-center justify-between p-2 bg-slate-50 rounded">
+                <span className="text-xs text-slate-700">{mode}</span>
+                <Badge variant="outline">{count}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex gap-2">
+        <Button onClick={onSaveTemplate} variant="outline" className="flex-1">
+          <Save className="w-4 h-4 mr-2" />
+          Save as Template
+        </Button>
+        <Button onClick={onClose} className="flex-1">
+          Close
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default function StressTestRunner({ open, onOpenChange, simulation, selectedRoles, environmentalFactors }) {
+  const [step, setStep] = useState('config');
+  const [testConfig, setTestConfig] = useState({
+    name: `Stress Test - ${simulation?.title || 'Untitled'}`,
+    iterations: 5,
+    environmental_factors: environmentalFactors || {
+      budget_pressure: 'none',
+      time_pressure: 'none',
+      team_conflict: 'none',
+      market_pressure: 'none',
+      regulatory_scrutiny: 'none',
+    },
+  });
+  const [testResult, setTestResult] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: stressTests = [], refetch: refetchTests } = useQuery({
-    queryKey: ['stressTests', template?.id],
-    queryFn: () => template?.id ? base44.entities.StressTestResult.filter({ template_id: template.id }) : Promise.resolve([]),
-    enabled: !!template?.id,
-  });
+  const runStressTest = useMutation({
+    mutationFn: async () => {
+      if (!simulation) throw new Error('No simulation provided');
 
-  const runTestMutation = useMutation({
-    mutationFn: (iterCount) => base44.functions.invoke('runStressTest', {
-      template_id: template.id,
-      iterations: iterCount,
-      simulation_id: simulation?.id,
-    }),
-    onSuccess: (res) => {
-      setActiveTestId(res.stress_test_id);
-      toast.success('Stress test started');
-      // Poll for completion
-      const interval = setInterval(() => {
-        refetchTests();
-      }, 1000);
-      return () => clearInterval(interval);
+      const res = await base44.functions.invoke('runStressTest', {
+        simulation_id: simulation.id,
+        iterations: testConfig.iterations,
+        environmental_factors: testConfig.environmental_factors,
+      });
+
+      return res.data;
     },
-    onError: (error) => toast.error(error.message),
+    onSuccess: (data) => {
+      setTestResult(data);
+      setStep('results');
+      toast.success('Stress test completed');
+    },
+    onError: (error) => {
+      toast.error(`Stress test failed: ${error.message}`);
+    },
   });
 
-  const activeTest = stressTests.find(t => t.id === activeTestId);
-
-  useEffect(() => {
-    if (!open) setActiveTestId(null);
-  }, [open]);
-
-  // Auto-poll active test
-  useEffect(() => {
-    if (!activeTestId) return;
-    const timer = setInterval(() => refetchTests(), 2000);
-    return () => clearInterval(timer);
-  }, [activeTestId, refetchTests]);
+  const saveAsTemplate = useMutation({
+    mutationFn: async () => {
+      const template = await base44.entities.StressTestTemplate.create({
+        name: testConfig.name,
+        description: `Stress test with ${testConfig.iterations} iterations`,
+        scenario: simulation.scenario,
+        selected_roles: simulation.selected_roles,
+        environmental_factors: testConfig.environmental_factors,
+        use_case_type: simulation.use_case_type,
+        source_simulation_id: simulation.id,
+        tags: ['stress-test'],
+      });
+      return template;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stress_test_templates'] });
+      toast.success('Template saved');
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to save template: ${error.message}`);
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5" />
-            Stress Test Runner
+          <DialogTitle>
+            {step === 'config' ? 'Configure Stress Test' : 'Stress Test Results'}
           </DialogTitle>
-          <DialogDescription>
-            Run {template?.name} multiple times with randomized environmental factors
-          </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="config" className="w-full">
-          <TabsList>
-            <TabsTrigger value="config">Configure</TabsTrigger>
-            <TabsTrigger value="results" disabled={!stressTests.length}>Results</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="config" className="space-y-4">
-            {!activeTest || activeTest.status === 'completed' ? (
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Iterations (1-1000)</label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={1000}
-                    value={iterations}
-                    onChange={(e) => setIterations(parseInt(e.target.value) || 10)}
-                    disabled={activeTest && activeTest.status === 'running'}
-                  />
-                </div>
-                <Button
-                  onClick={() => runTestMutation.mutate(iterations)}
-                  disabled={runTestMutation.isPending || (activeTest && activeTest.status === 'running')}
-                  className="gap-2"
-                >
-                  <Play className="w-4 h-4" />
-                  {runTestMutation.isPending ? 'Starting...' : 'Start Test'}
-                </Button>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span className="text-slate-500">
-                      {activeTest.iterations_completed} / {activeTest.iterations_requested}
-                    </span>
-                  </div>
-                  <Progress
-                    value={(activeTest.iterations_completed / activeTest.iterations_requested) * 100}
-                  />
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="results" className="space-y-6">
-            {stressTests.map((test) => (
-              <div key={test.id} className="border rounded-lg p-4 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-slate-900">{test.iterations_completed} / {test.iterations_requested} iterations</h4>
-                    <p className="text-sm text-slate-500">{test.status}</p>
-                  </div>
-                  <span className="text-2xl font-bold text-emerald-600">
-                    {test.aggregate_stats?.success_rate || 0}%
-                  </span>
-                </div>
-
-                {test.aggregate_stats && (
-                  <>
-                    <div className="grid grid-cols-4 gap-2 text-sm">
-                      <div className="bg-slate-50 p-2 rounded">
-                        <p className="text-slate-500">Avg Tensions</p>
-                        <p className="text-lg font-semibold">{test.aggregate_stats.avg_tensions.toFixed(1)}</p>
-                      </div>
-                      <div className="bg-slate-50 p-2 rounded">
-                        <p className="text-slate-500">Avg Quality</p>
-                        <p className="text-lg font-semibold">{test.aggregate_stats.avg_decision_quality}</p>
-                      </div>
-                      <div className="bg-slate-50 p-2 rounded">
-                        <p className="text-slate-500">Resilience</p>
-                        <p className="text-lg font-semibold">{test.aggregate_stats.resilience_score}</p>
-                      </div>
-                      <div className="bg-slate-50 p-2 rounded">
-                        <p className="text-slate-500">Failures</p>
-                        <p className="text-lg font-semibold">
-                          {Object.values(test.aggregate_stats.failure_modes).reduce((a, b) => a + b, 0)}
-                        </p>
-                      </div>
-                    </div>
-
-                    {test.results?.length > 0 && (
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={test.results.slice(-50)}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="iteration" />
-                            <YAxis />
-                            <Tooltip />
-                            <Line type="monotone" dataKey="decision_quality_score" stroke="#10b981" />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))}
-          </TabsContent>
-        </Tabs>
+        {step === 'config' ? (
+          <ConfigPanel
+            testConfig={testConfig}
+            setTestConfig={setTestConfig}
+            onRun={() => runStressTest.mutate()}
+            isRunning={runStressTest.isPending}
+          />
+        ) : (
+          <ResultsPanel
+            result={testResult}
+            onSaveTemplate={() => saveAsTemplate.mutate()}
+            onClose={() => onOpenChange(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
