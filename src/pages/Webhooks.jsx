@@ -63,19 +63,43 @@ export default function WebhooksPage() {
 
   const testMutation = useMutation({
     mutationFn: async (webhookId) => {
-      const result = await base44.functions.invoke('fireWebhook', {
-        webhookId,
-        payload: {
-          event: 'test',
-          timestamp: new Date().toISOString(),
-          message: 'This is a test payload'
-        }
+      // Fetch the webhook to get its details
+      const webhookList = await base44.entities.Webhook.filter({ id: webhookId });
+      const webhook = webhookList[0];
+      
+      if (!webhook) throw new Error('Webhook not found');
+
+      const payload = {
+        event: 'test',
+        timestamp: new Date().toISOString(),
+        message: 'This is a test webhook payload'
+      };
+
+      // Fire the webhook directly
+      const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(webhook.secret && { 'X-Webhook-Secret': webhook.secret })
+        },
+        body: JSON.stringify(payload)
       });
-      return result.data;
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      // Update webhook metrics
+      await base44.entities.Webhook.update(webhook.id, {
+        success_count: (webhook.success_count || 0) + 1,
+        last_triggered: new Date().toISOString()
+      });
+
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks'] });
-      toast.success('Test payload fired');
+      toast.success('Test payload delivered successfully');
       setTestingWebhookId(null);
     },
     onError: (err) => {
