@@ -83,13 +83,13 @@ import OutcomeLogger from '../components/simulation/OutcomeLogger';
 import EmptyDashboard from '../components/simulation/EmptyDashboard';
 import ShareSimulationModal from '../components/simulation/ShareSimulationModal';
 import VersionHistoryPanel from '../components/simulation/VersionHistoryPanel';
+import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 import SimulationSearchFilter, { applyFilters } from '../components/simulation/SimulationSearchFilter';
 import SimulationCard from '../components/simulation/SimulationCard';
 import TagsInput from '../components/simulation/TagsInput';
 import PlaybookStepsPanel from '../components/simulation/PlaybookStepsPanel';
 import DecisionTreeCanvas from '../components/simulation/DecisionTreeCanvas';
 import SimulationCommentsPanel from '../components/simulation/SimulationCommentsPanel';
-import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -827,7 +827,6 @@ Return a single JSON object.`;
                         size="sm"
                         onClick={() => window.print()}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                        title="Export simulation to PDF"
                       >
                         <FileDown className="w-3 h-3" />
                         Export PDF
@@ -1070,12 +1069,15 @@ Return a single JSON object.`;
                 </TabsContent>
 
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
-                  {currentSimulation && currentSimulation.status === 'completed' && (
-                    <>
-                      {/* Playbook steps sidebar panel */}
-                      {selectedPlaybook?.steps?.length > 0 && (
-                        <PlaybookStepsPanel playbook={selectedPlaybook} />
-                      )}
+                   {currentSimulation && currentSimulation.status === 'completed' && (
+                     <>
+                       {/* PDF Report (hidden but renderable for print) */}
+                       <SimulationPDFReport simulation={currentSimulation} outcome={null} />
+
+                       {/* Playbook steps sidebar panel */}
+                       {selectedPlaybook?.steps?.length > 0 && (
+                         <PlaybookStepsPanel playbook={selectedPlaybook} />
+                       )}
 
                       {/* Synthesis failure banner */}
                       {currentSimulation._synthesisFailed && (
