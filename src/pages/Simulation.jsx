@@ -89,6 +89,7 @@ import TagsInput from '../components/simulation/TagsInput';
 import PlaybookStepsPanel from '../components/simulation/PlaybookStepsPanel';
 import DecisionTreeCanvas from '../components/simulation/DecisionTreeCanvas';
 import SimulationCommentsPanel from '../components/simulation/SimulationCommentsPanel';
+import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
