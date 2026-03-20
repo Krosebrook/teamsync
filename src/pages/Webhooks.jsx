@@ -9,10 +9,11 @@ import { Plus, Trash2, Play, CheckCircle2, AlertCircle, Clock } from 'lucide-rea
 import { toast } from 'sonner';
 
 const EVENT_TYPES = [
-  { id: 'simulation.started', label: 'Simulation Started' },
-  { id: 'simulation.completed', label: 'Simulation Completed' },
-  { id: 'tension.critical', label: 'Critical Tension Detected' },
-  { id: 'next_step.created', label: 'Next Step Created' },
+  { id: 'simulation.started', label: 'Simulation Started', desc: 'When a new simulation begins' },
+  { id: 'simulation.completed', label: 'Simulation Completed', desc: 'When simulation analysis finishes' },
+  { id: 'tension.critical', label: 'Critical Tension Detected', desc: 'When a critical tension is identified' },
+  { id: 'tension.high', label: 'High Tension Detected', desc: 'When a high-severity tension is found' },
+  { id: 'next_step.created', label: 'Next Step Created', desc: 'When action items are generated' },
 ];
 
 export default function WebhooksPage() {
