@@ -1,56 +1,42 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
+/**
+ * Fire outbound webhook POST request and track success/failure
+ * Called during simulation completion and tension detection
+ */
 Deno.serve(async (req) => {
   try {
+    const { webhook, payload } = await req.json();
+
+    if (!webhook || !payload) {
+      return Response.json({ error: 'Missing webhook or payload' }, { status: 400 });
+    }
+
+    const response = await fetch(webhook.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(webhook.secret && { 'X-Webhook-Secret': webhook.secret })
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000)
+    });
+
+    const isSuccess = response.ok;
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
-    const { webhookId, payload } = await req.json();
-    
-    if (!webhookId || !payload) {
-      return Response.json({ error: 'Missing webhookId or payload' }, { status: 400 });
-    }
-
-    // Get webhook record
-    const webhook = await base44.entities.Webhook.filter({ id: webhookId });
-    if (!webhook || webhook.length === 0) {
-      return Response.json({ error: 'Webhook not found' }, { status: 404 });
-    }
-
-    const webhookRecord = webhook[0];
-    
-    // Fire the webhook
-    let success = false;
-    try {
-      const response = await fetch(webhookRecord.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(webhookRecord.secret && { 'X-Webhook-Secret': webhookRecord.secret })
-        },
-        body: JSON.stringify(payload)
-      });
-
-      success = response.ok;
-    } catch (error) {
-      console.error('Webhook fire error:', error);
-      success = false;
-    }
-
-    // Update webhook metrics
-    const updateData = {
-      ...(success && { success_count: (webhookRecord.success_count || 0) + 1 }),
-      ...(!success && { failure_count: (webhookRecord.failure_count || 0) + 1 }),
+    // Update webhook record with success/failure metrics
+    await base44.asServiceRole.entities.Webhook.update(webhook.id, {
+      ...(isSuccess && { success_count: (webhook.success_count || 0) + 1 }),
+      ...(!isSuccess && { failure_count: (webhook.failure_count || 0) + 1 }),
       last_triggered: new Date().toISOString()
-    };
+    });
 
-    await base44.entities.Webhook.update(webhookRecord.id, updateData);
-
-    return Response.json({ success, webhookId });
+    return Response.json({ 
+      success: isSuccess, 
+      status: response.status,
+      webhookId: webhook.id 
+    });
   } catch (error) {
     console.error('fireWebhook error:', error);
     return Response.json({ error: error.message }, { status: 500 });
