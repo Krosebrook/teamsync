@@ -206,7 +206,6 @@ export default function SimulationPage() {
       toast.error('Please enter a title and scenario');
       return;
     }
-
     if (selectedRoles.length < 2) {
       toast.error('Please select at least 2 team roles');
       return;
@@ -215,19 +214,14 @@ export default function SimulationPage() {
     setIsRunning(true);
     setActiveTab('results');
 
-    // Build role descriptions including custom roles
     const allRoles = [
       ...ROLES,
-      ...customRoles.map(cr => ({
-        id: `custom_${cr.id}`,
-        name: cr.name,
-        description: cr.description,
-      }))
+      ...customRoles.map(cr => ({ id: `custom_${cr.id}`, name: cr.name, description: cr.description }))
     ];
 
     const envContext = environmentalFactors.length > 0
-      ? `\nENVIRONMENTAL CONTEXT (Dynamic factors influencing this decision):\n${environmentalFactors.map(f =>
-          `- [${f.category.toUpperCase()} | Impact: ${f.impact} | Trend: ${f.drift}] ${f.name}${f.current_state ? `: ${f.current_state}` : ''}${f.evolution_hint ? ` (May evolve: ${f.evolution_hint})` : ''}`
+      ? `\nENVIRONMENTAL CONTEXT:\n${environmentalFactors.map(f =>
+          `- [${f.category.toUpperCase()} | Impact: ${f.impact}] ${f.name}${f.current_state ? `: ${f.current_state}` : ''}`
         ).join('\n')}\n`
       : '';
 
@@ -238,15 +232,13 @@ export default function SimulationPage() {
       const tuning = personaTunings[r.role];
 
       let block = `--- ROLE: ${roleName} (Influence: ${r.influence}/10) ---
-You are simulating ${roleName}. Reason through each step before responding:
-
-STEP 1 — SCAN: What does this scenario mean for ${roleName}? What's personally and professionally at stake?
-STEP 2 — RISK FILTER: What biases does ${roleName} carry? What will they over- or under-weight?
-STEP 3 — POSITION: What is ${roleName}'s concrete recommendation? No hedging.
-STEP 4 — CONCERNS: Top 2-3 objections or risks ${roleName} would raise.
-STEP 5 — TENSION CHECK: Which other roles in this room will ${roleName} clash with, and why?
-STEP 6 — COMMUNICATE: Deliver the position in ${roleName}'s authentic voice.
-
+You are simulating ${roleName}.
+STEP 1 — SCAN: What does this scenario mean for ${roleName}?
+STEP 2 — RISK FILTER: What biases does ${roleName} carry?
+STEP 3 — POSITION: What is ${roleName}'s concrete recommendation?
+STEP 4 — CONCERNS: Top 2-3 objections.
+STEP 5 — TENSION CHECK: Which other roles will ${roleName} clash with?
+STEP 6 — COMMUNICATE: Deliver in ${roleName}'s authentic voice.
 Profile context:`;
 
       if (roleData?.description) block += `\n- Typical concerns: ${roleData.description}`;
@@ -260,65 +252,66 @@ Profile context:`;
       if (motivations?.length) block += `\n- Core motivations: ${motivations.join(', ')}`;
       if (roleProfile?.risk_tolerance) block += `\n- Risk tolerance: ${roleProfile.risk_tolerance}`;
       if (roleProfile?.conflict_style) block += `\n- Conflict style: ${roleProfile.conflict_style}`;
-      if (roleProfile?.signature_phrases?.length) block += `\n- Signature phrases: "${roleProfile.signature_phrases.join('", "')}"`;
-      if (roleProfile?.cognitive_biases?.length) block += `\n- Known biases: ${roleProfile.cognitive_biases.map(b => b.bias).join(', ')}`;
-      if (roleProfile?.relationship_dynamics?.friction_with?.length) block += `\n- Tends to clash with: ${roleProfile.relationship_dynamics.friction_with.join(', ')}`;
 
       if (tuning?.enabled) {
-        block += `\n--- PERSONA TUNING (apply with priority) ---`;
-        block += `\n- Directness: ${tuning.directness_level}/10`;
-        block += `\n- Contrarianism: ${tuning.contrarianism}/10`;
-        block += `\n- Data orientation: ${tuning.data_orientation}/10`;
-        block += `\n- Urgency bias: ${tuning.urgency_bias}/10`;
-        block += `\n- Stress level: ${tuning.stress_level}/10`;
+        block += `\n--- PERSONA TUNING ---`;
+        block += `\n- Directness: ${tuning.directness_level}/10, Contrarianism: ${tuning.contrarianism}/10`;
+        block += `\n- Data orientation: ${tuning.data_orientation}/10, Urgency bias: ${tuning.urgency_bias}/10`;
         if (tuning.risk_tolerance_override) block += `\n- Risk tolerance OVERRIDE: ${tuning.risk_tolerance_override}`;
-        if (tuning.conflict_style_override) block += `\n- Conflict style OVERRIDE: ${tuning.conflict_style_override}`;
-        if (tuning.active_cognitive_biases?.length) block += `\n- Amplified biases: ${tuning.active_cognitive_biases.join(', ')}`;
-        if (tuning.custom_agenda?.trim()) block += `\n- Hidden agenda (subtle, don't state explicitly): ${tuning.custom_agenda}`;
+        if (tuning.custom_agenda?.trim()) block += `\n- Hidden agenda: ${tuning.custom_agenda}`;
       }
-
       return block;
     }).join('\n\n');
 
     const prompt = `ROLE: You are a simulation engine running a cross-functional team decision discussion.
 
-INPUT:
 SCENARIO: ${scenario}
 USE CASE TYPE: ${selectedUseCase?.id || 'custom'}
 ${envContext}
 
-PARTICIPATING ROLES WITH CHAIN-OF-THOUGHT INSTRUCTIONS:
+PARTICIPATING ROLES:
 ${roleRiseBlocks}
 
-${envContext ? 'IMPORTANT: Environmental factors MUST be reflected in each role\'s concerns and recommendations.' : ''}
+TENSION DETECTION: As an organizational psychologist, identify:
+1. Role pairs with conflicting positions, severity (low/medium/high/critical), root cause, hidden alignment
+2. The single most dangerous tension
 
-TENSION DETECTION (after generating all role responses):
-You are now a neutral organizational psychologist. Identify:
-1. Pairs of roles with conflicting positions or values
-2. For each conflict: severity, root cause, and which biases are colliding
-3. Hidden alignments — roles that seem to conflict but share an underlying goal
-4. The single most dangerous tension that could derail this decision
+DECISION SYNTHESIS: As a senior facilitator:
+1. CONSENSUS SCAN: What do most roles agree on?
+2. WEDGE ISSUES: 2-3 things the team won't resolve naturally
+3. TRADEOFFS: Core decision as A vs B
+4. NEXT STEPS: 3-5 specific actions with owner_role, priority (low/medium/high), confidence (0-100), estimated_hours (realistic: low=2-8h, medium=4-16h, high=8-40h)
 
-DECISION SYNTHESIS:
-You are now a senior decision facilitator. Synthesize:
-1. CONSENSUS SCAN: What do most roles agree on, even if they disagree on approach?
-2. WEDGE ISSUES: 2-3 things the team will NOT naturally resolve
-3. TRADEOFFS: Frame the core decision as A vs B — forced choice with known costs
-4. NEXT STEPS: 3-5 specific, assignable actions with owner role, priority, confidence %
+Return a single JSON object.`;
 
-Return a single JSON object with the exact schema provided.`;
-
+    let simulation;
     try {
-      const simulation = await createMutation.mutateAsync({
+      simulation = await createMutation.mutateAsync({
         title,
         scenario,
         use_case_type: selectedUseCase?.id || 'custom',
         selected_roles: selectedRoles,
+        tags: simTags,
         status: 'running',
       });
-
       setCurrentSimulation(simulation);
+    } catch (error) {
+      console.error('[Pass 0] Failed to create simulation record:', error);
+      toast.error('Failed to start simulation');
+      setIsRunning(false);
+      return;
+    }
 
+    // Pass 1+2+3: single LLM call with graceful partial degradation
+    let responses = [];
+    let tensions = [];
+    let summary = null;
+    let decision_trade_offs = [];
+    let next_steps = [];
+    let tensionsFailed = false;
+    let synthesisFailed = false;
+
+    try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
         response_json_schema: {
@@ -334,7 +327,9 @@ Return a single JSON object with the exact schema provided.`;
                   concerns: { type: "array", items: { type: "string" } },
                   risk_tolerance: { type: "string" },
                   recommendation: { type: "string" },
-                  primary_driver: { type: "string" }
+                  primary_driver: { type: "string" },
+                  predicted_tensions_with: { type: "array", items: { type: "string" } },
+                  authentic_voice_quote: { type: "string" }
                 }
               }
             },
@@ -345,7 +340,9 @@ Return a single JSON object with the exact schema provided.`;
                 properties: {
                   between: { type: "array", items: { type: "string" } },
                   description: { type: "string" },
-                  severity: { type: "string" }
+                  severity: { type: "string" },
+                  root_cause: { type: "string" },
+                  hidden_alignment: { type: "string" }
                 }
               }
             },
@@ -369,7 +366,8 @@ Return a single JSON object with the exact schema provided.`;
                   action: { type: "string" },
                   owner_role: { type: "string" },
                   priority: { type: "string" },
-                  confidence: { type: "number" }
+                  confidence: { type: "number" },
+                  estimated_hours: { type: "number" }
                 }
               }
             }
@@ -377,40 +375,86 @@ Return a single JSON object with the exact schema provided.`;
         }
       });
 
-      const nextSteps = (result.next_steps || []).map(step => ({
-        ...step,
-        completed: false
-      }));
+      // Parse Pass 1 (role responses) — per-role fallback
+      try {
+        responses = (result.responses || []).map(r => {
+          if (!r || typeof r !== 'object') {
+            console.error('[Pass 1] Malformed role response:', r);
+            return { role: 'unknown', position: '⚠ This role failed to respond — retry the simulation', status: 'error', concerns: [], recommendation: '' };
+          }
+          return r;
+        });
+        // Ensure every selected role has a response
+        selectedRoles.forEach(sr => {
+          const roleName = allRoles.find(rd => rd.id === sr.role)?.name || sr.role.replace(/_/g, ' ');
+          if (!responses.find(r => r.role?.toLowerCase().includes(sr.role.toLowerCase()) || sr.role.toLowerCase().includes(r.role?.toLowerCase()))) {
+            console.error(`[Pass 1] Missing response for role: ${roleName}`);
+            responses.push({ role: roleName, position: '⚠ This role failed to respond — retry the simulation', status: 'error', concerns: [], recommendation: '' });
+          }
+        });
+      } catch (e) {
+        console.error('[Pass 1] Role response parse error:', e);
+        responses = selectedRoles.map(sr => ({
+          role: allRoles.find(rd => rd.id === sr.role)?.name || sr.role,
+          position: '⚠ This role failed to respond — retry the simulation',
+          status: 'error', concerns: [], recommendation: ''
+        }));
+      }
 
+      // Parse Pass 2 (tension detection)
+      try {
+        tensions = result.tensions || [];
+        if (!Array.isArray(tensions)) throw new Error('tensions not an array');
+      } catch (e) {
+        console.error('[Pass 2] Tension detection parse error:', e);
+        tensionsFailed = true;
+        tensions = [];
+      }
+
+      // Parse Pass 3 (synthesis)
+      try {
+        summary = result.summary || null;
+        decision_trade_offs = result.decision_trade_offs || [];
+        next_steps = (result.next_steps || []).map(s => ({ ...s, completed: false }));
+        if (!summary && !next_steps.length) throw new Error('synthesis empty');
+      } catch (e) {
+        console.error('[Pass 3] Synthesis parse error:', e);
+        synthesisFailed = true;
+        summary = null;
+        next_steps = [];
+      }
+
+    } catch (error) {
+      console.error('[AI Call] Full simulation API error:', error);
+      toast.error('AI analysis failed — partial results may be shown');
+      tensionsFailed = true;
+      synthesisFailed = true;
+    }
+
+    const finalSim = {
+      ...simulation,
+      responses,
+      tensions,
+      summary,
+      decision_trade_offs,
+      next_steps,
+      status: 'completed',
+      _tensionsFailed: tensionsFailed,
+      _synthesisFailed: synthesisFailed,
+    };
+
+    try {
       await updateMutation.mutateAsync({
         id: simulation.id,
-        data: {
-          responses: result.responses,
-          tensions: result.tensions,
-          summary: result.summary,
-          decision_trade_offs: result.decision_trade_offs || [],
-          next_steps: nextSteps,
-          status: 'completed',
-        }
+        data: { responses, tensions, summary, decision_trade_offs, next_steps, status: 'completed' }
       });
-
-      setCurrentSimulation({
-        ...simulation,
-        responses: result.responses,
-        tensions: result.tensions,
-        summary: result.summary,
-        decision_trade_offs: result.decision_trade_offs || [],
-        next_steps: nextSteps,
-        status: 'completed',
-      });
-
-      toast.success('Simulation complete!');
-    } catch (error) {
-      toast.error('Failed to run simulation');
-      console.error(error);
-    } finally {
-      setIsRunning(false);
+    } catch (e) {
+      console.error('[Save] Failed to persist simulation results:', e);
     }
+
+    setCurrentSimulation(finalSim);
+    setIsRunning(false);
+    toast.success('Simulation complete!');
   };
 
   const loadSimulation = (sim) => {
