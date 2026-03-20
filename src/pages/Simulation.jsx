@@ -31,7 +31,8 @@ import {
   Share2,
   History,
   AlertTriangle,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Users
 } from "lucide-react";
 import { toast } from "sonner";
 import { createPageUrl } from '@/utils';
