@@ -1012,7 +1012,17 @@ Return a single JSON object.`;
                     environmentalFactors={environmentalFactors}
                     onEnvironmentalFactorsChange={setEnvironmentalFactors}
                   />
-                  
+
+                  {/* Tags input */}
+                  <div className="mt-4">
+                    <p className="text-xs text-slate-500 mb-1.5">Tags</p>
+                    <TagsInput
+                      tags={simTags}
+                      onChange={setSimTags}
+                      useCaseType={decisionType}
+                    />
+                  </div>
+
                   <div className="mt-4 flex gap-2">
                     <Button
                       onClick={() => setOutcomePredictionOpen(true)}
