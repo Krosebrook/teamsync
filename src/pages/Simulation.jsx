@@ -1543,6 +1543,22 @@ Return a single JSON object.`;
           onLoadVersion={loadSimulation}
         />
       )}
+
+      <DecisionTreeCanvas
+        open={decisionTreeCanvasOpen}
+        onOpenChange={setDecisionTreeCanvasOpen}
+        simulation={currentSimulation}
+      />
+
+      {commentTarget && (
+        <SimulationCommentsPanel
+          open={commentsOpen}
+          onOpenChange={setCommentsOpen}
+          simulation={currentSimulation}
+          targetType={commentTarget.type}
+          targetId={commentTarget.id}
+        />
+      )}
     </div>
   );
 }
