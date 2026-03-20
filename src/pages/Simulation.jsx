@@ -76,6 +76,14 @@ import WhatIfBranch from '../components/simulation/WhatIfBranch';
 import NetworkGraph from '../components/simulation/NetworkGraph';
 import MultiStageSimulation from '../components/simulation/MultiStageSimulation';
 import OnboardingWizard from '../components/onboarding/OnboardingWizard';
+import OutcomeLogger from '../components/simulation/OutcomeLogger';
+import EmptyDashboard from '../components/simulation/EmptyDashboard';
+import ShareSimulationModal from '../components/simulation/ShareSimulationModal';
+import VersionHistoryPanel from '../components/simulation/VersionHistoryPanel';
+import SimulationSearchFilter, { applyFilters } from '../components/simulation/SimulationSearchFilter';
+import SimulationCard from '../components/simulation/SimulationCard';
+import TagsInput from '../components/simulation/TagsInput';
+import PlaybookStepsPanel from '../components/simulation/PlaybookStepsPanel';
 
 export default function SimulationPage() {
   const queryClient = useQueryClient();
@@ -133,6 +141,10 @@ export default function SimulationPage() {
   const [whatIfOpen, setWhatIfOpen] = useState(false);
   const [multiStageOpen, setMultiStageOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const [simFilters, setSimFilters] = useState({ search: '', status: 'all', useCase: 'all', sort: 'newest' });
+  const [simTags, setSimTags] = useState([]);
 
   const { data: simulations = [], isLoading: loadingSimulations } = useQuery({
     queryKey: ['simulations'],
