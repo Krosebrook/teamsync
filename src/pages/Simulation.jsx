@@ -34,7 +34,6 @@ import {
   Settings as SettingsIcon
 } from "lucide-react";
 import { toast } from "sonner";
-import { Users } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 
