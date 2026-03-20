@@ -30,7 +30,8 @@ import {
   GitBranch,
   Share2,
   History,
-  AlertTriangle
+  AlertTriangle,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { createPageUrl } from '@/utils';
@@ -83,7 +84,6 @@ import OutcomeLogger from '../components/simulation/OutcomeLogger';
 import EmptyDashboard from '../components/simulation/EmptyDashboard';
 import ShareSimulationModal from '../components/simulation/ShareSimulationModal';
 import VersionHistoryPanel from '../components/simulation/VersionHistoryPanel';
-import SimulationPDFReport from '../components/simulation/SimulationPDFReport';
 import SimulationSearchFilter, { applyFilters } from '../components/simulation/SimulationSearchFilter';
 import SimulationCard from '../components/simulation/SimulationCard';
 import TagsInput from '../components/simulation/TagsInput';
@@ -173,15 +173,6 @@ export default function SimulationPage() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-  });
-
-  const { data: simulationOutcome } = useQuery({
-    queryKey: ['simulationOutcome', currentSimulation?.id],
-    queryFn: () => {
-      if (!currentSimulation?.id) return null;
-      return base44.entities.SimulationOutcome.filter({ simulation_id: currentSimulation.id }).then(results => results[0] || null);
-    },
-    enabled: !!currentSimulation?.id,
   });
 
   // Show onboarding for new users
@@ -834,7 +825,17 @@ Return a single JSON object.`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.print()}
+                        onClick={async () => {
+                          try {
+                            const response = await base44.functions.invoke('generateSimulationPDF', {
+                              simulationId: currentSimulation.id
+                            });
+                            // PDF download is handled by the function response
+                            toast.success('PDF downloaded');
+                          } catch (err) {
+                            toast.error('PDF generation failed');
+                          }
+                        }}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                       >
                         <FileDown className="w-3 h-3" />
@@ -930,6 +931,27 @@ Return a single JSON object.`;
                   >
                     <BarChart3 className="w-3 h-3" />
                     Analytics
+                  </a>
+                  <a
+                    href="/Team"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Users className="w-3 h-3" />
+                    Team
+                  </a>
+                  <a
+                    href="/Webhooks"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Zap className="w-3 h-3" />
+                    Webhooks
+                  </a>
+                  <a
+                    href="/Settings"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Settings className="w-3 h-3" />
+                    Settings
                   </a>
                 </>
               )}
@@ -1078,15 +1100,12 @@ Return a single JSON object.`;
                 </TabsContent>
 
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
-                   {currentSimulation && currentSimulation.status === 'completed' && (
-                     <>
-                       {/* PDF Report (hidden but renderable for print) */}
-                       <SimulationPDFReport simulation={currentSimulation} outcome={null} />
-
-                       {/* Playbook steps sidebar panel */}
-                       {selectedPlaybook?.steps?.length > 0 && (
-                         <PlaybookStepsPanel playbook={selectedPlaybook} />
-                       )}
+                  {currentSimulation && currentSimulation.status === 'completed' && (
+                    <>
+                      {/* Playbook steps sidebar panel */}
+                      {selectedPlaybook?.steps?.length > 0 && (
+                        <PlaybookStepsPanel playbook={selectedPlaybook} />
+                      )}
 
                       {/* Synthesis failure banner */}
                       {currentSimulation._synthesisFailed && (
