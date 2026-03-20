@@ -178,21 +178,32 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
                         )}
 
                         <button
-                          onClick={() => openTuner(selectedRole)}
-                          title="Fine-tune persona"
-                          className="text-slate-300 hover:text-violet-500 transition-colors shrink-0"
-                        >
-                          <Sliders className="w-3 h-3" />
-                        </button>
+                           onClick={() => openTuner(selectedRole)}
+                           title="Fine-tune persona"
+                           className="text-slate-300 hover:text-violet-500 transition-colors shrink-0"
+                         >
+                           <Sliders className="w-3 h-3" />
+                         </button>
 
-                        <Input
-                          type="number"
-                          value={selectedRole.influence}
-                          onChange={(e) => handleUpdateInfluence(selectedRole.role, parseInt(e.target.value) || 1)}
-                          className="w-12 h-6 text-xs text-center border-slate-200 px-1"
-                          min="1"
-                          max="10"
-                        />
+                         <TeamMemberSelector
+                           roleId={selectedRole.role}
+                           selectedMember={teamMemberMappings[selectedRole.role]}
+                           onSelectMember={(roleId, member) => {
+                             setTeamMemberMappings({
+                               ...teamMemberMappings,
+                               [roleId]: member
+                             });
+                           }}
+                         />
+
+                         <Input
+                           type="number"
+                           value={selectedRole.influence}
+                           onChange={(e) => handleUpdateInfluence(selectedRole.role, parseInt(e.target.value) || 1)}
+                           className="w-12 h-6 text-xs text-center border-slate-200 px-1"
+                           min="1"
+                           max="10"
+                         />
 
                         <button
                           onClick={() => handleRemoveRole(selectedRole.role)}
