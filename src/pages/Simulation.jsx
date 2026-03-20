@@ -1189,14 +1189,28 @@ Return a single JSON object.`;
                 <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                   History
                 </h3>
-                <SimulationHistory 
+                <SimulationSearchFilter
                   simulations={simulations}
-                  onSelect={compareMode ? toggleCompareSimulation : loadSimulation}
-                  selectedId={currentSimulation?.id}
-                  isLoading={loadingSimulations}
-                  compareMode={compareMode}
-                  compareSelected={compareSimulations.map(s => s.id)}
+                  filters={simFilters}
+                  onChange={setSimFilters}
                 />
+                <div className="mt-2 space-y-2">
+                  {loadingSimulations ? (
+                    <p className="text-xs text-slate-400 text-center py-4">Loading...</p>
+                  ) : applyFilters(simulations, simFilters).length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-4">No simulations match filters</p>
+                  ) : (
+                    applyFilters(simulations, simFilters).map(sim => (
+                      <SimulationCard
+                        key={sim.id}
+                        simulation={sim}
+                        onSelect={compareMode ? toggleCompareSimulation : loadSimulation}
+                        isSelected={currentSimulation?.id === sim.id}
+                        compareMode={compareMode}
+                      />
+                    ))
+                  )}
+                </div>
                 {currentSimulation?.status === 'completed' && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
                     <ForkSimulationButton
