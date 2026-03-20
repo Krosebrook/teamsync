@@ -63,6 +63,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Team" element={<Team />} />
       <Route path="/Webhooks" element={<Webhooks />} />
+      <Route path="/Settings" element={<Settings />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
