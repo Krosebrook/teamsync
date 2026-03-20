@@ -21,6 +21,13 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
   const [tunerOpen, setTunerOpen] = useState(false);
   const [tunerRole, setTunerRole] = useState(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [personaPickerRole, setPersonaPickerRole] = useState(null);
+  const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
+
+  const { data: personaTemplates = [] } = useQuery({
+    queryKey: ['personaTemplates'],
+    queryFn: () => base44.entities.PersonaTemplate.list()
+  });
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
