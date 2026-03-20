@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { createPageUrl } from '@/utils';
+import { base44 } from '@/api/base44Client';
 
 import { ROLES } from '../components/simulation/RoleSelector';
 import RolePills from '../components/simulation/RolePills';
