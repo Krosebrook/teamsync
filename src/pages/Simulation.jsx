@@ -1513,12 +1513,29 @@ Return a single JSON object.`;
           if (u) setSelectedUseCase({ id: u });
           setActiveTab('setup');
           if (runImmediately) {
-            // Small delay to let state settle then run
             setTimeout(() => runSimulation(), 100);
           }
           toast.success(runImmediately ? 'Running simulation…' : 'Simulation saved as draft');
         }}
       />
+
+      {currentSimulation && (
+        <ShareSimulationModal
+          simulation={currentSimulation}
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          onSimulationUpdate={(updated) => setCurrentSimulation(prev => ({ ...prev, ...updated }))}
+        />
+      )}
+
+      {currentSimulation && (
+        <VersionHistoryPanel
+          simulation={currentSimulation}
+          open={versionHistoryOpen}
+          onOpenChange={setVersionHistoryOpen}
+          onLoadVersion={loadSimulation}
+        />
+      )}
     </div>
   );
 }
