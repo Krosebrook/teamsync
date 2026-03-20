@@ -1193,7 +1193,9 @@ Return a single JSON object.`;
                         <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                           Outcome Tracking
                         </h3>
-                        <OutcomeLogger simulation={currentSimulation} />
+                        <OutcomeLogger simulation={currentSimulation} onOutcomeLogged={() => {
+                          queryClient.invalidateQueries({ queryKey: ['simulations'] });
+                        }} />
                       </div>
                     </>
                   )}
