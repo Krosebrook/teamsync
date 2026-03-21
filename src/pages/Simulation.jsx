@@ -179,6 +179,13 @@ export default function SimulationPage() {
     queryFn: () => base44.auth.me(),
   });
 
+  const { data: currentOutcome } = useQuery({
+    queryKey: ['simulationOutcome', currentSimulation?.id],
+    queryFn: () => base44.entities.SimulationOutcome.filter({ simulation_id: currentSimulation.id }),
+    enabled: !!currentSimulation?.id && currentSimulation?.status === 'completed',
+    select: (data) => data?.[0] || null,
+  });
+
   // Show onboarding for new users
   useEffect(() => {
     if (currentUser && !currentUser.onboarding_completed && simulations.length === 0) {
