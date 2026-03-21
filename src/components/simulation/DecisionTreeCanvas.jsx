@@ -205,6 +205,21 @@ export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
             ref={canvasRef}
             className="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded relative overflow-hidden"
           >
+            {nodes.length === 0 && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mb-3">
+                  <GitBranch className="w-6 h-6 text-violet-500" />
+                </div>
+                <p className="text-sm font-medium text-slate-700">No what-if branches yet</p>
+                <p className="text-xs text-slate-400 mt-1 mb-3">Click "+ Start Tree" to explore alternative outcomes from this simulation.</p>
+                <button
+                  onClick={() => addNode('start')}
+                  className="text-xs px-3 py-1.5 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                >
+                  + Start Tree
+                </button>
+              </div>
+            )}
             {nodes.map((node) => (
               <Node
                 key={node.id}
