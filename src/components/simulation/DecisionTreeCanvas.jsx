@@ -137,13 +137,14 @@ export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
   });
 
   const addNode = (type) => {
+    const isFirstStart = type === 'start' && nodes.length === 0;
     const newNode = {
       id: `${type}-${Date.now()}`,
       type,
-      label: `New ${NODE_TYPES[type]?.label || 'Node'}`,
-      description: '',
-      x: Math.random() * 400 + 200,
-      y: Math.random() * 400 + 200,
+      label: isFirstStart ? (simulation?.title || 'Base Scenario') : `New ${NODE_TYPES[type]?.label || 'Node'}`,
+      description: isFirstStart ? (simulation?.scenario?.substring(0, 100) || '') : '',
+      x: isFirstStart ? 100 : Math.random() * 400 + 200,
+      y: isFirstStart ? 100 : Math.random() * 400 + 200,
     };
     setNodes([...nodes, newNode]);
   };
