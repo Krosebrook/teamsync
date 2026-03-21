@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -185,7 +185,7 @@ export default function SimulationPage() {
   }, [currentUser, simulations.length]);
 
   // Build complete roles list including custom roles
-  const allRolesWithCustom = React.useMemo(() => {
+  const allRolesWithCustom = useMemo(() => {
     const customRoleObjects = customRoles.map(cr => ({
       id: `custom_${cr.id}`,
       name: cr.name,
