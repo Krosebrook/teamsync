@@ -714,287 +714,57 @@ Return a single JSON object.`;
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {compareMode ? (
                 <>
                   <Badge variant="outline" className="gap-1 text-xs h-7">
                     <GitCompare className="w-3 h-3" />
                     {compareSimulations.length} selected
                   </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={exitCompareMode}
-                    className="h-7 text-xs"
-                  >
+                  <Button variant="outline" size="sm" onClick={exitCompareMode} className="h-7 text-xs">
                     Exit Compare
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button 
-                   variant="outline" 
-                   size="sm"
-                   onClick={enterCompareMode}
-                   className="gap-2 h-7 text-xs"
-                   disabled={simulations.length < 2}
-                   aria-label="Compare simulations"
-                  >
-                   <GitCompare className="w-3 h-3" aria-hidden="true" />
-                   Compare
-                  </Button>
-                  <Button 
-                   variant="outline" 
-                   size="sm"
-                   onClick={() => setOnboardingOpen(true)}
-                   className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                   aria-label="Start guided setup"
-                  >
-                   <Sparkles className="w-3 h-3" aria-hidden="true" />
-                   Guided Setup
-                  </Button>
-                  <Button 
-                   variant="outline" 
-                   size="sm"
-                   onClick={() => setAiWizardOpen(true)}
-                   className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
-                   aria-label="Open AI Wizard"
-                  >
-                   <Sparkles className="w-3 h-3" aria-hidden="true" />
-                   AI Wizard
-                  </Button>
-                  <Button 
-                   variant="outline" 
-                   size="sm"
-                   onClick={() => setScenarioBuilderOpen(true)}
-                   className="gap-2 h-7 text-xs"
-                   aria-label="Open scenario builder"
-                  >
-                   <Zap className="w-3 h-3" aria-hidden="true" />
-                   Builder
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setProfileAnalyzerOpen(true)}
-                    className="gap-2 h-7 text-xs"
-                  >
-                    <Brain className="w-3 h-3" />
-                    Analyze
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setMatcherOpen(true)}
-                    className="gap-2 h-7 text-xs"
-                    disabled={!scenario || selectedRoles.length === 0}
-                  >
-                    <UsersIcon className="w-3 h-3" />
-                    Match
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setScenarioLibraryOpen(true)}
-                    className="gap-2 h-7 text-xs"
-                  >
-                    <FolderOpen className="w-3 h-3" />
-                    Library
+                  <SimulationActionBar
+                    simulation={currentSimulation}
+                    hasOutcome={!!currentOutcome}
+                    onReRun={() => {
+                      if (!currentSimulation) return;
+                      setTitle(currentSimulation.title);
+                      setScenario(currentSimulation.scenario);
+                      setSelectedRoles(currentSimulation.selected_roles || []);
+                      setCurrentSimulation(null);
+                      setActiveTab('setup');
+                      setTimeout(() => runSimulation(), 50);
+                    }}
+                    onFork={() => {
+                      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+                    }}
+                    onStressTest={() => setStressTestRunnerOpen(true)}
+                    onWhatIfTree={() => setDecisionTreeCanvasOpen(true)}
+                    onExportPDF={() => exportSimulationPDF(currentSimulation)}
+                    onShare={() => setShareOpen(true)}
+                    onLogOutcome={() => setCollaborationOpen(true)}
+                    onEdit={() => setActiveTab('setup')}
+                  />
+                  <div className="h-5 w-px bg-slate-200 mx-1" />
+                  <Button variant="outline" size="sm" onClick={resetForm} className="gap-1.5 h-7 text-xs">
+                    <RefreshCw className="w-3 h-3" /> New
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setStressTestLibraryOpen(true)}
-                    className="gap-2 h-7 text-xs text-rose-600 border-rose-200 hover:bg-rose-50"
+                    variant="outline" size="sm"
+                    onClick={enterCompareMode}
+                    className="gap-1.5 h-7 text-xs"
+                    disabled={simulations.length < 2}
                   >
-                    <Flame className="w-3 h-3" />
-                    Stress Tests
+                    <GitCompare className="w-3 h-3" /> Compare
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setPlaybookTemplatesOpen(true)}
-                    className="gap-2 h-7 text-xs"
-                  >
-                    <FileText className="w-3 h-3" />
-                    Templates
+                  <Button variant="outline" size="sm" onClick={() => setAiWizardOpen(true)}
+                    className="gap-1.5 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50">
+                    <Sparkles className="w-3 h-3" /> AI Wizard
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setPlaybookSelectorOpen(true)}
-                    className="gap-2 h-7 text-xs"
-                  >
-                    <FileText className="w-3 h-3" />
-                    Playbooks
-                  </Button>
-                  {currentSimulation?.status === 'completed' && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShareOpen(true)}
-                        className="gap-2 h-7 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
-                      >
-                        <Share2 className="w-3 h-3" />
-                        Share
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setVersionHistoryOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <History className="w-3 h-3" />
-                        Versions
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setWhatIfOpen(true)}
-                        className="gap-2 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50"
-                      >
-                        <GitBranch className="w-3 h-3" />
-                        What If
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDebriefBoardOpen(true)}
-                        className="gap-2 h-7 text-xs text-slate-700 border-slate-300 hover:bg-slate-50"
-                      >
-                        <ClipboardList className="w-3 h-3" />
-                        Debrief
-                      </Button>
-                      <Button
-                        variant={personaChatOpen ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setPersonaChatOpen(p => !p)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <MessageSquare className="w-3 h-3" />
-                        Interview
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => exportSimulationPDF(currentSimulation)}
-                        className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                      >
-                        <FileDown className="w-3 h-3" />
-                        Export PDF
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setPlaybookGeneratorOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <BookOpen className="w-3 h-3" />
-                        Playbook
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setIntegrationsOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <LinkIcon className="w-3 h-3" />
-                        Export
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setPlaybackOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <PlayCircle className="w-3 h-3" />
-                        Playback
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDecisionTreeCanvasOpen(true)}
-                        className="gap-2 h-7 text-xs text-violet-700 border-violet-200 hover:bg-violet-50"
-                      >
-                        <GitBranch className="w-3 h-3" />
-                        Explore What-Ifs →
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setMultiStageOpen(true)}
-                        className="gap-2 h-7 text-xs text-indigo-700 border-indigo-200 hover:bg-indigo-50"
-                      >
-                        <GitBranch className="w-3 h-3" />
-                        Multi-Stage
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setStressTestRunnerOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <Zap className="w-3 h-3" />
-                        Stress Test
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setWebhookManagerOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <LinkIcon className="w-3 h-3" />
-                        Webhooks
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setCollaborationOpen(true)}
-                        className="gap-2 h-7 text-xs"
-                      >
-                        <UsersIcon className="w-3 h-3" />
-                        Team
-                      </Button>
-                    </>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={resetForm}
-                    className="gap-2 h-7 text-xs"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    New
-                  </Button>
-                  <a
-                    href={createPageUrl('Analytics')}
-                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors"
-                  >
-                    <BarChart3 className="w-3 h-3" />
-                    Analytics
-                  </a>
-                  <a
-                    href="/Team"
-                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <Users className="w-3 h-3" />
-                    Team
-                  </a>
-                  <a
-                    href="/Webhooks"
-                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <Zap className="w-3 h-3" />
-                    Webhooks
-                  </a>
-                  <a
-                    href="/Settings"
-                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <SettingsIcon className="w-3 h-3" />
-                    Settings
-                  </a>
                 </>
               )}
             </div>
