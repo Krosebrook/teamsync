@@ -59,6 +59,8 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Webhooks" element={<LayoutWrapper currentPageName="Webhooks"><WebhooksPage /></LayoutWrapper>} />
+      <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><SettingsPage /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
