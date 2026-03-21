@@ -60,6 +60,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Simulation" element={<LayoutWrapper currentPageName="Simulation"><SimulationPage /></LayoutWrapper>} />
       <Route path="/Webhooks" element={<LayoutWrapper currentPageName="Webhooks"><WebhooksPage /></LayoutWrapper>} />
       <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><SettingsPage /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
