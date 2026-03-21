@@ -870,16 +870,7 @@ Return a single JSON object.`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={async () => {
-                          try {
-                            const response = await base44.functions.invoke('generateSimulationPDF', {
-                              simulationId: currentSimulation.id
-                            });
-                            toast.success('PDF downloaded');
-                          } catch (err) {
-                            toast.error('PDF generation failed');
-                          }
-                        }}
+                        onClick={() => exportSimulationPDF(currentSimulation)}
                         className="gap-2 h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                       >
                         <FileDown className="w-3 h-3" />
