@@ -765,7 +765,7 @@ Return a single JSON object.`;
         </div>
       </header>
 
-      <main id="main-content" aria-label="Simulation workspace" className="h-[calc(100vh-57px)] flex">
+      <main id="main-content" aria-label="Simulation workspace" className="h-[calc(100vh-89px)] flex">
         <div className="flex-1 flex">
           
           {/* LEFT: Role Selection */}
