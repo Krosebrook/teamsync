@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { createPageUrl } from '@/utils';
 import { fireWebhooks } from '@/utils/webhooks';
 import { exportSimulationPDF } from '@/utils/pdfExport';
+import SimulationActionBar from '../components/simulation/SimulationActionBar';
 
 import { ROLES } from '../components/simulation/RoleSelector';
 import RolePills from '../components/simulation/RolePills';
