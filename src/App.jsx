@@ -1,27 +1,28 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import WebhooksPage from './pages/Webhooks';
-import SettingsPage from './pages/Settings';
+import AppLayout from './components/AppLayout';
+
 import SimulationPage from './pages/Simulation';
+import TemplatesPage from './pages/Templates';
+import PlaybooksPage from './pages/Playbooks';
+import TeamPage from './pages/Team';
+import SettingsPage from './pages/Settings';
+import WebhooksPage from './pages/Webhooks';
 
-const { Pages, Layout, mainPage } = pagesConfig;
-const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+// Legacy pages kept accessible
+import Analytics from './pages/Analytics';
+import AnalyticsNew from './pages/AnalyticsNew';
 
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+const Wrap = ({ children }) => <AppLayout>{children}</AppLayout>;
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -30,47 +31,28 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
   }
 
-  // Render the main app
   return (
     <Routes>
-      <Route path="/" element={
-        <LayoutWrapper currentPageName="Simulation">
-          <SimulationPage />
-        </LayoutWrapper>
-      } />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
-      ))}
-      <Route path="/Simulation" element={<LayoutWrapper currentPageName="Simulation"><SimulationPage /></LayoutWrapper>} />
-      <Route path="/Webhooks" element={<LayoutWrapper currentPageName="Webhooks"><WebhooksPage /></LayoutWrapper>} />
-      <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><SettingsPage /></LayoutWrapper>} />
+      <Route path="/" element={<Wrap><SimulationPage /></Wrap>} />
+      <Route path="/Simulation" element={<Wrap><SimulationPage /></Wrap>} />
+      <Route path="/Templates" element={<Wrap><TemplatesPage /></Wrap>} />
+      <Route path="/Playbooks" element={<Wrap><PlaybooksPage /></Wrap>} />
+      <Route path="/Team" element={<Wrap><TeamPage /></Wrap>} />
+      <Route path="/Settings" element={<Wrap><SettingsPage /></Wrap>} />
+      <Route path="/Webhooks" element={<Wrap><WebhooksPage /></Wrap>} />
+      <Route path="/Analytics" element={<Wrap><Analytics /></Wrap>} />
+      <Route path="/AnalyticsNew" element={<Wrap><AnalyticsNew /></Wrap>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
@@ -80,7 +62,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
