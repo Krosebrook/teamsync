@@ -699,20 +699,13 @@ Return a single JSON object.`;
         <CollaborationCursors simulationId={currentSimulation.id} currentUser={currentUser} />
       )}
 
-      {/* Header */}
-      <header aria-label="Application header" className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="px-6 py-3">
+      {/* Simulation toolbar */}
+      <header aria-label="Simulation toolbar" className="border-b border-slate-200 bg-white sticky top-0 z-40">
+        <div className="px-6 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-slate-800 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-base font-semibold text-slate-900 tracking-tight">
-                  Team Decision Simulation
-                </h1>
-              </div>
-            </div>
+            <p className="text-sm font-medium text-slate-700 truncate max-w-xs">
+              {currentSimulation?.title || 'New Simulation'}
+            </p>
 
             <div className="flex items-center gap-2 flex-wrap">
               {compareMode ? (
