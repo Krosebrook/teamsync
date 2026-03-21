@@ -92,16 +92,7 @@ function Node({ node, selected, onSelect, onEditLabel, onDelete, onRun, onConnec
 
 export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
   const canvasRef = useRef(null);
-  const [nodes, setNodes] = useState([
-    {
-      id: 'start-1',
-      type: 'start',
-      label: simulation?.title || 'Base Scenario',
-      description: simulation?.scenario?.substring(0, 100),
-      x: 100,
-      y: 100,
-    },
-  ]);
+  const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [connectingFromId, setConnectingFromId] = useState(null);
