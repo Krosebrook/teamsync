@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { createPageUrl } from '@/utils';
+import { fireWebhooks } from '@/utils/webhooks';
 
 import { ROLES } from '../components/simulation/RoleSelector';
 import RolePills from '../components/simulation/RolePills';
@@ -305,6 +306,15 @@ Return a single JSON object.`;
         status: 'running',
       });
       setCurrentSimulation(simulation);
+
+      // Fire simulation.started webhook
+      fireWebhooks('simulation.started', {
+        event: 'simulation.started',
+        simulation_id: simulation.id,
+        title: simulation.title,
+        scenario_preview: scenario.substring(0, 100),
+        roles: selectedRoles.map(r => r.role),
+      });
     } catch (error) {
       console.error('[Pass 0] Failed to create simulation record:', error);
       toast.error('Failed to start simulation');
@@ -415,6 +425,36 @@ Return a single JSON object.`;
       try {
         tensions = result.tensions || [];
         if (!Array.isArray(tensions)) throw new Error('tensions not an array');
+
+        // Fire webhook for critical/high tensions
+        const criticalTensions = tensions.filter(t => t.severity === 'critical');
+        const highTensions = tensions.filter(t => t.severity === 'high');
+
+        criticalTensions.forEach(tension => {
+          fireWebhooks('tension.critical', {
+            event: 'tension.critical',
+            simulation_id: simulation.id,
+            tension: {
+              between: tension.between,
+              description: tension.description,
+              severity: tension.severity,
+              root_cause: tension.root_cause,
+            },
+          });
+        });
+
+        highTensions.forEach(tension => {
+          fireWebhooks('tension.high', {
+            event: 'tension.high',
+            simulation_id: simulation.id,
+            tension: {
+              between: tension.between,
+              description: tension.description,
+              severity: tension.severity,
+              root_cause: tension.root_cause,
+            },
+          });
+        });
       } catch (e) {
         console.error('[Pass 2] Tension detection parse error:', e);
         tensionsFailed = true;
@@ -461,6 +501,17 @@ Return a single JSON object.`;
     } catch (e) {
       console.error('[Save] Failed to persist simulation results:', e);
     }
+
+    // Fire simulation.completed webhook
+    fireWebhooks('simulation.completed', {
+      event: 'simulation.completed',
+      simulation_id: simulation.id,
+      title,
+      use_case_type: selectedUseCase?.id || 'custom',
+      roles_count: selectedRoles.length,
+      tensions_count: tensions.length,
+      has_critical_tension: tensions.some(t => t.severity === 'critical'),
+    });
 
     setCurrentSimulation(finalSim);
     setIsRunning(false);
@@ -546,16 +597,14 @@ Return a single JSON object.`;
   const handleApplyPlaybook = (playbook) => {
     setSelectedPlaybook(playbook);
     
-    // Pre-fill roles based on playbook requirements
     if (playbook.required_roles && playbook.required_roles.length > 0) {
       const roles = playbook.required_roles.map(rr => ({
         role: rr.role,
-        influence: 7 // Default influence
+        influence: 7
       }));
       setSelectedRoles(roles);
     }
 
-    // Set title if framework name exists
     if (playbook.name) {
       setTitle(`${playbook.name} Decision`);
     }
@@ -567,13 +616,11 @@ Return a single JSON object.`;
     try {
       const parsed = JSON.parse(playbook.output_template);
       
-      // Apply scenario hints from insights
       if (parsed.key_insights?.emergent_tensions?.length > 0) {
         const scenarioHint = `Key considerations: ${parsed.key_insights.emergent_tensions.join(', ')}`;
         setScenario(prev => prev ? `${prev}\n\n${scenarioHint}` : scenarioHint);
       }
 
-      // Apply essential roles
       if (playbook.required_roles?.length > 0) {
         const newRoles = playbook.required_roles.map(r => ({
           role: r.role,
@@ -596,7 +643,6 @@ Return a single JSON object.`;
   };
 
   const handleSimulateTemplate = (template) => {
-    // Pre-fill roles from template, then open the role interaction simulator
     if (template.required_roles?.length > 0) {
       setSelectedRoles(template.required_roles.map(r => ({ role: r.role, influence: 7 })));
     }
@@ -629,7 +675,6 @@ Return a single JSON object.`;
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Skip link for keyboard/screen reader users */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-slate-900 focus:text-white focus:px-4 focus:py-2 focus:rounded focus:text-sm"
@@ -637,12 +682,10 @@ Return a single JSON object.`;
         Skip to main content
       </a>
 
-      {/* Screen reader live region for status updates */}
       <div aria-live="polite" aria-atomic="true" className="sr-only" id="status-announcer">
         {isRunning ? `Analyzing ${selectedRoles.length} perspectives...` : ''}
       </div>
 
-      {/* Collaboration cursors */}
       {currentSimulation && currentUser && (
         <CollaborationCursors simulationId={currentSimulation.id} currentUser={currentUser} />
       )}
@@ -831,7 +874,6 @@ Return a single JSON object.`;
                             const response = await base44.functions.invoke('generateSimulationPDF', {
                               simulationId: currentSimulation.id
                             });
-                            // PDF download is handled by the function response
                             toast.success('PDF downloaded');
                           } catch (err) {
                             toast.error('PDF generation failed');
@@ -860,7 +902,6 @@ Return a single JSON object.`;
                         <LinkIcon className="w-3 h-3" />
                         Export
                       </Button>
-
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -962,7 +1003,6 @@ Return a single JSON object.`;
       </header>
 
       <main id="main-content" aria-label="Simulation workspace" className="h-[calc(100vh-57px)] flex">
-        {/* Three Column Layout */}
         <div className="flex-1 flex">
           
           {/* LEFT: Role Selection */}
@@ -1036,7 +1076,6 @@ Return a single JSON object.`;
 
               <div className="flex-1 overflow-y-auto">
                 <TabsContent value="setup" className="p-6 mt-0">
-                  {/* Empty state when user has no simulations */}
                   {!loadingSimulations && simulations.length === 0 && !currentSimulation ? (
                     <EmptyDashboard
                       onRunTemplate={(template) => {
@@ -1045,9 +1084,7 @@ Return a single JSON object.`;
                         if (template.suggested_roles?.length > 0) setSelectedRoles(template.suggested_roles);
                         if (template.industry) setSelectedUseCase({ id: template.industry });
                       }}
-                      onStartFromScratch={() => {
-                        // Just scroll past the empty state — the canvas is below
-                      }}
+                      onStartFromScratch={() => {}}
                     />
                   ) : (
                   <>
@@ -1066,7 +1103,6 @@ Return a single JSON object.`;
                     onEnvironmentalFactorsChange={setEnvironmentalFactors}
                   />
 
-                  {/* Tags input */}
                   <div className="mt-4">
                     <p className="text-xs text-slate-500 mb-1.5">Tags</p>
                     <TagsInput
@@ -1103,12 +1139,10 @@ Return a single JSON object.`;
                 <TabsContent value="results" className="p-6 mt-0 space-y-4">
                   {currentSimulation && currentSimulation.status === 'completed' && (
                     <>
-                      {/* Playbook steps sidebar panel */}
                       {selectedPlaybook?.steps?.length > 0 && (
                         <PlaybookStepsPanel playbook={selectedPlaybook} />
                       )}
 
-                      {/* Synthesis failure banner */}
                       {currentSimulation._synthesisFailed && (
                         <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
                           <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -1116,7 +1150,6 @@ Return a single JSON object.`;
                         </div>
                       )}
 
-                      {/* Summary */}
                       {currentSimulation.summary && (
                         <div className="border-b border-slate-200 pb-6">
                           <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
@@ -1128,7 +1161,6 @@ Return a single JSON object.`;
                         </div>
                       )}
 
-                      {/* Next Steps */}
                       {currentSimulation.next_steps && currentSimulation.next_steps.length > 0 && (
                         <div className="border-b border-slate-200 pb-6">
                           <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
@@ -1141,7 +1173,6 @@ Return a single JSON object.`;
                         </div>
                       )}
 
-                      {/* Tension failure banner */}
                       {currentSimulation._tensionsFailed && (
                         <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
                           <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -1149,7 +1180,6 @@ Return a single JSON object.`;
                         </div>
                       )}
 
-                      {/* Tensions */}
                       {currentSimulation.tensions && currentSimulation.tensions.length > 0 && (
                         <div className="border-b border-slate-200 pb-6">
                           <TensionMap 
@@ -1159,14 +1189,12 @@ Return a single JSON object.`;
                         </div>
                       )}
 
-                      {/* Network Graph */}
                       {currentSimulation.tensions?.length > 0 && (
                         <div className="border-b border-slate-200 pb-6">
                           <NetworkGraph simulation={currentSimulation} />
                         </div>
                       )}
 
-                      {/* Role Responses */}
                       <div>
                         <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                           Role Perspectives
@@ -1189,7 +1217,6 @@ Return a single JSON object.`;
                         </div>
                       </div>
 
-                      {/* Outcome Logger */}
                       <div className="border-t border-slate-200 pt-6">
                         <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">
                           Outcome Tracking
@@ -1519,11 +1546,6 @@ Return a single JSON object.`;
         onOpenChange={setStressTestRunnerOpen}
         template={editingTemplate || templates[0]}
         simulation={currentSimulation}
-      />
-
-      <WebhookManager
-        open={webhookManagerOpen}
-        onOpenChange={setWebhookManagerOpen}
       />
 
       <WhatIfBranch
