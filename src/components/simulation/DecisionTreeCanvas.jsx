@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,10 @@ import {
   GitBranch,
   Flag,
   ChevronDown,
+  Undo2,
+  Redo2,
 } from 'lucide-react';
+import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -91,8 +94,31 @@ function Node({ node, selected, onSelect, onEditLabel, onDelete, onRun, onConnec
 
 export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
   const canvasRef = useRef(null);
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
+  const {
+    state: treeState,
+    setState: setTreeState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    reset: resetHistory,
+  } = useUndoRedo({ nodes: [], edges: [] });
+
+  const nodes = treeState.nodes;
+  const edges = treeState.edges;
+
+  const setNodes = useCallback((newNodes) => {
+    setTreeState({ nodes: typeof newNodes === 'function' ? newNodes(nodes) : newNodes, edges });
+  }, [nodes, edges, setTreeState]);
+
+  const setEdges = useCallback((newEdges) => {
+    setTreeState({ nodes, edges: typeof newEdges === 'function' ? newEdges(edges) : newEdges });
+  }, [nodes, edges, setTreeState]);
+
+  const setNodesAndEdges = useCallback((newNodes, newEdges) => {
+    setTreeState({ nodes: newNodes, edges: newEdges });
+  }, [setTreeState]);
+
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [connectingFromId, setConnectingFromId] = useState(null);
   const [editingNodeId, setEditingNodeId] = useState(null);
@@ -105,13 +131,23 @@ export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
         .then((trees) => {
           if (trees.length > 0) {
             setTree(trees[0]);
-            setNodes(trees[0].nodes || nodes);
-            setEdges(trees[0].edges || []);
+            resetHistory({ nodes: trees[0].nodes || [], edges: trees[0].edges || [] });
           }
         })
         .catch(() => {});
     }
   }, [simulation?.id]);
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [open, undo, redo]);
 
   const saveTree = useMutation({
     mutationFn: async () => {
@@ -149,8 +185,10 @@ export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
   };
 
   const deleteNode = (id) => {
-    setNodes(nodes.filter((n) => n.id !== id));
-    setEdges(edges.filter((e) => e.from_node_id !== id && e.to_node_id !== id));
+    setNodesAndEdges(
+      nodes.filter((n) => n.id !== id),
+      edges.filter((e) => e.from_node_id !== id && e.to_node_id !== id)
+    );
     setSelectedNodeId(null);
   };
 
@@ -300,6 +338,29 @@ export default function DecisionTreeCanvas({ open, onOpenChange, simulation }) {
                 })()}
               </div>
             )}
+
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={undo}
+                disabled={!canUndo}
+                className="flex-1 text-xs"
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="w-3 h-3 mr-1" /> Undo
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={redo}
+                disabled={!canRedo}
+                className="flex-1 text-xs"
+                title="Redo (Ctrl+Y)"
+              >
+                <Redo2 className="w-3 h-3 mr-1" /> Redo
+              </Button>
+            </div>
 
             <Button
               onClick={() => saveTree.mutate()}

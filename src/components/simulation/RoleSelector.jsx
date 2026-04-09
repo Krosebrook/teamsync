@@ -49,7 +49,8 @@ import {
   FileSpreadsheet,
   Handshake,
   Bot,
-  FileUser
+  FileUser,
+  Sparkles,
 } from "lucide-react";
 import CustomRoleDialog from './CustomRoleDialog';
 import RoleProfileManager from './RoleProfileManager';
