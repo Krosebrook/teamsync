@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { X, GripVertical, Plus, Sliders, BookOpen, ChevronDown } from "lucide-react";
+import { X, GripVertical, Plus, Sliders, BookOpen, ChevronDown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import PersonaTuner from './PersonaTuner';
 import CustomRoleLibrary from './CustomRoleLibrary';
 import TeamMemberSelector from './TeamMemberSelector';
+import AIRoleSuggestor from './AIRoleSuggestor';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-export default function RolePills({ selectedRoles, onRolesChange, allRoles, personaTunings = {}, onPersonaTuningsChange }) {
+export default function RolePills({ selectedRoles, onRolesChange, allRoles, personaTunings = {}, onPersonaTuningsChange, scenario = '' }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [tunerOpen, setTunerOpen] = useState(false);
@@ -24,6 +25,7 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
   const [personaPickerRole, setPersonaPickerRole] = useState(null);
   const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
   const [teamMemberMappings, setTeamMemberMappings] = useState({});
+  const [aiSuggestOpen, setAiSuggestOpen] = useState(false);
 
   const { data: personaTemplates = [] } = useQuery({
     queryKey: ['personaTemplates'],
@@ -248,6 +250,18 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
       <Button
         variant="outline"
         size="sm"
+        disabled={!scenario.trim()}
+        className="w-full justify-start gap-2 h-8 border-dashed text-violet-600 border-violet-200 hover:bg-violet-50"
+        onClick={() => setAiSuggestOpen(true)}
+        title="Get AI-powered role recommendations based on your scenario"
+      >
+        <Sparkles className="w-3 h-3" />
+        Smart Analyze
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
         className="w-full justify-start gap-2 h-8 border-dashed text-violet-600 border-violet-200 hover:bg-violet-50"
         onClick={() => setLibraryOpen(true)}
       >
@@ -292,6 +306,23 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
           </div>
         </PopoverContent>
       </Popover>
+
+      <AIRoleSuggestor
+        open={aiSuggestOpen}
+        onClose={() => setAiSuggestOpen(false)}
+        scenario={scenario}
+        selectedRoles={selectedRoles}
+        allRoles={allRoles}
+        onRolesAdd={(newRoles) => {
+          const updated = [...selectedRoles];
+          newRoles.forEach(nr => {
+            if (!updated.find(r => r.role === nr.role)) {
+              updated.push(nr);
+            }
+          });
+          onRolesChange(updated);
+        }}
+      />
     </div>
   );
 }

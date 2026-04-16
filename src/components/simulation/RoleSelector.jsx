@@ -55,6 +55,7 @@ import {
 import CustomRoleDialog from './CustomRoleDialog';
 import RoleProfileManager from './RoleProfileManager';
 import SuggestRolesDialog from './SuggestRolesDialog';
+import AIRoleSuggestor from './AIRoleSuggestor';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -206,13 +207,14 @@ const ROLES = [
   }))
 ];
 
-export default function RoleSelector({ selectedRoles, onRolesChange }) {
+export default function RoleSelector({ selectedRoles, onRolesChange, scenario = '', allRoles: externalAllRoles }) {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
   const [profileManagerOpen, setProfileManagerOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [aiSuggestOpen, setAiSuggestOpen] = useState(false);
 
   const { data: customRoles = [] } = useQuery({
     queryKey: ['customRoles'],
@@ -321,24 +323,37 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         </Badge>
       </div>
 
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-3 flex-col">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setEditingRole(null); setDialogOpen(true); }}
+            className="flex-1 gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Custom
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSuggestOpen(true)}
+            className="flex-1 gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            AI Suggest
+          </Button>
+        </div>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => { setEditingRole(null); setDialogOpen(true); }}
-          className="flex-1 gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Create Custom
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSuggestOpen(true)}
-          className="flex-1 gap-2"
+          onClick={() => setAiSuggestOpen(true)}
+          disabled={!scenario.trim()}
+          className="w-full gap-2 text-violet-600 border-violet-200 hover:bg-violet-50"
+          title="Analyze your scenario to get targeted role recommendations"
         >
           <Sparkles className="w-4 h-4" />
-          AI Suggest
+          Smart Analyze
         </Button>
       </div>
 
@@ -678,6 +693,23 @@ export default function RoleSelector({ selectedRoles, onRolesChange }) {
         onClose={() => setSuggestOpen(false)}
         existingRoles={ROLES}
         existingCustomRoles={customRoles}
+      />
+
+      <AIRoleSuggestor
+        open={aiSuggestOpen}
+        onClose={() => setAiSuggestOpen(false)}
+        scenario={scenario}
+        selectedRoles={selectedRoles}
+        allRoles={externalAllRoles || allRoles}
+        onRolesAdd={(newRoles) => {
+          const updated = [...selectedRoles];
+          newRoles.forEach(nr => {
+            if (!updated.find(r => r.role === nr.role)) {
+              updated.push(nr);
+            }
+          });
+          onRolesChange(updated);
+        }}
       />
     </div>
   );

@@ -777,6 +777,7 @@ Return a single JSON object.`;
                 allRoles={allRolesWithCustom}
                 personaTunings={personaTunings}
                 onPersonaTuningsChange={setPersonaTunings}
+                scenario={scenario}
               />
 
               <div className="mt-6 pt-6 border-t border-slate-200">
