@@ -8,9 +8,11 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Map, GitBranch, AlertTriangle, ChevronRight, ChevronLeft,
-  Sparkles, X, CheckCircle2, Plus, Loader2, Zap
+  Sparkles, X, CheckCircle2, Plus, Loader2, Zap, HelpCircle
 } from 'lucide-react';
 import { ROLES } from '../simulation/RoleSelector';
+import InteractiveTutorial from '../tutorial/InteractiveTutorial';
+import ContextualTutorialHighlight from '../tutorial/ContextualTutorialHighlight';
 import { toast } from 'sonner';
 
 const USE_CASE_TYPES = [
@@ -69,6 +71,8 @@ export default function OnboardingWizard({ open, onClose, onLaunchSimulation, al
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [useCaseType, setUseCaseType] = useState('');
   const [title, setTitle] = useState('');
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [guidedMode, setGuidedMode] = useState(false);
 
   // AI state
   const [qualityCheck, setQualityCheck] = useState(null);
@@ -299,9 +303,9 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                {EXAMPLE_USE_CASES.map(({ icon: Icon, label, color }) => (
+                {EXAMPLE_USE_CASES.map(({ icon: IconComponent, label, color }) => (
                   <div key={label} className={`rounded-xl p-4 ${color} border border-current/10`}>
-                    <Icon className="w-5 h-5 mb-2" />
+                    <IconComponent className="w-5 h-5 mb-2" />
                     <p className="text-xs font-semibold">{label}</p>
                   </div>
                 ))}
@@ -315,6 +319,14 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                   <li className="flex gap-2"><span className="font-bold text-slate-900">4.</span> Get actionable next steps</li>
                 </ol>
               </div>
+              <Button
+                variant="outline"
+                onClick={() => setTutorialOpen(true)}
+                className="w-full gap-2 border-violet-200 text-violet-600 hover:bg-violet-50"
+              >
+                <HelpCircle className="w-4 h-4" />
+                Take an Interactive Tutorial
+              </Button>
             </div>
           )}
 
@@ -326,10 +338,18 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                 <p className="text-sm text-slate-500">What does your team need to decide? Be specific — the more context, the better the simulation.</p>
               </div>
               <Textarea
+                id="scenario-input"
                 value={scenario}
                 onChange={e => setScenario(e.target.value)}
                 placeholder="e.g. We're considering rebuilding our auth system from scratch vs. using Auth0. We have 6 engineers, a hard deadline in 4 months, and compliance requirements incoming."
                 className="min-h-[140px] text-sm resize-none"
+              />
+              <ContextualTutorialHighlight
+                active={guidedMode && step === 2}
+                targetSelector="#scenario-input"
+                title="Write your scenario"
+                hint="Include constraints, timeline, and what's at stake. More detail = better AI analysis."
+                position="bottom"
               />
 
               {/* Quality feedback */}
@@ -388,7 +408,7 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                 <p className="text-sm text-slate-500">Select 3–6 roles. Each will get a distinct AI voice in the simulation.</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 max-h-[240px] overflow-y-auto pr-1">
+              <div id="role-grid" className="grid grid-cols-3 gap-2 max-h-[240px] overflow-y-auto pr-1">
                 {roles.slice(0, 30).map((role) => {
                   const isSelected = selectedRoles.some(r => r.role === role.id);
                   return (
@@ -406,11 +426,18 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                   );
                 })}
               </div>
+              <ContextualTutorialHighlight
+                active={guidedMode && step === 3}
+                targetSelector="#role-grid"
+                title="Pick roles for the room"
+                hint="Select 3-6 roles that would actually be in this meeting. Mix perspectives for richer tensions."
+                position="bottom"
+              />
 
               <p className="text-xs text-slate-400">{selectedRoles.length} selected</p>
 
               {/* Composition analysis */}
-              <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+              <div id="composition-section" className="rounded-xl border border-slate-200 p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <AIBadge />
                   <span className="text-xs font-medium text-slate-600">Team Composition Analysis</span>
@@ -477,7 +504,7 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div id="use-case-grid" className="grid grid-cols-2 gap-2">
                 {USE_CASE_TYPES.map(ut => (
                   <button
                     key={ut.id}
@@ -493,6 +520,13 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
                   </button>
                 ))}
               </div>
+              <ContextualTutorialHighlight
+                active={guidedMode && step === 4}
+                targetSelector="#use-case-grid"
+                title="Classify your decision"
+                hint="Different decisions benefit from different frameworks. Unsure? Click 'Suggest for my scenario'."
+                position="bottom"
+              />
             </div>
           )}
 
@@ -607,6 +641,13 @@ Return JSON only: { "recommended_type": "...", "reason": "one sentence why" }`,
           </div>
         </div>
       </div>
+
+      {/* Interactive Tutorial */}
+      <InteractiveTutorial
+        open={tutorialOpen}
+        onClose={() => setTutorialOpen(false)}
+        currentStep={Math.min(step - 1, 5)}
+      />
     </div>
   );
 }
