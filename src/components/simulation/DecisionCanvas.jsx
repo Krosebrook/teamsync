@@ -162,9 +162,9 @@ export default function DecisionCanvas({
         <div className="flex items-center gap-2">
           <div className={`
             w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold
-            ${currentStep >= 2 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}
+            ${currentStep >= 3 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}
           `}>
-            {currentStep > 2 ? <CheckCircle2 className="w-3 h-3" /> : '3'}
+            {currentStep > 3 ? <CheckCircle2 className="w-3 h-3" /> : '3'}
           </div>
           <Label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-slate-400" />

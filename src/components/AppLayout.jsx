@@ -24,7 +24,7 @@ export default function AppLayout({ children }) {
             <span className="text-sm font-semibold text-slate-900">TeamSync</span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <nav aria-label="Main navigation" className="flex items-center gap-0.5">
             {NAV_ITEMS.map(({ label, path, icon: Icon }) => {
               const active = path === '/'
                 ? location.pathname === '/'
@@ -33,18 +33,19 @@ export default function AppLayout({ children }) {
                 <Link
                   key={path}
                   to={path}
-                  className={`flex items-center gap-1.5 px-3 h-8 rounded-md text-xs font-medium transition-colors ${
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center gap-1.5 px-3 h-9 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
                     active
                       ? 'bg-slate-100 text-slate-900'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                   {label}
                 </Link>
               );
             })}
-          </div>
+          </nav>
         </div>
       </nav>
 

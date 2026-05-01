@@ -710,11 +710,11 @@ Return a single JSON object.`;
             <div className="flex items-center gap-2 flex-wrap">
               {compareMode ? (
                 <>
-                  <Badge variant="outline" className="gap-1 text-xs h-7">
-                    <GitCompare className="w-3 h-3" />
+                  <Badge variant="outline" className="gap-1 text-xs h-8 px-2.5 flex items-center">
+                    <GitCompare className="w-3 h-3" aria-hidden="true" />
                     {compareSimulations.length} selected
                   </Badge>
-                  <Button variant="outline" size="sm" onClick={exitCompareMode} className="h-7 text-xs">
+                  <Button variant="outline" size="sm" onClick={exitCompareMode} className="h-8 text-xs">
                     Exit Compare
                   </Button>
                 </>
@@ -743,20 +743,21 @@ Return a single JSON object.`;
                     onEdit={() => setActiveTab('setup')}
                   />
                   <div className="h-5 w-px bg-slate-200 mx-1" />
-                  <Button variant="outline" size="sm" onClick={resetForm} className="gap-1.5 h-7 text-xs">
-                    <RefreshCw className="w-3 h-3" /> New
+                  <Button variant="outline" size="sm" onClick={resetForm} className="gap-1.5 h-8 text-xs">
+                   <RefreshCw className="w-3 h-3" aria-hidden="true" /> New
                   </Button>
                   <Button
-                    variant="outline" size="sm"
-                    onClick={enterCompareMode}
-                    className="gap-1.5 h-7 text-xs"
-                    disabled={simulations.length < 2}
+                   variant="outline" size="sm"
+                   onClick={enterCompareMode}
+                   className="gap-1.5 h-8 text-xs"
+                   disabled={simulations.length < 2}
+                   title={simulations.length < 2 ? 'Need at least 2 simulations to compare' : undefined}
                   >
-                    <GitCompare className="w-3 h-3" /> Compare
+                   <GitCompare className="w-3 h-3" aria-hidden="true" /> Compare
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setAiWizardOpen(true)}
-                    className="gap-1.5 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50">
-                    <Sparkles className="w-3 h-3" /> AI Wizard
+                   className="gap-1.5 h-8 text-xs text-violet-700 border-violet-200 hover:bg-violet-50">
+                   <Sparkles className="w-3 h-3" aria-hidden="true" /> AI Wizard
                   </Button>
                 </>
               )}
@@ -806,31 +807,31 @@ Return a single JSON object.`;
           <div className="flex-1 overflow-y-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
               <div className="border-b border-slate-200 bg-white px-6 py-2">
-                <TabsList className="bg-transparent p-0 h-auto gap-1">
+                <TabsList className="bg-transparent p-0 h-auto gap-0.5">
                   <TabsTrigger 
                     value="setup" 
-                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 h-9 text-xs font-medium"
                     disabled={compareMode}
                   >
                     Setup
                   </TabsTrigger>
                   <TabsTrigger 
                     value="results"
-                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 h-9 text-xs font-medium"
                     disabled={!currentSimulation || compareMode}
                   >
                     Results
                   </TabsTrigger>
                   <TabsTrigger 
                     value="compare"
-                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 h-9 text-xs font-medium"
                     disabled={!compareMode}
                   >
                     Compare
                   </TabsTrigger>
                   <TabsTrigger 
                     value="analytics"
-                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 py-1.5 text-xs"
+                    className="data-[state=active]:bg-slate-100 data-[state=active]:shadow-none rounded-sm px-3 h-9 text-xs font-medium"
                     disabled={compareMode}
                   >
                     Analytics
@@ -993,11 +994,12 @@ Return a single JSON object.`;
                   )}
 
                   {isRunning && (
-                    <div className="flex flex-col items-center justify-center py-20">
-                      <Loader2 className="w-8 h-8 text-slate-400 animate-spin mb-3" />
-                      <p className="text-sm text-slate-600">
-                        Analyzing {selectedRoles.length} perspectives...
+                    <div className="flex flex-col items-center justify-center py-20" role="status" aria-live="polite">
+                      <Loader2 className="w-8 h-8 text-slate-500 animate-spin mb-3" aria-hidden="true" />
+                      <p className="text-sm text-slate-700 font-medium">
+                        Analyzing {selectedRoles.length} perspectives…
                       </p>
+                      <p className="text-xs text-slate-500 mt-1">This usually takes 10–20 seconds</p>
                     </div>
                   )}
                 </TabsContent>
@@ -1044,9 +1046,9 @@ Return a single JSON object.`;
                 />
                 <div className="mt-2 space-y-2">
                   {loadingSimulations ? (
-                    <p className="text-xs text-slate-400 text-center py-4">Loading...</p>
+                    <p className="text-xs text-slate-500 text-center py-4">Loading…</p>
                   ) : applyFilters(simulations, simFilters).length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-4">No simulations match filters</p>
+                    <p className="text-xs text-slate-500 text-center py-4">No simulations match filters</p>
                   ) : (
                     applyFilters(simulations, simFilters).map(sim => (
                       <SimulationCard

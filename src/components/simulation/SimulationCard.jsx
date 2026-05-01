@@ -37,12 +37,14 @@ export default function SimulationCard({ simulation, onSelect, isSelected, compa
   const Icon = cfg.icon;
 
   return (
-    <div
+    <button
       onClick={() => onSelect(simulation)}
-      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+      aria-pressed={isSelected}
+      aria-label={`${simulation.title} — ${simulation.status}`}
+      className={`w-full text-left p-3 rounded-lg border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
         isSelected
           ? 'border-slate-900 bg-slate-50'
-          : 'border-slate-200 hover:border-slate-300 bg-white'
+          : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
       } ${compareMode ? 'hover:bg-violet-50 hover:border-violet-300' : ''}`}
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -69,14 +71,14 @@ export default function SimulationCard({ simulation, onSelect, isSelected, compa
 
       <div className="flex items-center justify-between mt-1.5">
         {simulation.created_date && (
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500">
             {format(new Date(simulation.created_date), 'MMM d')}
           </span>
         )}
-        <span className="text-xs text-slate-500 font-medium hover:text-slate-800 transition-colors">
+        <span className="text-xs text-slate-600 font-medium" aria-hidden="true">
           View →
         </span>
       </div>
-    </div>
+    </button>
   );
 }

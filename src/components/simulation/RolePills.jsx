@@ -136,8 +136,8 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
                           transition-all
                         `}
                       >
-                        <div {...provided.dragHandleProps} className="text-slate-300 hover:text-slate-500">
-                          <GripVertical className="w-3 h-3" />
+                        <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing">
+                          <GripVertical className="w-3.5 h-3.5" />
                         </div>
                         
                         <span className="flex-1 text-sm text-slate-700 font-medium truncate">
@@ -181,10 +181,10 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
 
                         <button
                            onClick={() => openTuner(selectedRole)}
-                           title="Fine-tune persona"
-                           className="text-slate-300 hover:text-violet-500 transition-colors shrink-0"
+                           aria-label={`Fine-tune persona for ${getRoleData(selectedRole.role)?.name || selectedRole.role}`}
+                           className="text-slate-300 hover:text-violet-500 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-400 rounded"
                          >
-                           <Sliders className="w-3 h-3" />
+                           <Sliders className="w-3.5 h-3.5" />
                          </button>
 
                          <TeamMemberSelector
@@ -198,20 +198,22 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
                            }}
                          />
 
-                         <Input
+                         <input
                            type="number"
                            value={selectedRole.influence}
                            onChange={(e) => handleUpdateInfluence(selectedRole.role, parseInt(e.target.value) || 1)}
-                           className="w-12 h-6 text-xs text-center border-slate-200 px-1"
+                           aria-label={`Influence level for ${getRoleData(selectedRole.role)?.name || selectedRole.role}`}
+                           className="w-10 h-7 text-xs text-center border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                            min="1"
                            max="10"
                          />
 
                         <button
                           onClick={() => handleRemoveRole(selectedRole.role)}
-                          className="text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label={`Remove ${getRoleData(selectedRole.role)?.name || selectedRole.role}`}
+                          className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}
@@ -247,37 +249,15 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
         }}
       />
 
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!scenario.trim()}
-        className="w-full justify-start gap-2 h-8 border-dashed text-violet-600 border-violet-200 hover:bg-violet-50"
-        onClick={() => setAiSuggestOpen(true)}
-        title="Get AI-powered role recommendations based on your scenario"
-      >
-        <Sparkles className="w-3 h-3" />
-        Smart Analyze
-      </Button>
-
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full justify-start gap-2 h-8 border-dashed text-violet-600 border-violet-200 hover:bg-violet-50"
-        onClick={() => setLibraryOpen(true)}
-      >
-        <BookOpen className="w-3 h-3" />
-        Custom Role Library
-      </Button>
-
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full justify-start gap-2 h-8 border-dashed text-slate-600"
+            className="w-full justify-start gap-2 h-8 text-slate-700"
           >
-            <Plus className="w-3 h-3" />
-            Add role
+            <Plus className="w-3.5 h-3.5" />
+            Add Role
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-64 p-2" align="start">
@@ -306,6 +286,29 @@ export default function RolePills({ selectedRoles, onRolesChange, allRoles, pers
           </div>
         </PopoverContent>
       </Popover>
+
+      <div className="flex gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!scenario.trim()}
+          className="flex-1 justify-start gap-1.5 h-8 text-violet-700 border-violet-200 hover:bg-violet-50 disabled:opacity-50"
+          onClick={() => setAiSuggestOpen(true)}
+          title={!scenario.trim() ? 'Enter a scenario first' : 'AI role recommendations'}
+        >
+          <Sparkles className="w-3 h-3" aria-hidden="true" />
+          Smart Suggest
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 justify-start gap-1.5 h-8 text-slate-600 hover:bg-slate-50"
+          onClick={() => setLibraryOpen(true)}
+        >
+          <BookOpen className="w-3 h-3" aria-hidden="true" />
+          Library
+        </Button>
+      </div>
 
       <AIRoleSuggestor
         open={aiSuggestOpen}
