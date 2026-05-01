@@ -8,6 +8,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AppLayout from './components/AppLayout';
 
 import SimulationPage from './pages/Simulation';
+import Dashboard from './pages/Dashboard';
 import TemplatesPage from './pages/Templates';
 import PlaybooksPage from './pages/Playbooks';
 import TeamPage from './pages/Team';
@@ -38,7 +39,8 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Wrap><SimulationPage /></Wrap>} />
+      <Route path="/" element={<Wrap><Dashboard /></Wrap>} />
+      <Route path="/Dashboard" element={<Wrap><Dashboard /></Wrap>} />
       <Route path="/Simulation" element={<Wrap><SimulationPage /></Wrap>} />
       <Route path="/Templates" element={<Wrap><TemplatesPage /></Wrap>} />
       <Route path="/Playbooks" element={<Wrap><PlaybooksPage /></Wrap>} />

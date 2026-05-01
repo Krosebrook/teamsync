@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, BookOpen, Users, Settings, Zap } from 'lucide-react';
+import { LayoutDashboard, FileText, BookOpen, Users, Settings, Zap, FlaskConical } from 'lucide-react';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { label: 'Simulation', path: '/Simulation', icon: FlaskConical },
   { label: 'Templates', path: '/Templates', icon: FileText },
   { label: 'Playbooks', path: '/Playbooks', icon: BookOpen },
   { label: 'Team', path: '/Team', icon: Users },
